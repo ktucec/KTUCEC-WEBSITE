@@ -1,3 +1,4 @@
+using ktucec.Features.Announcements;
 using ktucec.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -9,6 +10,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<KtucecDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+
+builder.Services.AddScoped<AddAnnouncementHandler>();
+
+
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -19,5 +24,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.MapAddAnnouncement();
 
 app.Run();
