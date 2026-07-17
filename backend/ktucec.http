@@ -1,0 +1,6 @@
+@ktucec_HostAddress = http://localhost:5142
+
+GET {{ktucec_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

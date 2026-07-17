@@ -1,0 +1,27 @@
+## .NET Core
+bin/
+obj/
+out/
+
+## Visual Studio
+.vs/
+*.user
+*.suo
+
+## Rider / JetBrains
+.idea/
+
+## VS Code 
+.vscode/
+
+## appsettings
+appsettings.Development.json
+appsettings.Local.json
+*.env
+
+## Logs
+*.log
+
+## OS files
+.DS_Store
+Thumbs.db
