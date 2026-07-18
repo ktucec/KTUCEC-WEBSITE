@@ -14,6 +14,7 @@ namespace ktucec.Infrastructure.Database
 
         public DbSet<Announcement> Announcements => Set<Announcement>();
         public DbSet<Event> Events => Set<Event>();
+        public DbSet<ContactForm> ContactForms => Set<ContactForm>();
 
 
 
