@@ -54,6 +54,7 @@ builder.Services.AddScoped<DeleteEventHandler>();
 // -- ContactForms -- 
 builder.Services.AddScoped<AddContactFormHandler>();
 builder.Services.AddScoped<InsertGetAllContactFormsHandler>();
+builder.Services.AddScoped<DeleteContactFormHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -87,6 +88,7 @@ app.MapDeleteEvent();
 // -- ContactForms --
 app.MapAddContactForm();
 app.MapGetAllContactForms();
+app.MapDeleteContactForm();
 
 
 app.Run();
