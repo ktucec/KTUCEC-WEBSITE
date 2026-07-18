@@ -15,6 +15,7 @@ builder.Services.AddScoped<AddAnnouncementHandler>();
 builder.Services.AddScoped<GetAllAnnouncementsHandler>();
 builder.Services.AddScoped<GetLatestAnnouncementsHandler>();
 builder.Services.AddScoped<UpdateAnnouncementHandler>();
+builder.Services.AddScoped<DeleteAnnouncementHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -32,5 +33,6 @@ app.MapAddAnnouncement();
 app.MapGetAllAnnouncements();
 app.MapGetLatestAnnouncements();
 app.MapUpdateAnnouncement();
+app.MapDeleteAnnouncement();
 
 app.Run();
