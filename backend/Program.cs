@@ -68,6 +68,7 @@ builder.Services.AddScoped<DeleteContactFormHandler>();
 builder.Services.AddScoped<LoginHandler>();
 builder.Services.AddScoped<VerifyCodeHandler>();
 builder.Services.AddScoped<RefreshTokenHandler>();
+builder.Services.AddScoped<LogoutHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -107,6 +108,7 @@ app.MapDeleteContactForm();
 app.MapLogin();
 app.MapVerifyCode();
 app.MapRefreshToken();
+app.MapLogout();
 
 
 //await DatabaseSeeder.SeedAdminAsync(app);
