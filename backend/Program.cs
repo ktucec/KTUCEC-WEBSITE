@@ -1,4 +1,5 @@
 using ktucec.Features.Announcements;
+using ktucec.Features.Events;
 using ktucec.Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,11 +12,17 @@ builder.Services.AddDbContext<KtucecDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 
+// ----------- Service Registration --------------
+
+// -- Annoucements --
 builder.Services.AddScoped<AddAnnouncementHandler>();
 builder.Services.AddScoped<GetAllAnnouncementsHandler>();
 builder.Services.AddScoped<GetLatestAnnouncementsHandler>();
 builder.Services.AddScoped<UpdateAnnouncementHandler>();
 builder.Services.AddScoped<DeleteAnnouncementHandler>();
+
+// -- Events --
+builder.Services.AddScoped<AddEventHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -29,10 +36,19 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+
+// ----------- Endpoint Mapping --------------
+
+// -- Annoucements --
 app.MapAddAnnouncement();
 app.MapGetAllAnnouncements();
 app.MapGetLatestAnnouncements();
 app.MapUpdateAnnouncement();
 app.MapDeleteAnnouncement();
+
+// -- Events --
+app.MapAddEvent();
+
+
 
 app.Run();
