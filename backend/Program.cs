@@ -1,3 +1,4 @@
+using ktucec.Domain.Enums;
 using ktucec.Features.Announcements;
 using ktucec.Features.Auth;
 using ktucec.Features.ContactForms;
@@ -6,9 +7,12 @@ using ktucec.Infrastructure.Database;
 using ktucec.Infrastructure.Services;
 using ktucec.Infrastructure.Services.Authentication;
 using ktucec.Infrastructure.Services.Telegram;
-using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,6 +49,44 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<JwtProvider>();
 
 
+
+var jwtSecret = builder.Configuration["Jwt:Secret"];
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("accessToken"))
+                {
+                    context.Token = context.Request.Cookies["accessToken"];
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireClaim(ClaimTypes.Role, UserRole.Admin.ToString()));
+});
+
+
 // ----------- Service Registration --------------
 
 // -- Annoucements --
@@ -69,6 +111,7 @@ builder.Services.AddScoped<LoginHandler>();
 builder.Services.AddScoped<VerifyCodeHandler>();
 builder.Services.AddScoped<RefreshTokenHandler>();
 builder.Services.AddScoped<LogoutHandler>();
+builder.Services.AddScoped<CreateManagerHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -81,6 +124,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseRateLimiter();
 
@@ -109,6 +155,7 @@ app.MapLogin();
 app.MapVerifyCode();
 app.MapRefreshToken();
 app.MapLogout();
+app.MapCreateManager();
 
 
 //await DatabaseSeeder.SeedAdminAsync(app);
