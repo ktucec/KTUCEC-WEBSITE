@@ -98,4 +98,6 @@ app.MapGetAllContactForms();
 app.MapDeleteContactForm();
 
 
+await DatabaseSeeder.SeedAdminAsync(app);
+
 app.Run();

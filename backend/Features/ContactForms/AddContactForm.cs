@@ -1,6 +1,7 @@
 ﻿using ktucec.Domain.Entities;
 using ktucec.Infrastructure.Database;
 using ktucec.Infrastructure.Services;
+using ktucec.Infrastructure.Services.Telegram;
 using ktucec.Shared.Models;
 using System;
 
