@@ -112,6 +112,7 @@ builder.Services.AddScoped<VerifyCodeHandler>();
 builder.Services.AddScoped<RefreshTokenHandler>();
 builder.Services.AddScoped<LogoutHandler>();
 builder.Services.AddScoped<CreateManagerHandler>();
+builder.Services.AddScoped<UpdateManagerHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -156,6 +157,7 @@ app.MapVerifyCode();
 app.MapRefreshToken();
 app.MapLogout();
 app.MapCreateManager();
+app.MapUpdateManager();
 
 
 //await DatabaseSeeder.SeedAdminAsync(app);
