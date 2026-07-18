@@ -13,6 +13,7 @@ namespace ktucec.Infrastructure.Database
         // ------ DB Table Definitions --------
 
         public DbSet<Announcement> Announcements => Set<Announcement>();
+        public DbSet<Event> Events => Set<Event>();
 
 
 
