@@ -1,6 +1,8 @@
 using ktucec.Features.Announcements;
+using ktucec.Features.ContactForms;
 using ktucec.Features.Events;
 using ktucec.Infrastructure.Database;
+using ktucec.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
 
@@ -10,6 +12,14 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<KtucecDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+
+// activate memorycache for rate limiting
+builder.Services.AddMemoryCache();
+
+// telegram service dependencies
+builder.Services.AddHttpClient<TelegramService>();
+builder.Services.AddScoped<TelegramService>();
 
 
 // ----------- Service Registration --------------
@@ -25,6 +35,10 @@ builder.Services.AddScoped<DeleteAnnouncementHandler>();
 builder.Services.AddScoped<AddEventHandler>();
 builder.Services.AddScoped<UpdateEventHandler>();
 builder.Services.AddScoped<DeleteEventHandler>();
+
+// -- ContactForms -- 
+builder.Services.AddScoped<AddContactFormHandler>();
+builder.Services.AddScoped<InsertGetAllContactFormsHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -52,6 +66,10 @@ app.MapDeleteAnnouncement();
 app.MapAddEvent();
 app.MapUpdateEvent();
 app.MapDeleteEvent();
+
+// -- ContactForms --
+app.MapAddContactForm();
+app.MapGetAllContactForms();
 
 
 app.Run();
