@@ -13,6 +13,7 @@ builder.Services.AddDbContext<KtucecDbContext>(options =>
 
 builder.Services.AddScoped<AddAnnouncementHandler>();
 builder.Services.AddScoped<GetAllAnnouncementsHandler>();
+builder.Services.AddScoped<GetLatestAnnouncementsHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -28,5 +29,6 @@ app.UseHttpsRedirection();
 
 app.MapAddAnnouncement();
 app.MapGetAllAnnouncements();
+app.MapGetLatestAnnouncements();
 
 app.Run();
