@@ -5,6 +5,8 @@ using ktucec.Infrastructure.Database;
 using ktucec.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +15,22 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<KtucecDbContext>(options =>
     options.UseSqlServer(connectionString));
 
+// contact form rate limiting policy
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-// activate memorycache for rate limiting
-builder.Services.AddMemoryCache();
+    options.AddPolicy("ContactPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-client",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5,                          
+                Window = TimeSpan.FromHours(1),         
+                QueueLimit = 0                         
+            }));
+});
 
 // telegram service dependencies
 builder.Services.AddHttpClient<TelegramService>();
@@ -51,6 +66,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRateLimiter();
 
 
 // ----------- Endpoint Mapping --------------
