@@ -24,6 +24,7 @@ builder.Services.AddScoped<DeleteAnnouncementHandler>();
 // -- Events --
 builder.Services.AddScoped<AddEventHandler>();
 builder.Services.AddScoped<UpdateEventHandler>();
+builder.Services.AddScoped<DeleteEventHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -50,7 +51,7 @@ app.MapDeleteAnnouncement();
 // -- Events --
 app.MapAddEvent();
 app.MapUpdateEvent();
-
+app.MapDeleteEvent();
 
 
 app.Run();
