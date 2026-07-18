@@ -27,12 +27,11 @@ public static class DatabaseSeeder
 
             var rootAdmin = new User
             {
-                NameSurname = adminName,
-                Email = adminEmail,
-                PasswordHash = passwordHasher.HashPassword(adminPassword),
-                Role = UserRole.Admin,
-                ManagerRole = ManagerRole.None,
-                IsEmailConfirmed = true 
+                NameSurname = "Barış Demir",
+                Email = "bimaildahaolsun@gmail.com",
+                PasswordHash = passwordHasher.HashPassword("12345678"),
+                Role = UserRole.Member,
+                IsEmailConfirmed = false 
             };
 
             context.Users.Add(rootAdmin);
