@@ -4,16 +4,14 @@ using System;
 
 namespace ktucec.Features.Announcements;
 
-// 1. REQUEST & RESPONSE
-public record UpdateAnnouncementRequest(string Title, string Content);
+// 1. REQUEST & RESPONSE 
+public record UpdateAnnouncementRequest(string? Title, string? Content);
 public record UpdateAnnouncementResponse(int Id);
-
 
 // 2. HANDLER
 public class UpdateAnnouncementHandler
 {
     private readonly KtucecDbContext _context;
-
     public UpdateAnnouncementHandler(KtucecDbContext context)
     {
         _context = context;
@@ -22,31 +20,32 @@ public class UpdateAnnouncementHandler
     public async Task<UpdateAnnouncementResponse?> HandleAsync(int id, UpdateAnnouncementRequest request)
     {
         var announcement = await _context.Announcements.FindAsync(id);
-
         if (announcement == null)
             return null;
 
-        announcement.Title = request.Title;
-        announcement.Content = request.Content;
+        // update only not null items
+        if (request.Title is not null)
+            announcement.Title = request.Title;
+
+        if (request.Content is not null)
+            announcement.Content = request.Content;
 
         await _context.SaveChangesAsync();
-
         return new UpdateAnnouncementResponse(announcement.Id);
     }
 }
-
 
 // 3. ENDPOINT
 public static class UpdateAnnouncementEndpoint
 {
     public static void MapUpdateAnnouncement(this IEndpointRouteBuilder app)
     {
-        app.MapPut("/api/announcements/{id}", async (int id, UpdateAnnouncementRequest request, UpdateAnnouncementHandler handler) =>
+        app.MapPatch("/api/announcements/{id}", async (int id, UpdateAnnouncementRequest request, UpdateAnnouncementHandler handler) =>
         {
-            if (string.IsNullOrWhiteSpace(request.Title))
+            if (request.Title is not null && string.IsNullOrWhiteSpace(request.Title))
                 return Results.BadRequest(new ApiResult(false, "Duyuru başlığı boş olamaz!"));
 
-            if (string.IsNullOrWhiteSpace(request.Content))
+            if (request.Content is not null && string.IsNullOrWhiteSpace(request.Content))
                 return Results.BadRequest(new ApiResult(false, "Duyuru içeriği boş olamaz!"));
 
             var response = await handler.HandleAsync(id, request);
