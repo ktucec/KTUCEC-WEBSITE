@@ -1,4 +1,5 @@
 using ktucec.Features.Announcements;
+using ktucec.Features.Auth;
 using ktucec.Features.ContactForms;
 using ktucec.Features.Events;
 using ktucec.Infrastructure.Database;
@@ -63,6 +64,10 @@ builder.Services.AddScoped<AddContactFormHandler>();
 builder.Services.AddScoped<InsertGetAllContactFormsHandler>();
 builder.Services.AddScoped<DeleteContactFormHandler>();
 
+// -- Authentication --
+builder.Services.AddScoped<LoginHandler>();
+builder.Services.AddScoped<VerifyCodeHandler>();
+
 
 builder.Services.AddOpenApi();
 
@@ -97,7 +102,11 @@ app.MapAddContactForm();
 app.MapGetAllContactForms();
 app.MapDeleteContactForm();
 
+// -- Authentication --
+app.MapLogin();
+app.MapVerifyCode();
 
-await DatabaseSeeder.SeedAdminAsync(app);
+
+//await DatabaseSeeder.SeedAdminAsync(app);
 
 app.Run();
