@@ -3,9 +3,11 @@ using ktucec.Features.ContactForms;
 using ktucec.Features.Events;
 using ktucec.Infrastructure.Database;
 using ktucec.Infrastructure.Services;
+using ktucec.Infrastructure.Services.Authentication;
+using ktucec.Infrastructure.Services.Telegram;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using System;
-using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +37,11 @@ builder.Services.AddRateLimiter(options =>
 // telegram service dependencies
 builder.Services.AddHttpClient<TelegramService>();
 builder.Services.AddScoped<TelegramService>();
+
+
+builder.Services.AddScoped<PasswordHasher>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<JwtProvider>();
 
 
 // ----------- Service Registration --------------

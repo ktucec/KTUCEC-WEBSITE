@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 
-namespace ktucec.Infrastructure.Services;
+namespace ktucec.Infrastructure.Services.Telegram;
 
 public class TelegramService
 {
@@ -21,10 +21,8 @@ public class TelegramService
         if (string.IsNullOrEmpty(_botToken) || string.IsNullOrEmpty(_chatId))
             return;
 
-        // Telegram Bot API sendMessage URL'i
         var url = $"https://api.telegram.org/bot{_botToken}/sendMessage?chat_id={_chatId}&text={Uri.EscapeDataString(message)}";
 
-        // HTTP Post ile Telegram sunucularına mesajı ateşliyoruz
         await _httpClient.PostAsync(url, null);
     }
 }
