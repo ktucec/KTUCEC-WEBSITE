@@ -114,6 +114,7 @@ builder.Services.AddScoped<LogoutHandler>();
 builder.Services.AddScoped<CreateManagerHandler>();
 builder.Services.AddScoped<UpdateManagerHandler>();
 builder.Services.AddScoped<DeleteManagerHandler>();
+builder.Services.AddScoped<GetAllManagersHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -160,6 +161,7 @@ app.MapLogout();
 app.MapCreateManager();
 app.MapUpdateManager();
 app.MapDeleteManager();
+app.MapGetAllManagers();
 
 
 //await DatabaseSeeder.SeedAdminAsync(app);
