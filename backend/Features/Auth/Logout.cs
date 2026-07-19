@@ -54,6 +54,7 @@ public static class LogoutEndpoint
             var result = await handler.HandleAsync(httpContext);
             return Results.Ok(result);
         })
+        .RequireAuthorization()
         .RequireRateLimiting("StrictPolicy");
     }
 }

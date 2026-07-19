@@ -70,6 +70,7 @@ public static class RefreshTokenEndpoint
 
             return Results.Ok(result);
         })
+        .RequireAuthorization()
         .RequireRateLimiting("StrictPolicy");
     }
 }

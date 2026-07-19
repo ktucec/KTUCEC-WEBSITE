@@ -48,6 +48,7 @@ public static class DeleteAnnouncementEndpoint
             var finalResult = new ApiResult<DeleteAnnouncementResponse>(true, response, "Duyuru başarıyla silindi.");
             return Results.Ok(finalResult);
         })
-        .RequireRateLimiting("FlexPolicy");
+        .RequireRateLimiting("FlexPolicy")
+        .RequireAuthorization("AdminAndManager");
     }
 }

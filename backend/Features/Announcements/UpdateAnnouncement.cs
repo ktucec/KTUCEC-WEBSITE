@@ -56,6 +56,7 @@ public static class UpdateAnnouncementEndpoint
             var finalResult = new ApiResult<UpdateAnnouncementResponse>(true, response, "Duyuru başarıyla güncellendi.");
             return Results.Ok(finalResult);
         })
-        .RequireRateLimiting("FlexPolicy");
+        .RequireRateLimiting("FlexPolicy")
+        .RequireAuthorization("AdminAndManager");
     }
 }

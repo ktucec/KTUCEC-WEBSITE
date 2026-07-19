@@ -54,6 +54,8 @@ public static class AddAnnouncementEndpoint
 
             // standard http 201 return schema
             return Results.Created($"/api/announcements/{response.Id}", finalResult);
-        });
+        })
+        .RequireRateLimiting("FlexPolicy")
+        .RequireAuthorization("AdminAndManager");
     }
 }

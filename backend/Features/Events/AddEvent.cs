@@ -67,6 +67,7 @@ public static class AddEventEndpoint
             var finalResult = new ApiResult<AddEventResponse>(true, response, "Etkinlik başarıyla oluşturuldu!");
             return Results.Created($"/api/events/{response.Id}", finalResult);
         })
+        .RequireAuthorization("AdminAndManager")
         .RequireRateLimiting("StrictPolicy");
     }
 }

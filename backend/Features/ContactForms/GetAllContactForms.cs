@@ -41,6 +41,7 @@ public static class GetAllContactFormsEndpoint
             var finalResult = new ApiResult<List<ContactFormDto>>(true, forms, "Tüm iletişim formları tersten listelendi.");
             return Results.Ok(finalResult);
         })
+        .RequireAuthorization("AdminAndManager")
         .RequireRateLimiting("FlexPolicy");
     }
 }

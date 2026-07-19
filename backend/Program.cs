@@ -109,10 +109,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
+// AUTHORIZATION POLICIES
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminOnly", policy =>
         policy.RequireClaim(ClaimTypes.Role, UserRole.Admin.ToString()));
+
+    options.AddPolicy("AdminAndManager", policy =>
+        policy.RequireClaim(ClaimTypes.Role, UserRole.Admin.ToString(), UserRole.Manager.ToString()));
 });
 
 

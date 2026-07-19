@@ -49,6 +49,7 @@ public static class DeleteEventEndpoint
             var finalResult = new ApiResult<DeleteEventResponse>(true, response, "Etkinlik başarıyla silindi!");
             return Results.Ok(finalResult);
         })
+        .RequireAuthorization("AdminAndManager")
         .RequireRateLimiting("FlexPolicy");
     }
 }
