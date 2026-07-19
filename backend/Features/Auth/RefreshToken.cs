@@ -69,6 +69,7 @@ public static class RefreshTokenEndpoint
             }
 
             return Results.Ok(result);
-        });
+        })
+        .RequireRateLimiting("StrictPolicy");
     }
 }

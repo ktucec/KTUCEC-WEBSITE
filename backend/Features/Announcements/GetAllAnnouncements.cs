@@ -42,6 +42,7 @@ public static class GetAllAnnouncementsEndpoint
 
             var finalResult = new ApiResult<List<AnnouncementDto>>(true, announcements, "Duyurular listelendi.");
             return Results.Ok(finalResult);
-        });
+        })
+        .RequireRateLimiting("FlexPolicy");
     }
 }

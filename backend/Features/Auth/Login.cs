@@ -107,6 +107,7 @@ public static class LoginEndpoint
                 return Results.BadRequest(result);
 
             return Results.Ok(result);
-        });
+        })
+        .RequireRateLimiting("StrictPolicy");
     }
 }

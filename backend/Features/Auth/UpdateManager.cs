@@ -81,6 +81,7 @@ public static class UpdateManagerEndpoint
                 return Results.BadRequest(new ApiResult(false, ex.Message));
             }
         })
-        .RequireAuthorization("AdminOnly"); 
+        .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("StrictPolicy");
     }
 }

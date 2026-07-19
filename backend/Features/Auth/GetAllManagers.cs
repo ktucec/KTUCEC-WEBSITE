@@ -47,6 +47,7 @@ public static class GetAllManagersEndpoint
             var finalResult = new ApiResult<List<GetAllManagersResponse>>(true, managers, "Tüm kulüp yöneticileri başarıyla listelendi.");
             return Results.Ok(finalResult);
         })
-        .RequireAuthorization("AdminOnly");
+        .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("FlexPolicy");
     }
 }

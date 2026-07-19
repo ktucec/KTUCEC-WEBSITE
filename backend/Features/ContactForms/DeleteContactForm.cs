@@ -48,6 +48,7 @@ public static class DeleteContactFormEndpoint
 
             var finalResult = new ApiResult<DeleteContactFormResponse>(true, response, "İletişim formu başarıyla silindi!");
             return Results.Ok(finalResult);
-        });
+        })
+        .RequireRateLimiting("FlexPolicy");
     }
 }

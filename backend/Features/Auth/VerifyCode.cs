@@ -93,6 +93,7 @@ public static class VerifyCodeEndpoint
                 return Results.BadRequest(result);
 
             return Results.Ok(result);
-        });
+        })
+        .RequireRateLimiting("StrictPolicy");
     }
 }

@@ -77,6 +77,7 @@ public static class UpdateEventEndpoint
 
             var finalResult = new ApiResult<UpdateEventResponse>(true, response, "Etkinlik başarıyla güncellendi!");
             return Results.Ok(finalResult);
-        });
+        })
+        .RequireRateLimiting("FlexPolicy");
     }
 }

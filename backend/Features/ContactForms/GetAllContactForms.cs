@@ -40,6 +40,7 @@ public static class GetAllContactFormsEndpoint
             var forms = await handler.HandleAsync();
             var finalResult = new ApiResult<List<ContactFormDto>>(true, forms, "Tüm iletişim formları tersten listelendi.");
             return Results.Ok(finalResult);
-        });
+        })
+        .RequireRateLimiting("FlexPolicy");
     }
 }

@@ -89,6 +89,7 @@ public static class CreateManagerEndpoint
 
             return Results.Ok(result);
         })
-        .RequireAuthorization("AdminOnly");
+        .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("StrictPolicy");
     }
 }

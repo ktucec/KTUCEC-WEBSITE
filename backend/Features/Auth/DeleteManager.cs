@@ -48,6 +48,7 @@ public static class DeleteManagerEndpoint
             var finalResult = new ApiResult<DeleteManagerResponse>(true, response, "Yönetici hesabı kulüp sisteminden başarıyla silindi!");
             return Results.Ok(finalResult);
         })
-        .RequireAuthorization("AdminOnly");
+        .RequireAuthorization("AdminOnly")
+        .RequireRateLimiting("StrictPolicy");
     }
 }

@@ -22,21 +22,50 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<KtucecDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// contact form rate limiting policy
+
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-    options.AddPolicy("ContactPolicy", httpContext =>
+    // STRICT RATE LIMIT
+    options.AddPolicy("StrictPolicy", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-client",
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-strict-client",
             factory: partition => new FixedWindowRateLimiterOptions
             {
                 AutoReplenishment = true,
-                PermitLimit = 5,                          
-                Window = TimeSpan.FromHours(1),         
-                QueueLimit = 0                         
-            }));
+                PermitLimit = 7,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }
+        ));
+
+    // FLEX RATE LIMIT
+    options.AddPolicy("FlexPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-flex-client",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 45,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 2,
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+            }
+        ));
+
+    // CONTACT-FORM RATE LIMIT
+    options.AddPolicy("ContactPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-contact-client",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 5,
+                Window = TimeSpan.FromHours(1),
+                QueueLimit = 0
+            }
+        ));
 });
 
 // telegram service dependencies

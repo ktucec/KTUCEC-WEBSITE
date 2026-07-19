@@ -66,6 +66,7 @@ public static class AddEventEndpoint
             // pack result and send with standard http 201 schema.
             var finalResult = new ApiResult<AddEventResponse>(true, response, "Etkinlik başarıyla oluşturuldu!");
             return Results.Created($"/api/events/{response.Id}", finalResult);
-        });
+        })
+        .RequireRateLimiting("StrictPolicy");
     }
 }

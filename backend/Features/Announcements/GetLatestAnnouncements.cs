@@ -43,6 +43,7 @@ public static class GetLatestAnnouncementsEndpoint
 
             var finalResult = new ApiResult<List<AnnouncementDto>>(true, latestAnnouncements, $"Son {limit} duyuru getirildi.");
             return Results.Ok(finalResult);
-        });
+        })
+        .RequireRateLimiting("FlexPolicy");
     }
 }
