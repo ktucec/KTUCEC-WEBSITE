@@ -1,5 +1,7 @@
 import '../styles/globals.css';
 import BackgroundCanvas from '@/components/ui/BackgroundCanvas';
+import Navbar from '@/components/layout/Navbar';
+import Footer from '@/components/layout/Footer';
 
 export const metadata = {
   title: 'KTUCEC - Engineering the Future',
@@ -9,16 +11,18 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="tr">
-      <body className="antialiased relative min-h-screen overflow-x-hidden selection:bg-[var(--color-primary-container)] selection:text-white">
+      <body className="antialiased relative min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-white">
         
         {/* Global WebGL Background */}
         <BackgroundCanvas />
 
-        {/* Navbar  */}
+        {/* Top Navbar */}
+        <Navbar />
         
         {children}
 
-        {/* Footer  */}
+        {/* Footer */}
+        <Footer />
         
       </body>
     </html>
