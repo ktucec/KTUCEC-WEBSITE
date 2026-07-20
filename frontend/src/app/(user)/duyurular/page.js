@@ -1,0 +1,164 @@
+"use client";
+
+import Link from 'next/link';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+
+export default function AnnouncementsPage() {
+    // Sayfa yüklendiğinde intersection observer'ı başlat
+    useScrollAnimation();
+
+    // Örnek Duyuru Verileri (İleride API'den gelecek)
+    const announcements = [
+        {
+            id: 1,
+            category: "Yazılım",
+            date: "14 Mart 2024",
+            title: "Google Hash Code 2024 Hub Duyurusu",
+            description: "KTU Bilgisayar Mühendisliği olarak bu yıl da Google Hash Code için resmi hub oluyoruz. Kayıtlar ve detaylar için web sitemizi ziyaret edin.",
+            icon: "terminal"
+        },
+        {
+            id: 2,
+            category: "Kariyer",
+            date: "12 Mart 2024",
+            title: "Büyük Şirketlerde Staj Arayışı Semineri",
+            description: "FAANG ve yerli teknoloji devlerinde staj süreci nasıl işler? CV hazırlama ve teknik mülakat teknikleri üzerine konuşuyoruz.",
+            icon: "work"
+        },
+        {
+            id: 3,
+            category: "Etkinlik",
+            date: "10 Mart 2024",
+            title: "Python ile Veri Bilimi Atölyesi",
+            description: "Temel kütüphanelerden başlayarak gerçek dünya veri setleri üzerinde analiz yapacağımız 4 haftalık yoğunlaştırılmış eğitim serisi.",
+            icon: "data_object"
+        },
+        {
+            id: 4,
+            category: "Yazılım",
+            date: "05 Mart 2024",
+            title: "Open Source Katkı Rehberi Yayında",
+            description: "Açık kaynak dünyasına ilk adımınızı nasıl atarsınız? Topluluğumuzun hazırladığı kapsamlı GitHub rehberine göz atın.",
+            icon: "code_blocks"
+        },
+        {
+            id: 5,
+            category: "Kulüp",
+            date: "01 Mart 2024",
+            title: "Yeni Dönem Tanışma Toplantısı",
+            description: "Bahar dönemine hızlı bir giriş yapıyoruz. Yeni projelerimizi ve hedeflerimizi konuşmak üzere herkesi bekliyoruz.",
+            icon: "groups"
+        },
+        {
+            id: 6,
+            category: "Eğitim",
+            date: "25 Şubat 2024",
+            title: "Siber Güvenlikte Kariyer Basamakları",
+            description: "White-hat hacking dünyasına giriş yapacaklar için yol haritası. Sertifikalar, araçlar ve uygulama alanları üzerine detaylı rehber.",
+            icon: "security"
+        }
+    ];
+
+    return (
+        <main className="pt-32 pb-24 px-gutter max-w-container-max mx-auto relative z-10">
+            {/* Hero / Breadcrumb Section */}
+            <section className="mb-12">
+                <nav className="flex items-center gap-2 text-on-surface-variant/60 font-label-md text-label-md mb-4 uppercase tracking-widest">
+                    <Link href="/" className="hover:text-primary transition-colors">Ana Sayfa</Link>
+                    <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span className="text-primary font-bold">Duyurular</span>
+                </nav>
+                <h1 className="font-display-lg text-display-lg text-primary mb-2">Duyurular</h1>
+                <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                    Bilgisayar Mühendisliği topluluğumuzdan en güncel haberler, teknik makaleler ve kariyer fırsatları.
+                </p>
+            </section>
+
+            {/* Filtering System */}
+            <section className="fade-up mb-16">
+                <div className="glass-panel p-6 md:p-8 rounded-[24px] shadow-sm flex flex-col md:flex-row items-end gap-6 border-white/60">
+                    <div className="w-full md:w-auto flex-1">
+                        <label className="block font-label-md text-label-md text-on-surface-variant mb-2 uppercase tracking-wider">Başlangıç Tarihi</label>
+                        <div className="relative">
+                            <input className="w-full bg-white/50 border border-outline-variant/30 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all font-body-md" type="date" />
+                        </div>
+                    </div>
+                    <div className="w-full md:w-auto flex-1">
+                        <label className="block font-label-md text-label-md text-on-surface-variant mb-2 uppercase tracking-wider">Bitiş Tarihi</label>
+                        <div className="relative">
+                            <input className="w-full bg-white/50 border border-outline-variant/30 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all font-body-md" type="date" />
+                        </div>
+                    </div>
+                    <div className="w-full md:w-auto">
+                        <button className="w-full bg-primary text-white px-10 py-3.5 rounded-xl font-label-md text-label-md uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+                            <span className="material-symbols-outlined text-[20px]">filter_list</span>
+                            Filtrele
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            {/* Announcements List */}
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {announcements.map((item, index) => (
+                    <article
+                        key={item.id}
+                        className="fade-up group cursor-pointer"
+                        style={{ transitionDelay: `${index * 100}ms` }}
+                    >
+                        <div className="glass-panel-dark rounded-[24px] p-8 transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl group-hover:shadow-primary/10 border border-white/40 group-hover:border-primary/30 flex flex-col h-full">
+                            {/* Card Header: Icon & Category */}
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300 text-primary">
+                                    <span className="material-symbols-outlined">{item.icon}</span>
+                                </div>
+                                <span className="bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-outline-variant/20">
+                                    {item.category}
+                                </span>
+                            </div>
+
+                            {/* Card Content */}
+                            <div className="flex-grow">
+                                <div className="flex items-center gap-2 text-primary/80 font-label-md text-[12px] mb-3">
+                                    <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                                    {item.date}
+                                </div>
+                                <h3 className="font-headline-sm text-[20px] leading-tight text-on-surface mb-4 group-hover:text-primary transition-colors">
+                                    {item.title}
+                                </h3>
+                                <p className="text-on-surface-variant font-body-md line-clamp-3">
+                                    {item.description}
+                                </p>
+                            </div>
+
+                            {/* Card Footer */}
+                            <div className="mt-6 pt-6 border-t border-outline-variant/20 flex items-center text-primary font-label-md text-[13px] uppercase tracking-wider group-hover:gap-2 transition-all">
+                                Detayları Gör <span className="material-symbols-outlined text-[18px] ml-1">arrow_forward</span>
+                            </div>
+                        </div>
+                    </article>
+                ))}
+            </section>
+
+            {/* Pagination */}
+            <nav className="mt-20 flex justify-center items-center gap-2">
+                <button className="glass-panel w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all">
+                    <span className="material-symbols-outlined">chevron_left</span>
+                </button>
+                <button className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary text-white font-bold shadow-lg shadow-primary/20">
+                    1
+                </button>
+                <button className="glass-panel w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all">
+                    2
+                </button>
+                <button className="glass-panel w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all">
+                    3
+                </button>
+                <span className="px-2 text-on-surface-variant">...</span>
+                <button className="glass-panel w-12 h-12 rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all">
+                    <span className="material-symbols-outlined">chevron_right</span>
+                </button>
+            </nav>
+        </main>
+    );
+}

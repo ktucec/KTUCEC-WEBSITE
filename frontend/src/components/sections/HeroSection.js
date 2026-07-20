@@ -62,13 +62,13 @@ export default function HeroSection() {
                 <div className="absolute inset-0 bg-black/60 z-10"></div>
                 <div
                     className="w-full h-full bg-cover bg-center object-cover"
-                    style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAwqvt2nbvZSe8upFBhA-2nb5offdyp8_enhMIkPwT9rIsaGvZsvVAYA54HizPv7g1OuViK34p_fyk7DRZcmxwqslLEoDw3lxHnxa-YTuwnuJY2B5HmFk3KW0V5cs-7xaX4BK7deJNFGSL2mbhHhjww6k32S_C1ACfkbz88u2e39IvS4YmdJzbkZXR-3ygtJbtDDaRrdvT1bA-dS2l8q86tG1wGAwz1WTUqNB-WmyTxCL2MvGxdxkFIiuIYH3uY85tFJynxJDrZEAFX')" }}
+                    style={{ backgroundImage: "url('/hero.jpeg')" }}
                 ></div>
             </div>
 
-            <div className="relative z-20 px-4 flex flex-col items-start">
+            <div className="relative z-20 w-full px-4 flex flex-col items-start">
                 <div className="max-w-container-max mx-auto px-gutter w-full">
-                    <h1 className="font-display-lg text-display-lg-mobile md:text-[120px] text-white mb-6 drop-shadow-2xl leading-none">
+                    <h1 className="font-display-lg text-display-lg-mobile text-[60px] md:text-[80px] lg:text-[100px] xl::text-[120px] text-white mb-6 drop-shadow-2xl leading-none">
                         KTUCEC
                     </h1>
                     <div className="font-headline-sm text-2xl md:text-4xl text-white/90 h-12 flex items-center">
