@@ -2,60 +2,47 @@
 
 import Link from 'next/link';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import AnnouncementCard from '@/components/ui/AnnouncementCard';
 
 export default function AnnouncementsPage() {
-    // Sayfa yüklendiğinde intersection observer'ı başlat
     useScrollAnimation();
 
-    // Örnek Duyuru Verileri (İleride API'den gelecek)
     const announcements = [
         {
             id: 1,
-            category: "Yazılım",
             date: "14 Mart 2024",
             title: "Google Hash Code 2024 Hub Duyurusu",
-            description: "KTU Bilgisayar Mühendisliği olarak bu yıl da Google Hash Code için resmi hub oluyoruz. Kayıtlar ve detaylar için web sitemizi ziyaret edin.",
-            icon: "terminal"
+            description: "KTU Bilgisayar Mühendisliği olarak bu yıl da Google Hash Code için resmi hub oluyoruz. Kayıtlar ve detaylar için web sitemizi ziyaret edin."
         },
         {
             id: 2,
-            category: "Kariyer",
             date: "12 Mart 2024",
             title: "Büyük Şirketlerde Staj Arayışı Semineri",
-            description: "FAANG ve yerli teknoloji devlerinde staj süreci nasıl işler? CV hazırlama ve teknik mülakat teknikleri üzerine konuşuyoruz.",
-            icon: "work"
+            description: "FAANG ve yerli teknoloji devlerinde staj süreci nasıl işler? CV hazırlama ve teknik mülakat teknikleri üzerine konuşuyoruz."
         },
         {
             id: 3,
-            category: "Etkinlik",
             date: "10 Mart 2024",
             title: "Python ile Veri Bilimi Atölyesi",
-            description: "Temel kütüphanelerden başlayarak gerçek dünya veri setleri üzerinde analiz yapacağımız 4 haftalık yoğunlaştırılmış eğitim serisi.",
-            icon: "data_object"
+            description: "Temel kütüphanelerden başlayarak gerçek dünya veri setleri üzerinde analiz yapacağımız 4 haftalık yoğunlaştırılmış eğitim serisi."
         },
         {
             id: 4,
-            category: "Yazılım",
             date: "05 Mart 2024",
             title: "Open Source Katkı Rehberi Yayında",
-            description: "Açık kaynak dünyasına ilk adımınızı nasıl atarsınız? Topluluğumuzun hazırladığı kapsamlı GitHub rehberine göz atın.",
-            icon: "code_blocks"
+            description: "Açık kaynak dünyasına ilk adımınızı nasıl atarsınız? Topluluğumuzun hazırladığı kapsamlı GitHub rehberine göz atın."
         },
         {
             id: 5,
-            category: "Kulüp",
             date: "01 Mart 2024",
             title: "Yeni Dönem Tanışma Toplantısı",
-            description: "Bahar dönemine hızlı bir giriş yapıyoruz. Yeni projelerimizi ve hedeflerimizi konuşmak üzere herkesi bekliyoruz.",
-            icon: "groups"
+            description: "Bahar dönemine hızlı bir giriş yapıyoruz. Yeni projelerimizi ve hedeflerimizi konuşmak üzere herkesi bekliyoruz."
         },
         {
             id: 6,
-            category: "Eğitim",
             date: "25 Şubat 2024",
             title: "Siber Güvenlikte Kariyer Basamakları",
-            description: "White-hat hacking dünyasına giriş yapacaklar için yol haritası. Sertifikalar, araçlar ve uygulama alanları üzerine detaylı rehber.",
-            icon: "security"
+            description: "White-hat hacking dünyasına giriş yapacaklar için yol haritası. Sertifikalar, araçlar ve uygulama alanları üzerine detaylı rehber."
         }
     ];
 
@@ -98,45 +85,17 @@ export default function AnnouncementsPage() {
                 </div>
             </section>
 
-            {/* Announcements List */}
+            {/* Announcements List Componentized */}
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {announcements.map((item, index) => (
-                    <article
+                    <AnnouncementCard
                         key={item.id}
-                        className="fade-up group cursor-pointer"
-                        style={{ transitionDelay: `${index * 100}ms` }}
-                    >
-                        <div className="glass-panel-dark rounded-[24px] p-8 transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-xl group-hover:shadow-primary/10 border border-white/40 group-hover:border-primary/30 flex flex-col h-full">
-                            {/* Card Header: Icon & Category */}
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-300 text-primary">
-                                    <span className="material-symbols-outlined">{item.icon}</span>
-                                </div>
-                                <span className="bg-surface-container-highest text-on-surface-variant px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-outline-variant/20">
-                                    {item.category}
-                                </span>
-                            </div>
-
-                            {/* Card Content */}
-                            <div className="flex-grow">
-                                <div className="flex items-center gap-2 text-primary/80 font-label-md text-[12px] mb-3">
-                                    <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                                    {item.date}
-                                </div>
-                                <h3 className="font-headline-sm text-[20px] leading-tight text-on-surface mb-4 group-hover:text-primary transition-colors">
-                                    {item.title}
-                                </h3>
-                                <p className="text-on-surface-variant font-body-md line-clamp-3">
-                                    {item.description}
-                                </p>
-                            </div>
-
-                            {/* Card Footer */}
-                            <div className="mt-6 pt-6 border-t border-outline-variant/20 flex items-center text-primary font-label-md text-[13px] uppercase tracking-wider group-hover:gap-2 transition-all">
-                                Detayları Gör <span className="material-symbols-outlined text-[18px] ml-1">arrow_forward</span>
-                            </div>
-                        </div>
-                    </article>
+                        id={item.id}
+                        title={item.title}
+                        description={item.description}
+                        date={item.date}
+                        index={index}
+                    />
                 ))}
             </section>
 
