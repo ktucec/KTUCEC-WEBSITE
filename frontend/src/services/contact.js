@@ -11,7 +11,6 @@ export function getContactForms() {
 export function sendContactForm(data) {
     return apiFetch("/api/contact", {
         method: "POST",
-        credentials: "include",
         body: JSON.stringify(data),
     });
 }

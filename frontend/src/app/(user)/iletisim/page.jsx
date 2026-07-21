@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import ContactModal from '@/components/ui/ContactModal';
+import { sendContactForm } from '@/services/contact';
+import { ApiError } from '@/lib/api';
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -14,21 +16,34 @@ export default function ContactPage() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [error, setError] = useState(null);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setError(null);
 
-        setTimeout(() => {
-            setIsSubmitting(false);
+        try {
+            await sendContactForm({
+                nameSurname: formData.name,
+                email: formData.email,
+                subject: formData.subject,
+                message: formData.message
+            });
+
             setIsModalOpen(true);
             setFormData({ name: '', email: '', subject: '', message: '' });
-        }, 1200);
+        } catch (err) {
+            const msg = err instanceof ApiError ? err.message : "Mesajınız gönderilirken bir hata oluştu. Lütfen tekrar deneyiniz.";
+            setError(msg);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -50,7 +65,7 @@ export default function ContactPage() {
                     <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">
                         İletişime Geçin
                     </h1>
-                    <p className="font-size-10 font-body-lg md:text-body-lg  text-on-surface-variant max-w-2xl">
+                    <p className="font-size-10 font-body-lg md:text-body-lg text-on-surface-variant max-w-2xl">
                         KTÜ Bilgisayar Mühendisliği Kulübü ile bağlantı kurun. Birlikte üretmeye, yenilikler geliştirmeye ve geleceği kodlamaya hazırız.
                     </p>
                 </div>
@@ -209,7 +224,13 @@ export default function ContactPage() {
                                 İletişim Formu
                             </h2>
 
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-6 pt-6 relative z-10">
+                            {error && (
+                                <div className="p-4 mb-4 text-sm text-error bg-error/10 rounded-xl border border-error/20">
+                                    {error}
+                                </div>
+                            )}
+
+                            <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-6 pt-2 relative z-10">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                                     <div className="flex flex-col gap-1.5 md:gap-2">
                                         <label className="font-label-md text-sm md:text-label-md text-secondary ml-1 md:ml-2" htmlFor="name">
@@ -278,7 +299,7 @@ export default function ContactPage() {
                                 <div className="mt-2 md:mt-4 flex justify-end">
                                     <button
                                         disabled={isSubmitting}
-                                        className="btn-glow bg-primary-container text-white font-label-md text-xs md:text-label-md py-3.5 md:py-4 px-8 md:px-10 rounded-xl flex items-center gap-2 md:gap-3 w-full md:w-auto justify-center disabled:opacity-50 cursor-pointer"
+                                        className="btn-glow bg-primary-container text-white font-label-md text-xs md:text-label-md py-3.5 md:py-4 px-8 md:px-10 rounded-xl flex items-center gap-2 md:gap-3 w-full md:w-auto justify-center disabled:opacity-50 cursor-pointer transition-all"
                                         type="submit"
                                     >
                                         <span>{isSubmitting ? 'Gönderiliyor...' : 'Gönder'}</span>
