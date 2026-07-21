@@ -1,7 +1,7 @@
 "use client";
 import { useEffect } from 'react';
 
-export function useScrollAnimation() {
+export function useScrollAnimation(deps = []) {
     useEffect(() => {
         const observerOptions = {
             root: null,
@@ -9,16 +9,16 @@ export function useScrollAnimation() {
             threshold: 0.1
         };
 
-        const observer = new IntersectionObserver((entries, observer) => {
+        const observer = new IntersectionObserver((entries, obs) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    observer.unobserve(entry.target);
+                    obs.unobserve(entry.target);
                 }
             });
         }, observerOptions);
 
-        const elements = document.querySelectorAll('.fade-up');
+        const elements = document.querySelectorAll('.fade-up:not(.visible)');
         elements.forEach(element => {
             observer.observe(element);
         });
@@ -26,5 +26,6 @@ export function useScrollAnimation() {
         return () => {
             elements.forEach(element => observer.unobserve(element));
         };
-    }, []);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, deps);
 }

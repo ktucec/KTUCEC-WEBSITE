@@ -45,7 +45,7 @@ export default function AnnouncementModal({ isOpen, onClose, announcement }) {
                 </h2>
                 
                 <div className="font-body-lg text-on-surface-variant leading-relaxed space-y-4">
-                    <p>{announcement.description}</p>
+                    <p>{announcement.content}</p>
                     
                     <p className="opacity-80 text-[15px] pt-4 border-t border-outline-variant/20">
                         Detaylı bilgi ve kayıt formu yakında KTUCEC resmi sosyal medya hesapları üzerinden paylaşılacaktır. Lütfen takipte kalın.

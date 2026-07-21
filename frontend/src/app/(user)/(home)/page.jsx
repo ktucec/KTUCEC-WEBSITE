@@ -12,7 +12,7 @@ export default function Home() {
     return (
         <>
             <Hero />
-            <main className="max-w-[var(--spacing-container-max)] mx-auto px-gutter py-margin-desktop space-y-[120px] relative z-10">
+            <main className="max-w-(--spacing-container-max) mx-auto px-gutter py-margin-desktop space-y-[120px] relative z-10">
                 <Announcements />
                 <Events />
                 <About />

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -6,76 +6,167 @@ import Link from 'next/link';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import AnnouncementCard from '@/components/ui/AnnouncementCard';
 import AnnouncementModal from '@/components/ui/AnnouncementModal';
+import AnnouncementCardSkeleton from '@/components/ui/Skeletons/AnnouncementCardSkeleton';
+import { getAnnouncements } from '@/services/announcements';
+import { formatDate } from '@/lib/formatDate';
 
 export default function AnnouncementsPage() {
     useScrollAnimation();
     const searchParams = useSearchParams();
     const router = useRouter();
 
+    const [announcements, setAnnouncements] = useState([]);
+    const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    // Modal States
     const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalLoading, setIsModalLoading] = useState(false);
 
-    const announcements = [
-        {
-            id: 1,
-            date: "14 Mart 2024",
-            title: "Google Hash Code 2024 Hub Duyurusu",
-            description: "KTU Bilgisayar Mühendisliği olarak bu yıl da Google Hash Code için resmi hub oluyoruz. Kayıtlar ve detaylar için web sitemizi ziyaret edin. Bu süreçte takım kurma ve çalışma ortamları hakkında kulüp odamızda rehberlik sağlanacaktır."
-        },
-        {
-            id: 2,
-            date: "12 Mart 2024",
-            title: "Büyük Şirketlerde Staj Arayışı Semineri",
-            description: "FAANG ve yerli teknoloji devlerinde staj süreci nasıl işler? CV hazırlama ve teknik mülakat teknikleri üzerine konuşuyoruz."
-        },
-        {
-            id: 3,
-            date: "10 Mart 2024",
-            title: "Python ile Veri Bilimi Atölyesi",
-            description: "Temel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindeTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerindTemel kütüphanelerden başlayarak gerçek dünya veri setleri üzerind analiz yapacağımız 4 haftalık yoğunlaştırılmış eğitim serisi."
-        },
-        {
-            id: 4,
-            date: "05 Mart 2024",
-            title: "Open Source Katkı Rehberi Yayında",
-            description: "Açık kaynak dünyasına ilk adımınızı nasıl atarsınız? Topluluğumuzun hazırladığı kapsamlı GitHub rehberine göz atın."
-        },
-        {
-            id: 5,
-            date: "01 Mart 2024",
-            title: "Yeni Dönem Tanışma Toplantısı",
-            description: "Bahar dönemine hızlı bir giriş yapıyoruz. Yeni projelerimizi ve hedeflerimizi konuşmak üzere herkesi bekliyoruz."
-        },
-        {
-            id: 6,
-            date: "25 Şubat 2024",
-            title: "Siber Güvenlikte Kariyer Basamakları",
-            description: "White-hat hacking dünyasına giriş yapacaklar için yol haritası. Sertifikalar, araçlar ve uygulama alanları üzerine detaylı rehber."
+    // Filter States
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+    // Pagination States
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(6);
+
+    useScrollAnimation([isLoading, filteredAnnouncements, currentPage]);
+
+    // Handle Responsive Items Per Page (4 on mobile, 6 on desktop)
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 768) {
+                setItemsPerPage(4);
+            } else {
+                setItemsPerPage(6);
+            }
+        };
+
+        handleResize(); // Initial check
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Fetch Data
+    useEffect(() => {
+        let isCancelled = false;
+
+        async function fetchAllAnnouncements() {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const result = await getAnnouncements();
+                if (!isCancelled) {
+                    setAnnouncements(result.data || []);
+                    setFilteredAnnouncements(result.data || []);
+                }
+            } catch (err) {
+                if (!isCancelled) {
+                    setError("Duyurular sunucudan çekilirken bir hata oluştu.");
+                }
+            } finally {
+                if (!isCancelled) {
+                    setIsLoading(false);
+                }
+            }
         }
-    ];
 
+        fetchAllAnnouncements();
 
+        return () => {
+            isCancelled = true;
+        };
+    }, []);
+
+    // Handle Search Params for Modal
     useEffect(() => {
         const idParam = searchParams.get('id');
-        if (idParam) {
+        if (idParam && announcements.length > 0) {
             const found = announcements.find(a => a.id === Number(idParam));
             if (found) {
                 setSelectedAnnouncement(found);
                 setIsModalOpen(true);
             }
         }
-    }, [searchParams]);
+    }, [searchParams, announcements]);
 
-    const handleOpenModal = (announcement) => {
-        setSelectedAnnouncement(announcement);
+    const handleFilter = () => {
+        if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+            alert("Başlangıç tarihi, bitiş tarihinden sonraki bir tarih olamaz.");
+            return;
+        }
+
+        let filtered = [...announcements];
+
+        if (startDate) {
+            const start = new Date(startDate).getTime();
+            filtered = filtered.filter(item => new Date(item.createdAt).getTime() >= start);
+        }
+
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            filtered = filtered.filter(item => new Date(item.createdAt).getTime() <= end.getTime());
+        }
+
+        setFilteredAnnouncements(filtered);
+        setCurrentPage(1);
+    };
+
+    const handleOpenModal = async (announcement) => {
         setIsModalOpen(true);
+        setIsModalLoading(true);
         router.replace(`/duyurular?id=${announcement.id}`, { scroll: false });
+
+        // Simulating data fetch for modal
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        setSelectedAnnouncement(announcement);
+        setIsModalLoading(false);
     };
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
-        setTimeout(() => setSelectedAnnouncement(null), 300);
+        setTimeout(() => {
+            setSelectedAnnouncement(null);
+            setIsModalLoading(false);
+        }, 300);
         router.replace('/duyurular', { scroll: false });
+    };
+
+    // Pagination Logic
+    const totalPages = Math.ceil(filteredAnnouncements.length / itemsPerPage);
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = filteredAnnouncements.slice(indexOfFirstItem, indexOfLastItem);
+
+    const paginate = (pageNumber) => {
+        if (pageNumber > 0 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+            window.scrollTo({ top: document.getElementById('announcements-list').offsetTop - 100, behavior: 'smooth' });
+        }
+    };
+
+    // Generate page numbers for pagination
+    const getPageNumbers = () => {
+        const pageNumbers = [];
+        const maxPagesToShow = 3;
+
+        if (totalPages <= maxPagesToShow) {
+            for (let i = 1; i <= totalPages; i++) pageNumbers.push(i);
+        } else {
+            if (currentPage <= 2) {
+                pageNumbers.push(1, 2, 3);
+            } else if (currentPage >= totalPages - 1) {
+                pageNumbers.push(totalPages - 2, totalPages - 1, totalPages);
+            } else {
+                pageNumbers.push(currentPage - 1, currentPage, currentPage + 1);
+            }
+        }
+        return pageNumbers;
     };
 
     return (
@@ -95,7 +186,7 @@ export default function AnnouncementsPage() {
                         </span>
                     </nav>
                     <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">Duyurular</h1>
-                    <p className="font-size-10 font-body-lg md:text-body-lg  text-on-surface-variant max-w-2xl">
+                    <p className="font-size-10 font-body-lg md:text-body-lg text-on-surface-variant max-w-2xl">
                         Bilgisayar Mühendisliği topluluğumuzdan en güncel haberler, teknik makaleler ve kariyer fırsatları.
                     </p>
                 </section>
@@ -109,6 +200,9 @@ export default function AnnouncementsPage() {
                             </label>
                             <div className="relative">
                                 <input
+                                    value={startDate}
+                                    max={endDate || undefined}
+                                    onChange={(e) => setStartDate(e.target.value)}
                                     className="w-full bg-white/50 border border-outline-variant/30 rounded-xl px-3.5 py-2.5 md:px-4 md:py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all font-body-md text-sm md:text-base text-on-surface"
                                     type="date"
                                 />
@@ -120,66 +214,126 @@ export default function AnnouncementsPage() {
                             </label>
                             <div className="relative">
                                 <input
+                                    value={endDate}
+                                    min={startDate || undefined}
+                                    onChange={(e) => setEndDate(e.target.value)}
                                     className="w-full bg-white/50 border border-outline-variant/30 rounded-xl px-3.5 py-2.5 md:px-4 md:py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all font-body-md text-sm md:text-base text-on-surface"
                                     type="date"
                                 />
                             </div>
                         </div>
-                        <div className="w-full md:w-auto">
-                            <button className="w-full bg-primary text-white px-8 md:px-10 py-3 md:py-3.5 rounded-xl font-label-md text-xs md:text-label-md uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
+                        <div className="w-full md:w-auto flex flex-col gap-2">
+                            <button
+                                onClick={handleFilter}
+                                className="w-full bg-primary text-white px-8 md:px-10 py-3 md:py-3.5 rounded-xl font-label-md text-xs md:text-label-md uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer"
+                            >
                                 <span className="material-symbols-outlined text-[18px] md:text-[20px]">filter_list</span>
                                 Filtrele
                             </button>
+                            {(startDate || endDate) && (
+                                <button
+                                    onClick={() => {
+                                        setStartDate('');
+                                        setEndDate('');
+                                        setFilteredAnnouncements(announcements);
+                                        setCurrentPage(1);
+                                    }}
+                                    className="w-full text-error text-xs md:text-sm font-medium hover:underline flex justify-center items-center cursor-pointer"
+                                >
+                                    Filtreyi Temizle
+                                </button>
+                            )}
                         </div>
                     </div>
                 </section>
 
-                {/* Announcements List Componentized */}
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {announcements.map((item, index) => (
-                        <AnnouncementCard
-                            key={item.id}
-                            id={item.id}
-                            title={item.title}
-                            description={item.description}
-                            date={item.date}
-                            index={index}
-                            onClick={() => handleOpenModal(item)}
-                        />
-                    ))}
-                </section>
+                {error ? (
+                    <div className="text-center py-12">
+                        <p className="text-error font-body-lg">{error}</p>
+                    </div>
+                ) : (
+                    <>
+                        <div id="announcements-list" className="scroll-mt-32">
+                            {isLoading ? (
+                                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                    {Array.from({ length: itemsPerPage }).map((_, index) => (
+                                        <AnnouncementCardSkeleton key={index} index={index} />
+                                    ))}
+                                </section>
+                            ) : filteredAnnouncements.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center text-center py-20 opacity-60">
+                                    <span className="material-symbols-outlined text-5xl mb-3 text-on-surface-variant">
+                                        campaign
+                                    </span>
+                                    <p className="font-body-lg text-on-surface-variant">
+                                        Duyuru bulunamadı.
+                                    </p>
+                                </div>
+                            ) : (
+                                <>
+                                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                        {currentItems.map((item, index) => (
+                                            <AnnouncementCard
+                                                key={item.id}
+                                                id={item.id}
+                                                title={item.title}
+                                                description={item.content}
+                                                date={formatDate(item.createdAt)}
+                                                index={index}
+                                                onClick={() => handleOpenModal(item)}
+                                            />
+                                        ))}
+                                    </section>
 
-                {/* Pagination */}
-                <nav className="mt-10 md:mt-20 flex justify-center items-center gap-1.5 sm:gap-2">
-                    <button className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all">
-                        <span className="material-symbols-outlined text-sm sm:text-base md:text-xl">chevron_left</span>
-                    </button>
+                                    {/* Pagination Controls */}
+                                    {totalPages > 1 && (
+                                        <nav className="mt-10 md:mt-20 flex justify-center items-center gap-1.5 sm:gap-2 fade-up">
+                                            <button
+                                                onClick={() => paginate(currentPage - 1)}
+                                                disabled={currentPage === 1}
+                                                className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                            >
+                                                <span className="material-symbols-outlined text-sm sm:text-base md:text-xl">chevron_left</span>
+                                            </button>
 
-                    <button className="w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center bg-primary text-white font-bold text-xs sm:text-sm md:text-base shadow-lg shadow-primary/20">
-                        1
-                    </button>
+                                            {getPageNumbers().map(num => (
+                                                <button
+                                                    key={num}
+                                                    onClick={() => paginate(num)}
+                                                    className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm md:text-base transition-all cursor-pointer ${currentPage === num
+                                                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                                        : 'glass-panel text-on-surface-variant hover:text-primary hover:border-primary'
+                                                        }`}
+                                                >
+                                                    {num}
+                                                </button>
+                                            ))}
 
-                    <button className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all text-xs sm:text-sm md:text-base">
-                        2
-                    </button>
+                                            {totalPages > 3 && currentPage < totalPages - 1 && (
+                                                <span className="px-1 sm:px-2 text-on-surface-variant text-xs sm:text-sm select-none">...</span>
+                                            )}
 
-                    <button className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all text-xs sm:text-sm md:text-base">
-                        3
-                    </button>
-
-                    <span className="px-1 sm:px-2 text-on-surface-variant text-xs sm:text-sm select-none">...</span>
-
-                    <button className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all">
-                        <span className="material-symbols-outlined text-sm sm:text-base md:text-xl">chevron_right</span>
-                    </button>
-                </nav>
+                                            <button
+                                                onClick={() => paginate(currentPage + 1)}
+                                                disabled={currentPage === totalPages}
+                                                className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                            >
+                                                <span className="material-symbols-outlined text-sm sm:text-base md:text-xl">chevron_right</span>
+                                            </button>
+                                        </nav>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </>
+                )}
             </main>
 
-            {/* Modal Component*/}
             <AnnouncementModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
                 announcement={selectedAnnouncement}
+                isLoading={isModalLoading}
             />
         </>
     );
