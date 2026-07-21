@@ -32,7 +32,7 @@ async function parseResponseBody(res) {
     try {
         return JSON.parse(text);
     } catch {
-        return null; 
+        return null;
     }
 }
 
@@ -63,7 +63,7 @@ export async function apiFetch(path, options = {}, _isRetry = false) {
     if (res.status === 401 && !_isRetry && !path.includes("/api/auth/refresh")) {
         const refreshed = await refreshAccessToken();
         if (refreshed) {
-            return apiFetch(path, options, true); 
+            return apiFetch(path, options, true);
         }
         if (typeof window !== "undefined") {
             window.location.href = "/admin/login";
@@ -90,5 +90,5 @@ export async function apiFetch(path, options = {}, _isRetry = false) {
 
     if (res.status === 204 || body === null) return null;
 
-    return body.data !== undefined ? body : body;
+    return body.data !== undefined ? body.data : body;
 }

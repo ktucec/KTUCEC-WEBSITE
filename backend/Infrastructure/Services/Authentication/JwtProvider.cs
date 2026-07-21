@@ -4,6 +4,7 @@ using System.Text;
 using ktucec.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ktucec.Infrastructure.Services.Authentication;
@@ -11,10 +12,12 @@ namespace ktucec.Infrastructure.Services.Authentication;
 public class JwtProvider
 {
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
-    public JwtProvider(IConfiguration configuration)
+    public JwtProvider(IConfiguration configuration, IWebHostEnvironment environment)
     {
         _configuration = configuration;
+        _environment = environment;
     }
 
     // 15m access token
@@ -36,14 +39,13 @@ public class JwtProvider
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(1),
+            expires: DateTime.UtcNow.AddMinutes(15), 
             signingCredentials: creds
         );
 
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    // refresh token generator
     public (string Token, DateTime ExpiresAt) GenerateRefreshToken()
     {
         return (
@@ -52,13 +54,14 @@ public class JwtProvider
         );
     }
 
-    // set token to the httponly cookie
     public void SetTokensInCookies(HttpContext context, string accessToken, string refreshToken, DateTime refreshExpiresAt)
     {
+        var isSecure = !_environment.IsDevelopment();
+
         var accessOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
+            Secure = isSecure,
             SameSite = SameSiteMode.Lax,
             Expires = refreshExpiresAt
         };
@@ -66,7 +69,7 @@ public class JwtProvider
         var refreshOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = false,
+            Secure = isSecure,
             SameSite = SameSiteMode.Lax,
             Expires = refreshExpiresAt
         };
@@ -75,7 +78,6 @@ public class JwtProvider
         context.Response.Cookies.Append("refreshToken", refreshToken, refreshOptions);
     }
 
-    // delete cookies when user quit
     public void ClearCookies(HttpContext context)
     {
         context.Response.Cookies.Delete("accessToken");
