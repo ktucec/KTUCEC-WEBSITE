@@ -1,7 +1,5 @@
 import '@/styles/globals.css';
 
-export const dynamic = "force-dynamic";
-
 export const metadata = {
     title: 'Admin Login - KTUCEC',
     description: 'KTUCEC Yönetim paneli güvenli giriş sayfası.',

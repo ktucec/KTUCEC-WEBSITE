@@ -1,11 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminVerificationModal from '@/components/ui/AdminVerificationModal';
+import { getAnnouncements } from '@/services/announcements';
 
 export default function AdminLoginPage() {
+    useEffect(() => {
+        const fetch = async () => {
+            try {
+                const result = await getAnnouncements();
+                console.log(result)
+            } catch (err) {
+                setError(err.message);
+            }
+        }
+
+        fetch()
+    }, [])
+
     const router = useRouter();
     const [formData, setFormData] = useState({
         email: '',

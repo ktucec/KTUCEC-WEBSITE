@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import AnnouncementCard from '@/components/ui/AnnouncementCard';
@@ -8,19 +9,11 @@ import AnnouncementModal from '@/components/ui/AnnouncementModal';
 
 export default function AnnouncementsPage() {
     useScrollAnimation();
+    const searchParams = useSearchParams();
+    const router = useRouter();
 
     const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const handleOpenModal = (announcement) => {
-        setSelectedAnnouncement(announcement);
-        setIsModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setTimeout(() => setSelectedAnnouncement(null), 300);
-    };
 
     const announcements = [
         {
@@ -60,6 +53,30 @@ export default function AnnouncementsPage() {
             description: "White-hat hacking dünyasına giriş yapacaklar için yol haritası. Sertifikalar, araçlar ve uygulama alanları üzerine detaylı rehber."
         }
     ];
+
+
+    useEffect(() => {
+        const idParam = searchParams.get('id');
+        if (idParam) {
+            const found = announcements.find(a => a.id === Number(idParam));
+            if (found) {
+                setSelectedAnnouncement(found);
+                setIsModalOpen(true);
+            }
+        }
+    }, [searchParams]);
+
+    const handleOpenModal = (announcement) => {
+        setSelectedAnnouncement(announcement);
+        setIsModalOpen(true);
+        router.replace(`/duyurular?id=${announcement.id}`, { scroll: false });
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setTimeout(() => setSelectedAnnouncement(null), 300);
+        router.replace('/duyurular', { scroll: false });
+    };
 
     return (
         <>
@@ -127,7 +144,7 @@ export default function AnnouncementsPage() {
                             description={item.description}
                             date={item.date}
                             index={index}
-                            onClick={() => handleOpenModal(item)} 
+                            onClick={() => handleOpenModal(item)}
                         />
                     ))}
                 </section>
