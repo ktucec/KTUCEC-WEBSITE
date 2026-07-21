@@ -3,36 +3,45 @@
 import { useState, useEffect } from 'react';
 import AdminAddAnnouncementModal from '@/components/ui/AdminAddAnnouncementModal';
 import AdminUpdateAnnouncementModal from '@/components/ui/AdminUpdateAnnouncementModal';
+import { getAnnouncements } from '@/services/announcements';
 
 export default function AnnouncementsManagementPage() {
     const [announcements, setAnnouncements] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null); // Hata durumu eklendi
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState(null);
 
     useEffect(() => {
+        let isCancelled = false;
+
         const fetchItems = async () => {
+            setIsLoading(true);
+            setError(null);
             try {
-                // TODO: Uncomment when actual service is connected
-                // const data = await GetAllAnnouncements();
+                const response = await getAnnouncements();
 
-                // Mock Data (Temporary)
-                const data = [
-                    { id: 1, title: 'Google Hash Code 2024 Hub Duyurusu' },
-                    { id: 2, title: 'Büyük Şirketlerde Staj Arayışı Semineri' },
-                    { id: 3, title: 'Python ile Veri Bilimi Atölyesi' },
-                ];
-
-                setAnnouncements(data || []);
-            } catch (error) {
-                console.error('Error fetching data:', error);
+                if (!isCancelled) {
+                    const data = response?.data || response || [];
+                    setAnnouncements(data);
+                }
+            } catch (err) {
+                if (!isCancelled) {
+                    setError('Sunucuya bağlanırken hata oluştu');
+                }
             } finally {
-                setIsLoading(false);
+                if (!isCancelled) {
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchItems();
+
+        return () => {
+            isCancelled = true;
+        };
     }, []);
 
     const handleDelete = async (id) => {
@@ -85,18 +94,18 @@ export default function AnnouncementsManagementPage() {
                     </div>
                 </div>
 
+                {/* Mobil Görünüm Kartları */}
                 <div className="grid grid-cols-1 gap-4 md:hidden">
                     {isLoading ? (
-                        Array.from({ length: 3 }).map((_, index) => (
-                            <div key={`skeleton-mob-${index}`} className="bg-surface-container-lowest border border-outline-variant/30 p-5 rounded-xl shadow-sm animate-pulse space-y-4">
-                                <div className="h-3 w-20 bg-surface-variant rounded" />
-                                <div className="h-5 w-48 bg-surface-variant rounded" />
-                                <div className="pt-3 border-t border-outline-variant/20 flex gap-4">
-                                    <div className="h-8 bg-surface-variant rounded flex-1" />
-                                    <div className="h-8 bg-surface-variant rounded flex-1" />
-                                </div>
-                            </div>
-                        ))
+                        <div className="flex justify-center items-center py-12">
+                            <span className="material-symbols-outlined text-primary text-5xl animate-spin">
+                                progress_activity
+                            </span>
+                        </div>
+                    ) : error ? (
+                        <div className="bg-error-container/20 border border-error/30 p-6 rounded-xl text-center text-sm text-error font-medium">
+                            {error}
+                        </div>
                     ) : announcements.length === 0 ? (
                         <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 rounded-xl text-center text-sm text-secondary font-medium">
                             Henüz hiç duyuru eklenmemiş.
@@ -129,6 +138,7 @@ export default function AnnouncementsManagementPage() {
                     )}
                 </div>
 
+                {/* Masaüstü Görünüm Tablosu */}
                 <div className="hidden md:block bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden mb-6">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -139,17 +149,19 @@ export default function AnnouncementsManagementPage() {
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                Array.from({ length: 3 }).map((_, index) => (
-                                    <tr key={`skeleton-desk-${index}`} className="border-b border-outline-variant/20 animate-pulse">
-                                        <td className="px-6 py-5">
-                                            <div className="h-5 w-64 bg-surface-variant rounded" />
-                                        </td>
-                                        <td className="px-6 py-5 flex justify-end gap-6 items-center">
-                                            <div className="h-6 w-6 bg-surface-variant rounded" />
-                                            <div className="h-6 w-6 bg-surface-variant rounded" />
-                                        </td>
-                                    </tr>
-                                ))
+                                <tr>
+                                    <td colSpan="2" className="px-6 py-12 text-center">
+                                        <span className="material-symbols-outlined text-primary text-5xl animate-spin">
+                                            progress_activity
+                                        </span>
+                                    </td>
+                                </tr>
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan="2" className="px-6 py-10 text-sm text-center text-error font-medium">
+                                        {error}
+                                    </td>
+                                </tr>
                             ) : announcements.length === 0 ? (
                                 <tr>
                                     <td colSpan="2" className="px-6 py-10 text-sm text-center text-secondary font-medium">

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+// auth.js dosyanızın doğru yolunu buraya ekleyin (örneğin '@/services/auth' veya '@/lib/auth')
+import { verifyCode } from '@/services/auth';
 
-export default function AdminVerificationModal({ isOpen, onClose, onSuccess }) {
+export default function AdminVerificationModal({ isOpen, onClose, onSuccess, email }) {
     const [code, setCode] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState('');
@@ -32,20 +34,15 @@ export default function AdminVerificationModal({ isOpen, onClose, onSuccess }) {
         setIsVerifying(true);
 
         try {
-            // TODO: Implement actual API fetch here for OTP validation
-            // await VerifyOtpCode(code);
-            await new Promise(res => setTimeout(res, 1000));
+            // Gerçek API isteği: auth.js içerisindeki verifyCode fonksiyonunu çağırıyoruz
+            await verifyCode(email, code);
 
-            // Mock Validation (Accepts '123456')
-            if (code === '123456') {
-                alert('Doğrulama başarılı!');
-                onSuccess();
-                onClose();
-            } else {
-                setError('Hatalı kod girdiniz. Lütfen tekrar deneyiniz.');
-            }
+            // İstek başarılı olursa (Http-Only cookie sunucu tarafından atanır)
+            onSuccess();
+            onClose();
         } catch (err) {
-            setError('Doğrulama sırasında sunucu kaynaklı bir hata oluştu.');
+            // api.js içerisindeki ApiError sınıfından gelen mesajı yakalayıp ekrana basıyoruz
+            setError(err.message || 'Doğrulama sırasında sunucu kaynaklı bir hata oluştu.');
         } finally {
             setIsVerifying(false);
         }
@@ -73,7 +70,7 @@ export default function AdminVerificationModal({ isOpen, onClose, onSuccess }) {
 
                 <h3 className="font-headline-sm text-xl text-on-surface mb-2">Güvenlik Doğrulaması</h3>
                 <p className="font-body-md text-on-surface-variant text-sm mb-6">
-                    İşlemi tamamlamak için kayıtlı e-posta adresinize gönderilen 6 haneli güvenlik kodunu giriniz. <br /> <span className="text-xs opacity-60">(Test Kodu: 123456)</span>
+                    İşlemi tamamlamak için <strong>{email}</strong> adresine gönderilen 6 haneli güvenlik kodunu giriniz.
                 </p>
 
                 {error && (
@@ -102,7 +99,7 @@ export default function AdminVerificationModal({ isOpen, onClose, onSuccess }) {
                         {isVerifying ? (
                             <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
                         ) : (
-                            <span>Kodu Doğrula ve Kaydet</span>
+                            <span>Kodu Doğrula ve Giriş Yap</span>
                         )}
                     </button>
                 </form>

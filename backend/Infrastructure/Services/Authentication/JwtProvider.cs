@@ -36,7 +36,7 @@ public class JwtProvider
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(15),
+            expires: DateTime.UtcNow.AddMinutes(1),
             signingCredentials: creds
         );
 
@@ -58,16 +58,16 @@ public class JwtProvider
         var accessOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddMinutes(15)
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = refreshExpiresAt
         };
 
         var refreshOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
             Expires = refreshExpiresAt
         };
 

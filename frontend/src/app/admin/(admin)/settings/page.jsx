@@ -33,7 +33,7 @@ export default function AdminSettingsPage() {
 
                 await new Promise(res => setTimeout(res, 800)); // Simulate API delay
 
-                // Mock API Response
+                // Mock API Response (Bu, kullanıcının MEVCUT/ESKİ mailidir)
                 const data = {
                     fullName: 'Barış',
                     email: 'admin@ktucec.com',
@@ -79,9 +79,15 @@ export default function AdminSettingsPage() {
         }
     };
 
-    const handleInitiateSave = (e) => {
+    const handleInitiateSave = async (e) => {
         e.preventDefault();
         if (!hasChanges) return;
+
+        // TODO: Sunucuya "Bana doğrulama kodu gönder" isteği atılmalı (örneğin sendOtpCode servisi)
+        // Çünkü login sayfasında "loginAdmin" fonksiyonu kodu otomatik gönderiyordu. 
+        // Ayarlar sayfasında isek, kaydetmeden hemen önce sunucudan bir OTP talep etmeliyiz.
+        // await sendOtpCode(originalData.email);
+
         setIsVerificationModalOpen(true);
     };
 
@@ -236,6 +242,10 @@ export default function AdminSettingsPage() {
                 isOpen={isVerificationModalOpen}
                 onClose={() => setIsVerificationModalOpen(false)}
                 onSuccess={handleFinalSave}
+                // DİKKAT: Burada formData.email DEĞİL, originalData.email gönderiliyor.
+                // Böylece kullanıcı input'a ne yazarsa yazsın, doğrulama kodu 
+                // her zaman sisteme önceden kayıtlı olan (eski) mail adresine gidecektir.
+                email={originalData.email}
             />
 
         </main>

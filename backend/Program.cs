@@ -164,6 +164,7 @@ builder.Services.AddScoped<CreateManagerHandler>();
 builder.Services.AddScoped<UpdateManagerHandler>();
 builder.Services.AddScoped<DeleteManagerHandler>();
 builder.Services.AddScoped<GetAllManagersHandler>();
+builder.Services.AddScoped<SystemRoleHandler>();
 
 
 builder.Services.AddOpenApi();
@@ -175,7 +176,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
 
@@ -215,6 +216,7 @@ app.MapCreateManager();
 app.MapUpdateManager();
 app.MapDeleteManager();
 app.MapGetAllManagers();
+app.MapSystemRole();
 
 
 //await DatabaseSeeder.SeedAdminAsync(app);

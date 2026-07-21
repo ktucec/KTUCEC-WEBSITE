@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { addAnnouncement } from '@/services/announcements';
+import { ApiError } from '@/lib/api';
 
 export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
@@ -9,10 +11,16 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            setFormData({ title: '', content: '' });
+            setError(null);
+        } else {
+            document.body.style.overflow = 'unset';
+        }
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
@@ -26,24 +34,25 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setError(null);
 
         try {
-            // TODO: Uncomment when actual service is connected
-            // await AddAnnouncement(formData);
-
-            await new Promise(res => setTimeout(res, 800));
-
-            onSuccess({
-                id: Date.now(),
+            const response = await addAnnouncement({
                 title: formData.title,
                 content: formData.content
             });
 
-            setFormData({ title: '', content: '' });
-            console.log(formData);
+            const newAnnouncement = response?.data || {
+                id: response?.id || Date.now(),
+                title: formData.title,
+                content: formData.content
+            };
+
+            onSuccess(newAnnouncement);
             onClose();
-        } catch (error) {
-            alert('Eklerken bir hata oluştu.');
+        } catch (err) {
+            const msg = err instanceof ApiError ? err.message : "Eklerken bir hata oluştu.";
+            setError(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -70,6 +79,13 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 md:p-8">
+
+                    {/* Hata Mesajı Bandı */}
+                    {error && (
+                        <div className="p-3.5 text-sm text-error bg-error-container/20 border border-error/30 rounded-xl font-medium">
+                            {error}
+                        </div>
+                    )}
 
                     <div className="flex flex-col gap-2">
                         <label className="font-label-md text-secondary ml-1" htmlFor="title">Duyuru Başlığı</label>
@@ -105,7 +121,10 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
                             className="w-full bg-primary hover:bg-primary-container text-white font-label-md py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
                         >
                             {isSubmitting ? (
-                                <span>Oluşturuluyor...</span>
+                                <>
+                                    <span className="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>
+                                    <span>Oluşturuluyor...</span>
+                                </>
                             ) : (
                                 <>
                                     <span className="material-symbols-outlined text-[18px]">campaign</span>

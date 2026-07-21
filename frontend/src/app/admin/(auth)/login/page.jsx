@@ -4,23 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminVerificationModal from '@/components/ui/AdminVerificationModal';
-import { getAnnouncements } from '@/services/announcements';
+import { loginAdmin } from '@/services/auth';
 
 export default function AdminLoginPage() {
-    useEffect(() => {
-        const fetch = async () => {
-            try {
-                const result = await getAnnouncements();
-                console.log(result)
-            } catch (err) {
-                setError(err.message);
-            }
-        }
-
-        fetch()
-    }, [])
-
     const router = useRouter();
+
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -43,22 +31,21 @@ export default function AdminLoginPage() {
             return;
         }
 
-        if (formData.password.length < 8 || formData.password.length > 16) {
-            setError('Şifreler en az 8, en fazla 16 karakter uzunluğunda olmalıdır.');
+        if (formData.password.length < 8 || formData.password.length > 32) {
+            setError('Şifreler en az 8, en fazla 32 karakter uzunluğunda olmalıdır.');
             return;
         }
 
         setIsLoading(true);
 
         try {
-            // TODO: Call initial login API here
-            // await LoginAdmin(formData.email, formData.password);
-            await new Promise(res => setTimeout(res, 800));
+            // TODO: auth.js içerisindeki loginAdmin servisini çağırdık
+            await loginAdmin(formData.email, formData.password);
 
-            // If credentials are correct, open 2FA modal
+            // İstek başarılı olursa (hata fırlatılmazsa) 2FA modalını aç
             setIsVerificationModalOpen(true);
-
         } catch (err) {
+            // api.js içerisindeki ApiError sınıfı sayesinde dönen hata mesajını yakalıyoruz
             setError(err.message || 'Giriş başarısız. Bilgilerinizi kontrol edin.');
         } finally {
             setIsLoading(false);
@@ -66,9 +53,8 @@ export default function AdminLoginPage() {
     };
 
     const handleVerificationSuccess = async () => {
-        // Validation succeeded in the modal
-        // TODO: You might want to finalize the session/cookie here
-
+        // Modal içerisinde verifyCode başarılı olduğunda, sunucu nihai oturum
+        // cookie'sini (HTTP-Only) atamış olacaktır. Sadece yönlendirme yapmamız yeterli.
         router.push('/admin/');
     };
 
@@ -177,10 +163,12 @@ export default function AdminLoginPage() {
 
             </main>
 
+            {/* Modal bileşenine doğrulama için email'i gönderdik */}
             <AdminVerificationModal
                 isOpen={isVerificationModalOpen}
                 onClose={() => setIsVerificationModalOpen(false)}
                 onSuccess={handleVerificationSuccess}
+                email={formData.email}
             />
 
         </div>

@@ -18,6 +18,14 @@ export function verifyCode(email, code) {
     });
 }
 
+// Get system role
+export function getSystemRole() {
+    return apiFetch("/api/auth/system-role", {
+        method: "GET",
+        credentials: "include",
+    });
+}
+
 // Refresh token
 export function refreshToken() {
     return apiFetch("/api/auth/refresh", {

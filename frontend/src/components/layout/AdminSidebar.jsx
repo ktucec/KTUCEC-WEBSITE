@@ -3,18 +3,39 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { getSystemRole } from '@/services/auth';
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ userRole: propUserRole }) {
     const pathname = usePathname();
 
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
+    const [userRole, setUserRole] = useState(propUserRole ?? null);
 
     useEffect(() => {
         if (pathname.startsWith('/admin/announcements') || pathname.startsWith('/admin/events')) {
             setIsPanelOpen(true);
         }
     }, [pathname]);
+
+    useEffect(() => {
+        if (propUserRole !== undefined) {
+            setUserRole(propUserRole);
+            return;
+        }
+
+        const fetchUserRole = async () => {
+            try {
+                const res = await getSystemRole();
+                const role = res?.data?.role ?? res?.role;
+                setUserRole(role);
+            } catch (err) {
+                console.error('Kullanıcı rolü alınamadı:', err);
+            }
+        };
+
+        fetchUserRole();
+    }, [propUserRole]);
 
     const getLinkClass = (path, level = 1) => {
         const isActive = path === '/admin' ? pathname === '/admin' : pathname.startsWith(path);
@@ -27,6 +48,8 @@ export default function AdminSidebar() {
     };
 
     const isPanelActive = pathname.startsWith('/admin/announcements') || pathname.startsWith('/admin/events');
+
+    const isAdmin = userRole === 2 || userRole === '2' || userRole === 'Admin';
 
     return (
         <>
@@ -108,16 +131,18 @@ export default function AdminSidebar() {
                             )}
                         </div>
 
-                        <div className="pt-1 border-t border-outline-variant/30 mt-2">
-                            <Link
-                                href="/admin/managers"
-                                className={getLinkClass('/admin/managers', 1)}
-                                onClick={() => setIsMobileOpen(false)}
-                            >
-                                <span className="material-symbols-outlined">manage_accounts</span>
-                                <span>Managers</span>
-                            </Link>
-                        </div>
+                        {isAdmin && (
+                            <div className="pt-1 border-t border-outline-variant/30 mt-2">
+                                <Link
+                                    href="/admin/managers"
+                                    className={getLinkClass('/admin/managers', 1)}
+                                    onClick={() => setIsMobileOpen(false)}
+                                >
+                                    <span className="material-symbols-outlined">manage_accounts</span>
+                                    <span>Managers</span>
+                                </Link>
+                            </div>
+                        )}
 
                         <div className="pt-2 border-t border-outline-variant/30 mt-2">
                             <Link

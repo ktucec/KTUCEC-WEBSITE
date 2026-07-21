@@ -1,28 +1,22 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { logoutAdmin } from '@/services/auth';
 
 export default function AdminLogoutPage() {
-    const router = useRouter();
-
     useEffect(() => {
         const performLogout = async () => {
             try {
-                // TODO: Gerçek servisi bağladığında burayı aç
-                // await LogoutAdmin();
-
-                await new Promise(res => setTimeout(res, 800)); 
-
-                router.push('/admin/login');
+                await logoutAdmin();
             } catch (error) {
-                console.error('Çıkış işlemi başarısız:', error);
-                router.push('/admin/login');
+                console.error('Çıkış işlemi sırasında bir hata oluştu:', error);
+            } finally {
+                window.location.href = '/admin/login';
             }
         };
 
         performLogout();
-    }, [router]);
+    }, []);
 
     return (
         <div className="min-h-screen bg-surface flex flex-col items-center justify-center">
