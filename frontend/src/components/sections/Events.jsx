@@ -12,7 +12,7 @@ export default function Events() {
                     event
                 </span>
                 <h2 className="font-headline-md text-2xl md:text-headline-md text-[var(--color-on-surface)]">
-                    Son Etkinlikler
+                    Yaklaşan Etkinlikler
                 </h2>
             </div>
 
