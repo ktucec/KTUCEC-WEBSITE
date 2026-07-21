@@ -147,6 +147,8 @@ builder.Services.AddScoped<DeleteAnnouncementHandler>();
 builder.Services.AddScoped<AddEventHandler>();
 builder.Services.AddScoped<UpdateEventHandler>();
 builder.Services.AddScoped<DeleteEventHandler>();
+builder.Services.AddScoped<GetCurrentEventsHandler>();
+builder.Services.AddScoped<GetAllEventsHandler>();
 
 // -- ContactForms -- 
 builder.Services.AddScoped<AddContactFormHandler>();
@@ -196,6 +198,8 @@ app.MapDeleteAnnouncement();
 app.MapAddEvent();
 app.MapUpdateEvent();
 app.MapDeleteEvent();
+app.MapGetCurrentEvents();
+app.MapGetAllEvents();
 
 // -- ContactForms --
 app.MapAddContactForm();

@@ -1,5 +1,16 @@
 import { apiFetch } from "@/lib/api";
 
+
+// Get current events
+export function getCurrentEvents() {
+    return apiFetch("/api/currentevents");
+}
+
+// Get All events
+export function getAllEvents() {
+    return apiFetch("/api/events");
+}
+
 // Add new event
 export function addEvent(data) {
     return apiFetch("/api/events", {
