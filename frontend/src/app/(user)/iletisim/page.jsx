@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import ContactModal from '@/components/ui/ContactModal'; 
+import ContactModal from '@/components/ui/ContactModal';
 
 export default function ContactPage() {
     const [formData, setFormData] = useState({
@@ -26,8 +26,8 @@ export default function ContactPage() {
 
         setTimeout(() => {
             setIsSubmitting(false);
-            setIsModalOpen(true); 
-            setFormData({ name: '', email: '', subject: '', message: '' }); 
+            setIsModalOpen(true);
+            setFormData({ name: '', email: '', subject: '', message: '' });
         }, 1200);
     };
 
@@ -36,15 +36,21 @@ export default function ContactPage() {
             <main className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10">
                 {/* Hero & Breadcrumb Section */}
                 <div className="mb-16 text-left max-w-2xl">
-                    <nav className="flex items-center gap-2 text-on-surface-variant/60 font-label-md text-label-md mb-4 uppercase tracking-widest">
-                        <Link href="/" className="hover:text-primary transition-colors">Ana Sayfa</Link>
-                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                        <span className="text-primary font-bold">İletişim</span>
+                    <nav className="flex items-center flex-wrap gap-1.5 md:gap-2 text-on-surface-variant/60 font-label-md text-xs md:text-label-md mb-3 md:mb-4 uppercase tracking-widest">
+                        <Link href="/" className="hover:text-primary transition-colors">
+                            Ana Sayfa
+                        </Link>
+                        <span className="material-symbols-outlined text-[12px] md:text-[14px] shrink-0">
+                            chevron_right
+                        </span>
+                        <span className="text-primary font-bold">
+                            İletişim
+                        </span>
                     </nav>
-                    <h1 className="font-display-lg text-display-lg text-primary mb-2">
+                    <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">
                         İletişime Geçin
                     </h1>
-                    <p className="font-body-lg text-body-lg text-secondary">
+                    <p className="font-size-10 font-body-lg md:text-body-lg  text-on-surface-variant max-w-2xl">
                         KTÜ Bilgisayar Mühendisliği Kulübü ile bağlantı kurun. Birlikte üretmeye, yenilikler geliştirmeye ve geleceği kodlamaya hazırız.
                     </p>
                 </div>
@@ -177,7 +183,7 @@ export default function ContactPage() {
                         </div>
 
                         {/* Map */}
-                        <div className="glass-panel rounded-[24px] overflow-hidden p-2 relative h-[300px]">
+                        <div className="glass-panel rounded-[24px] overflow-hidden p-2 relative h-[210px] md:h-[270px]">
                             <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-sm border border-white/50">
                                 <h4 className="font-label-md text-label-md text-on-background font-bold">Kulüp Odası</h4>
                                 <p className="font-body-md text-body-md text-secondary text-sm">Mühendislik Fakültesi, B Blok</p>
@@ -194,20 +200,20 @@ export default function ContactPage() {
 
                     {/* Right Col */}
                     <div className="md:col-span-7">
-                        <div className="glass-panel rounded-[32px] p-8 md:p-12 relative overflow-hidden h-full">
+                        <div className="glass-panel rounded-[20px] sm:rounded-[24px] md:rounded-[32px] p-5 sm:p-8 md:p-12 relative overflow-hidden h-full">
 
-                            <h2 className="font-headline-md text-headline-md text-on-background mb-8 border-l-4 border-primary pl-4 flex items-center">
+                            <h2 className="font-headline-md mt-6 md:mt-0 text-2xl md:text-headline-md text-on-background mb-6 md:mb-8 border-l-4 border-primary pl-3 md:pl-4 flex items-center">
                                 İletişim Formu
                             </h2>
 
-                            <form onSubmit={handleSubmit} className="flex flex-col gap-6 relative z-10">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-label-md text-label-md text-secondary ml-2" htmlFor="name">
+                            <form onSubmit={handleSubmit} className="flex flex-col gap-4 md:gap-6 pt-6 relative z-10">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                                    <div className="flex flex-col gap-1.5 md:gap-2">
+                                        <label className="font-label-md text-sm md:text-label-md text-secondary ml-1 md:ml-2" htmlFor="name">
                                             Ad Soyad
                                         </label>
                                         <input
-                                            className="input-glass rounded-xl px-5 py-4 font-body-lg text-body-lg text-on-background w-full"
+                                            className="input-glass rounded-xl px-4 py-3 md:px-5 md:py-4 font-body-md text-sm md:text-body-lg text-on-background w-full"
                                             id="name"
                                             name="name"
                                             value={formData.name}
@@ -217,12 +223,12 @@ export default function ContactPage() {
                                             required
                                         />
                                     </div>
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-label-md text-label-md text-secondary ml-2" htmlFor="email">
+                                    <div className="flex flex-col gap-1.5 md:gap-2">
+                                        <label className="font-label-md text-sm md:text-label-md text-secondary ml-1 md:ml-2" htmlFor="email">
                                             E-Posta Adresi
                                         </label>
                                         <input
-                                            className="input-glass rounded-xl px-5 py-4 font-body-lg text-body-lg text-on-background w-full"
+                                            className="input-glass rounded-xl px-4 py-3 md:px-5 md:py-4 font-body-md text-sm md:text-body-lg text-on-background w-full"
                                             id="email"
                                             name="email"
                                             value={formData.email}
@@ -234,12 +240,12 @@ export default function ContactPage() {
                                     </div>
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <label className="font-label-md text-label-md text-secondary ml-2" htmlFor="subject">
+                                <div className="flex flex-col gap-1.5 md:gap-2">
+                                    <label className="font-label-md text-sm md:text-label-md text-secondary ml-1 md:ml-2" htmlFor="subject">
                                         Konu
                                     </label>
                                     <input
-                                        className="input-glass rounded-xl px-5 py-4 font-body-lg text-body-lg text-on-background w-full"
+                                        className="input-glass rounded-xl px-4 py-3 md:px-5 md:py-4 font-body-md text-sm md:text-body-lg text-on-background w-full"
                                         id="subject"
                                         name="subject"
                                         value={formData.subject}
@@ -250,34 +256,34 @@ export default function ContactPage() {
                                     />
                                 </div>
 
-                                <div className="flex flex-col gap-2">
-                                    <label className="font-label-md text-label-md text-secondary ml-2" htmlFor="message">
+                                <div className="flex flex-col gap-1.5 md:gap-2">
+                                    <label className="font-label-md text-sm md:text-label-md text-secondary ml-1 md:ml-2" htmlFor="message">
                                         Mesajınız
                                     </label>
                                     <textarea
-                                        className="input-glass rounded-xl px-5 py-4 font-body-lg text-body-lg text-on-background w-full resize-none"
+                                        className="input-glass rounded-xl px-4 py-3 md:px-5 md:py-4 font-body-md text-sm md:text-body-lg text-on-background w-full resize-none"
                                         id="message"
                                         name="message"
                                         value={formData.message}
                                         onChange={handleChange}
                                         placeholder="Detaylı mesajınızı buraya yazabilirsiniz..."
-                                        rows={5}
+                                        rows={4}
                                         required
                                     ></textarea>
                                 </div>
 
-                                <div className="mt-4 flex justify-end">
+                                <div className="mt-2 md:mt-4 flex justify-end">
                                     <button
                                         disabled={isSubmitting}
-                                        className="btn-glow bg-primary-container text-white font-label-md text-label-md py-4 px-10 rounded-xl flex items-center gap-3 w-full md:w-auto justify-center disabled:opacity-50 cursor-pointer"
+                                        className="btn-glow bg-primary-container text-white font-label-md text-xs md:text-label-md py-3.5 md:py-4 px-8 md:px-10 rounded-xl flex items-center gap-2 md:gap-3 w-full md:w-auto justify-center disabled:opacity-50 cursor-pointer"
                                         type="submit"
                                     >
                                         <span>{isSubmitting ? 'Gönderiliyor...' : 'Gönder'}</span>
-                                        <span className="material-symbols-outlined">send</span>
+                                        <span className="material-symbols-outlined text-[18px] md:text-[24px]">send</span>
                                     </button>
                                 </div>
                                 <div>
-                                    <small className='text-body-lg text-sm opacity-60'>
+                                    <small className="font-body-md text-xs md:text-sm opacity-60 leading-relaxed block">
                                         *İletişim formlarınız saniyeler içinde bize ulaşır. Formu doldurarak bizimle kolayca iletişime geçebilirsiniz.
                                     </small>
                                 </div>

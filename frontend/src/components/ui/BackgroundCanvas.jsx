@@ -11,7 +11,6 @@ export default function BackgroundCanvas() {
 
     let animationFrameId;
 
-    // Ekran boyutuna göre canvas'ı boyutlandır
     function syncSize() {
       const w = canvas.clientWidth || window.innerWidth;
       const h = canvas.clientHeight || window.innerHeight;

@@ -7,27 +7,61 @@ import { usePathname } from 'next/navigation';
 export default function Navbar() {
     const pathname = usePathname();
     const isHomePage = pathname === '/';
+    const isEventsPage = pathname === '/etkinlikler';
 
     const [scrollY, setScrollY] = useState(0);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
+        let lastScrollY = window.scrollY;
+        let accumulatedDown = 0;
+        let accumulatedUp = 0;
+
         const handleScroll = () => {
-            setScrollY(window.scrollY);
+            const currentScrollY = window.scrollY;
+            setScrollY(currentScrollY);
+
+            if (isEventsPage) {
+                const delta = currentScrollY - lastScrollY;
+
+                if (currentScrollY <= 0) {
+                    setIsVisible(true);
+                    accumulatedDown = 0;
+                    accumulatedUp = 0;
+                } else if (delta > 0) {
+                    accumulatedUp = 0;
+                    accumulatedDown += delta;
+                    if (accumulatedDown >= 70) {
+                        setIsVisible(false);
+                    }
+                } else if (delta < 0) {
+                    accumulatedDown = 0;
+                    accumulatedUp += Math.abs(delta);
+                    if (accumulatedUp >= 40) {
+                        setIsVisible(true);
+                    }
+                }
+                lastScrollY = currentScrollY;
+            } else {
+                setIsVisible(true);
+            }
         };
+
         handleScroll();
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [isEventsPage]);
 
-    // Mobil menü açıkken arka plan scroll'unu kilitle
+    useEffect(() => {
+        setIsVisible(true);
+    }, [pathname]);
+
     useEffect(() => {
         document.body.style.overflow = isMenuOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [isMenuOpen]);
 
-    // Şeffaf navbar davranışı yalnızca anasayfada geçerli.
-    // Diğer sayfalarda navbar her zaman "scrolled" (normal, opak) görünümde kalır.
     const isScrolled = isHomePage ? scrollY > 200 : true;
 
     const navLinks = [
@@ -41,9 +75,10 @@ export default function Navbar() {
     return (
         <>
             <header
-                className={`fixed top-0 w-full z-50 border-b transition-all duration-300 ${isScrolled
-                    ? 'bg-surface/70 backdrop-blur-md border-white/40 shadow-sm'
-                    : 'bg-transparent border-transparent shadow-none'
+                className={`fixed top-0 w-full z-50 border-b transition-all duration-300 ease-in-out ${isEventsPage && !isVisible ? '-translate-y-full' : 'translate-y-0'
+                    } ${isScrolled
+                        ? 'bg-surface/70 backdrop-blur-md border-white/40 shadow-sm'
+                        : 'bg-transparent border-transparent shadow-none'
                     }`}
             >
                 <div className="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
@@ -64,10 +99,10 @@ export default function Navbar() {
                                     key={link.href}
                                     href={link.href}
                                     className={`
-                        font-label-md text-label-md uppercase tracking-wider 
-                        font-medium transition-all duration-300 
-                        px-3 py-2 rounded-md
-                        ${isActive
+                                        font-label-md text-label-md uppercase tracking-wider 
+                                        font-medium transition-all duration-300 
+                                        px-3 py-2 rounded-md
+                                        ${isActive
                                             ? isScrolled
                                                 ? 'bg-white/10 text-primary'
                                                 : 'bg-white/10 text-white'
@@ -75,8 +110,8 @@ export default function Navbar() {
                                                 ? 'text-on-surface-variant hover:bg-white/10 hover:text-primary'
                                                 : 'text-white hover:bg-white/10'
                                         }
-                        ${link.href === '/' ? 'hidden xl:block' : ''}
-                    `}
+                                        ${link.href === '/' ? 'hidden xl:block' : ''}
+                                    `}
                                 >
                                     {link.label}
                                 </Link>
@@ -105,7 +140,7 @@ export default function Navbar() {
                     }`}
             />
 
-            {/* Mobil sidebar - sağdan içeri, 1 saniyelik animasyon */}
+            {/* Mobil sidebar */}
             <aside
                 className={`fixed top-0 right-0 h-full w-72 max-w-[80%] z-[70] bg-surface shadow-2xl lg:hidden
                 transition-transform duration-1000 ease-in-out ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'

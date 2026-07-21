@@ -33,16 +33,16 @@ export default function AboutCard({ icon, title, description, customClass = "" }
             ref={cardRef}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className={`glass-card p-8 rounded-xl group transition-all duration-200 cursor-default ease-out ${customClass}`}
+            className={`glass-card p-5 sm:p-6 md:p-8 rounded-2xl md:rounded-3xl group transition-all duration-200 cursor-default ease-out ${customClass}`}
             style={{ willChange: 'transform' }}
         >
-            <span className="material-symbols-outlined text-primary text-4xl mb-4 group-hover:scale-110 transition-transform block">
+            <span className="material-symbols-outlined text-primary text-3xl md:text-4xl mb-3 md:mb-4 group-hover:scale-110 transition-transform block">
                 {icon}
             </span>
-            <h3 className="font-headline-sm text-headline-sm mb-2 text-on-surface">
+            <h3 className="font-headline-sm text-lg sm:text-xl md:text-headline-sm mb-1.5 md:mb-2 text-on-surface leading-snug">
                 {title}
             </h3>
-            <p className="text-[var(--color-on-secondary-fixed-variant)] opacity-80 font-body-md text-body-md">
+            <p className="text-[var(--color-on-secondary-fixed-variant)] opacity-80 font-body-md text-xs sm:text-sm md:text-body-md leading-relaxed">
                 {description}
             </p>
         </div>

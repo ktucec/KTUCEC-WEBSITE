@@ -27,7 +27,7 @@ export default function HeroSection() {
                 timeout = setTimeout(() => {
                     setIsWaiting(false);
                     setIsDeleting(true);
-                }, 2000); 
+                }, 2000);
                 return;
             }
 
@@ -36,7 +36,7 @@ export default function HeroSection() {
                 if (charIndex - 1 <= prefix.length) {
                     setIsDeleting(false);
                     setPhraseIndex((prev) => (prev + 1) % phrases.length);
-                    timeout = setTimeout(() => { }, 500); 
+                    timeout = setTimeout(() => { }, 500);
                 } else {
                     timeout = setTimeout(type, 50); // deleting speed
                 }
@@ -53,7 +53,7 @@ export default function HeroSection() {
         timeout = setTimeout(type, isDeleting ? 50 : 100);
 
         return () => clearTimeout(timeout);
-    }, [text, isDeleting, phraseIndex, isWaiting]); // Dependency'leri ekliyoruz
+    }, [text, isDeleting, phraseIndex, isWaiting]); 
 
     return (
         <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
@@ -71,9 +71,9 @@ export default function HeroSection() {
                     <h1 className="font-display-lg text-display-lg-mobile text-[60px] md:text-[80px] lg:text-[100px] xl::text-[120px] text-white mb-6 drop-shadow-2xl leading-none">
                         KTUCEC
                     </h1>
-                    <div className="font-headline-sm text-2xl md:text-4xl text-white/90 h-12 flex items-center">
-                        <span>{text}</span>
-                        <span className="cursor h-8 md:h-12"></span>
+                    <div className="font-headline-sm text-2xl md:text-4xl text-white/90 min-h-12">
+                        {text}
+                        <span className="cursor h-8 md:h-12 align-middle"></span>
                     </div>
                     <button className="mt-12 bg-[var(--color-primary-container)] text-white px-8 py-3 rounded-xl font-label-md text-label-md uppercase tracking-wider hover:opacity-90 transition-opacity shadow-lg shadow-primary-container/40 hover:scale-105 active:scale-95">
                         Keşfet

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import AboutCard from '@/components/ui/AboutCard';
+import SponsorTicker from '@/components/ui/SponsorTicker';
 
 function AnimatedCounter({ target, suffix = "" }) {
     const [count, setCount] = useState(0);
@@ -16,7 +17,7 @@ function AnimatedCounter({ target, suffix = "" }) {
 
             if (entry.isIntersecting) {
                 let startTime = null;
-                const duration = 2000; 
+                const duration = 2000;
 
                 function animate(timestamp) {
                     if (!startTime) startTime = timestamp;
@@ -36,7 +37,7 @@ function AnimatedCounter({ target, suffix = "" }) {
                     observer.unobserve(currentElement);
                 }
             }
-        }, { threshold: 0.1 }); 
+        }, { threshold: 0.1 });
 
         if (currentElement) {
             observer.observe(currentElement);
@@ -83,13 +84,19 @@ export default function AboutPage() {
             {/* Hero Section */}
             <section className="pt-32 pb-24 px-gutter max-w-container-max mx-auto relative z-10">
                 <div className="mb-12">
-                    <nav className="flex items-center gap-2 text-on-surface-variant/60 font-label-md text-label-md mb-4 uppercase tracking-widest">
-                        <Link href="/" className="hover:text-primary transition-colors">Ana Sayfa</Link>
-                        <span className="material-symbols-outlined text-[14px]">chevron_right</span>
-                        <span className="text-primary font-bold">Hakkımızda</span>
+                    <nav className="flex items-center flex-wrap gap-1.5 md:gap-2 text-on-surface-variant/60 font-label-md text-xs md:text-label-md mb-3 md:mb-4 uppercase tracking-widest">
+                        <Link href="/" className="hover:text-primary transition-colors">
+                            Ana Sayfa
+                        </Link>
+                        <span className="material-symbols-outlined text-[12px] md:text-[14px] shrink-0">
+                            chevron_right
+                        </span>
+                        <span className="text-primary font-bold">
+                            Hakkımızda
+                        </span>
                     </nav>
-                    <h1 className="font-display-lg text-display-lg text-primary mb-2">Hakkımızda</h1>
-                    <p className="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">
+                    <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">Hakkımızda</h1>
+                    <p className="font-size-10 font-body-lg md:text-body-lg  text-on-surface-variant max-w-2xl">
                         KTÜ Bilgisayar Mühendisliği Kulübü, geleceği bugünden tasarlayan tutkulu mühendislerin, geliştiricilerin ve teknoloji meraklılarının buluşma noktasıdır.
                     </p>
                 </div>
@@ -115,48 +122,52 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            {/* Sadece Yazılı Kulüp Tanıtım Bölümü (Yeni Section) */}
-            <section className="py-16 px-margin-mobile md:px-margin-desktop relative z-20">
-                <div className="max-w-container-max mx-auto bg-[#F8F9FA]/90 backdrop-blur-md shadow-xl rounded-3xl p-8 md:p-16 reveal">
-                    <div className="space-y-6 text-left">
-                        <p className="font-body-lg text-body-lg text-on-surface-variant">
+            {/* Just Text Section */}
+            <section className="py-10 md:py-16 px-margin-mobile md:px-margin-desktop relative z-20">
+                <div className="max-w-container-max mx-auto bg-[#F8F9FA]/90 backdrop-blur-md shadow-xl rounded-2xl md:rounded-3xl p-5 sm:p-8 md:p-16 reveal">
+                    <div className="space-y-4 md:space-y-6 text-left">
+                        <p className="font-body-lg text-md sm:text-base md:text-body-lg text-on-surface-variant leading-relaxed">
                             KTÜ Bilgisayar Mühendisliği Kulübü, teknolojiye gönül vermiş, inovasyon ve gelişimi odak noktasına alan vizyoner bir öğrenci topluluğudur. Kurulduğumuz günden itibaren üyelerimizin yalnızca teorik bilgilerle yetinmeyip, sektörün ihtiyaç duyduğu pratik tecrübeleri de kazanabilmesi için çalışıyoruz.
                         </p>
-                        <p className="font-body-lg text-body-lg text-on-surface-variant">
+                        <p className="font-body-lg text-md sm:text-base md:text-body-lg text-on-surface-variant leading-relaxed">
                             Yazılım geliştirmeden siber güvenliğe, yapay zekadan oyun tasarımına kadar geniş bir yelpazede projeler yürütüyor, düzenlediğimiz teknik eğitimler ve hackathon'larla sınırları zorluyoruz. Amacımız, her üyemizin yeteneklerini keşfedebileceği, özgürce fikir üretebileceği ve bu fikirleri hayata geçirebileceği güvenli ve destekleyici bir ekosistem yaratmaktır.
                         </p>
-                        <p className="font-body-lg text-body-lg text-on-surface-variant">
+                        <p className="font-body-lg text-md sm:text-base md:text-body-lg text-on-surface-variant leading-relaxed">
                             Akademi ile iş dünyası arasında güçlü bir köprü görevi görerek öğrencilerimizin mezun olmadan önce sektörel ağlarını kurmalarına ve kariyerlerine bir adım önde başlamalarına olanak tanıyoruz. Bizler sadece kod yazmıyor; birbirimizden öğrenerek, paylaşarak ve üreterek geleceği birlikte inşa ediyoruz.
                         </p>
                     </div>
                 </div>
             </section>
 
-            {/* Mission & Vision Section (Asymmetric & Parallax - Güncellenmiş Kart Yapısı) */}
-            <section className="py-16 px-margin-mobile md:px-margin-desktop relative z-20">
-                <div className="max-w-container-max mx-auto bg-[#F8F9FA]/90 backdrop-blur-md shadow-xl rounded-3xl p-8 md:p-16">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+            {/* Mission & Vision Section (Asymmetric & Parallax) */}
+            <section className="py-10 md:py-16 px-margin-mobile md:px-margin-desktop relative z-20">
+                <div className="max-w-container-max mx-auto bg-[#F8F9FA]/90 backdrop-blur-md shadow-xl rounded-2xl md:rounded-3xl p-5 sm:p-8 md:p-16">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-12 lg:gap-24 items-center">
                         {/* Visualization Block */}
-                        <div className="relative h-[500px] reveal">
+                        <div className="relative h-[300px] sm:h-[400px] md:h-[500px] reveal">
                             <div className="absolute top-0 left-0 w-4/5 h-4/5 rounded-xl overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
                                 <img className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCkIT1YthraRbZ66BsINxW2v17lupuESWwjrsJ9xGU5ufI5VWN-Rn2Biv5pF3GaQXFx00Q3_tHUxfVeNxU3ULoSODV8BeTXca9oYxjZna3jEsivJRU_QG2ncPirsnwCQuSvhxUe5URo2G1w6sIBDcmZ9CRx48xx_ZvvXzGdGB8DMoFHjx-nY8Ob-G2re7hjCuQmje-dMNAqf6EiHjFGwc1GVxcPgjeYOL_FTx44DyRTyXpCuxsu5bDic1UIawPQD1gU1F7oo-Yoce_v" alt="KTUCEC Laboratory Collaboration" />
                             </div>
-                            <div className="absolute bottom-0 right-0 w-3/5 h-3/5 glass-card rounded-xl overflow-hidden -rotate-6 hover:rotate-0 transition-transform duration-700 p-2">
+                            <div className="absolute bottom-0 right-0 w-3/5 h-3/5 glass-card rounded-xl overflow-hidden -rotate-6 hover:rotate-0 transition-transform duration-700 p-1.5 sm:p-2">
                                 <img className="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcNKU_g1s1h5CoyMhWmG-S_TLvaRo7yPSYm3d5KUe2x3OCnDX2S7UOIHgcbZeiu_gEbDvSeZt421aJeuk3Hh-t7Uw4TypI-IOJxLvMN_QWPos8w3rH8w56X3fEz7L8hx8vcYuWuFKrADKQHFM-yjlX105BTlLk2Iolc7C5yOLFuvtjGmjUUJ1VGbzAFbMZnme71iAYcgm2vHzuEvojtdMetmpovKa_gYEm3zjD2RRdbEpIhdk_wIpMZqGpRyECVnkLz3as6UrgRDFv" alt="Engineering Precision Hardware" />
                             </div>
                         </div>
 
                         {/* Content Block */}
-                        <div className="space-y-16 reveal">
-                            <div className="relative pl-8 border-l-4 border-primary">
-                                <h2 className="font-headline-md text-headline-md mb-6 text-on-surface">Misyonumuz</h2>
-                                <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                        <div className="space-y-8 sm:space-y-12 md:space-y-16 reveal">
+                            <div className="relative pl-4 sm:pl-6 md:pl-8 border-l-2 sm:border-l-4 border-primary">
+                                <h2 className="font-headline-md text-2xl md:text-headline-md mb-3 md:mb-6 text-on-surface">
+                                    Misyonumuz
+                                </h2>
+                                <p className="font-body-lg text-sm sm:text-base md:text-body-lg text-on-surface-variant leading-relaxed">
                                     Bilgisayar mühendisliği öğrencilerine, teorik bilgilerini pratiğe dökebilecekleri dinamik bir ekosistem sağlamak. Teknolojik gelişmeleri yakından takip ederek, üyelerimizi geleceğin lider mühendisleri olarak yetiştirmek ve yerel çözümlerle küresel değer üretmektir.
                                 </p>
                             </div>
-                            <div className="relative pl-8 border-l-4 border-outline-variant">
-                                <h2 className="font-headline-md text-headline-md mb-6 text-on-surface">Vizyonumuz</h2>
-                                <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                            <div className="relative pl-4 sm:pl-6 md:pl-8 border-l-2 sm:border-l-4 border-outline-variant">
+                                <h2 className="font-headline-md text-2xl md:text-headline-md mb-3 md:mb-6 text-on-surface">
+                                    Vizyonumuz
+                                </h2>
+                                <p className="font-body-lg text-sm sm:text-base md:text-body-lg text-on-surface-variant leading-relaxed">
                                     Türkiye'nin en saygın ve üretken öğrenci topluluğu olarak, bilgisayar bilimleri alanında uluslararası başarılara imza atmak. Teknolojinin etik ve sürdürülebilir gelişimine yön veren, yenilikçi projeleriyle ilham veren bir marka haline gelmek.
                                 </p>
                             </div>
@@ -166,31 +177,39 @@ export default function AboutPage() {
             </section>
 
             {/* Stats Section */}
-            <section className="py-20 bg-primary-container text-white">
-                <div className="max-w-container-max mx-auto px-margin-mobile grid grid-cols-2 md:grid-cols-4 gap-12 text-center reveal">
+            <section className="py-10 sm:py-14 md:py-20 bg-primary-container text-white">
+                <div className="max-w-container-max mx-auto px-margin-mobile grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 text-center reveal">
                     <div>
-                        <div className="font-display-lg text-display-lg-mobile md:text-headline-md mb-2">
+                        <div className="font-display-lg text-3xl sm:text-4xl md:text-headline-md mb-1 md:mb-2 font-bold">
                             <AnimatedCounter target={500} suffix="+" />
                         </div>
-                        <div className="font-label-md uppercase opacity-80">Aktif Üye</div>
+                        <div className="font-label-md text-[11px] sm:text-xs md:text-label-md uppercase opacity-80 tracking-wider">
+                            Aktif Üye
+                        </div>
                     </div>
                     <div>
-                        <div className="font-display-lg text-display-lg-mobile md:text-headline-md mb-2">
+                        <div className="font-display-lg text-3xl sm:text-4xl md:text-headline-md mb-1 md:mb-2 font-bold">
                             <AnimatedCounter target={25} suffix="+" />
                         </div>
-                        <div className="font-label-md uppercase opacity-80">Yıllık Etkinlik</div>
+                        <div className="font-label-md text-[11px] sm:text-xs md:text-label-md uppercase opacity-80 tracking-wider">
+                            Yıllık Etkinlik
+                        </div>
                     </div>
                     <div>
-                        <div className="font-display-lg text-display-lg-mobile md:text-headline-md mb-2">
+                        <div className="font-display-lg text-3xl sm:text-4xl md:text-headline-md mb-1 md:mb-2 font-bold">
                             <AnimatedCounter target={12} />
                         </div>
-                        <div className="font-label-md uppercase opacity-80">Aktif Proje</div>
+                        <div className="font-label-md text-[11px] sm:text-xs md:text-label-md uppercase opacity-80 tracking-wider">
+                            Aktif Proje
+                        </div>
                     </div>
                     <div>
-                        <div className="font-display-lg text-display-lg-mobile md:text-headline-md mb-2">
+                        <div className="font-display-lg text-3xl sm:text-4xl md:text-headline-md mb-1 md:mb-2 font-bold">
                             <AnimatedCounter target={15} />
                         </div>
-                        <div className="font-label-md uppercase opacity-80">Sektör Ortağı</div>
+                        <div className="font-label-md text-[11px] sm:text-xs md:text-label-md uppercase opacity-80 tracking-wider">
+                            Sektör Ortağı
+                        </div>
                     </div>
                 </div>
             </section>
@@ -203,23 +222,9 @@ export default function AboutPage() {
                 </div>
 
                 {/* Scrolling Ticker Container */}
-                <div className="relative w-full reveal">
-                    <div className="flex overflow-hidden group">
-                        <div className="flex space-x-16 sponsor-ticker items-center py-4">
-                            {sponsorLogos.map((src, i) => (
-                                <div key={`ticker-1-${i}`} className="w-48 h-20 grayscale hover:grayscale-0 transition-all duration-300 flex items-center justify-center opacity-60 hover:opacity-100">
-                                    <img className="max-h-full max-w-full object-contain" src={src} alt={`Sponsor Logo ${i + 1}`} />
-                                </div>
-                            ))}
-                        </div>
-                        {/* Duplicate ticker for seamless infinite transition loop */}
-                        <div aria-hidden="true" className="flex space-x-16 sponsor-ticker items-center py-4">
-                            {sponsorLogos.map((src, i) => (
-                                <div key={`ticker-2-${i}`} className="w-48 h-20 grayscale hover:grayscale-0 transition-all duration-300 flex items-center justify-center opacity-60 hover:opacity-100">
-                                    <img className="max-h-full max-w-full object-contain" src={src} alt={`Sponsor Logo Duplicate ${i + 1}`} />
-                                </div>
-                            ))}
-                        </div>
+                <div className='flex justify-center'>
+                    <div className="relative w-full lg:w-1/2 overflow-hidden reveal">
+                        <SponsorTicker logos={sponsorLogos} />
                     </div>
                 </div>
             </section>
