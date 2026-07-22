@@ -1,14 +1,18 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import AdminAddAnnouncementModal from '@/components/ui/AdminAddAnnouncementModal';
 import AdminUpdateAnnouncementModal from '@/components/ui/AdminUpdateAnnouncementModal';
-import { getAnnouncements } from '@/services/announcements';
+import { getAnnouncements, deleteAnnouncement } from '@/services/announcements';
+import { useRouter } from "next/navigation";
 
 export default function AnnouncementsManagementPage() {
+    const router = useRouter();
+
     const [announcements, setAnnouncements] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null); // Hata durumu eklendi
+    const [error, setError] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedAnnouncementId, setSelectedAnnouncementId] = useState(null);
@@ -49,18 +53,15 @@ export default function AnnouncementsManagementPage() {
         if (!confirmed) return;
 
         try {
-            // TODO: Uncomment when actual service is connected
-            // await DeleteAnnouncement(id);
-
+            await deleteAnnouncement(id);
             setAnnouncements((prev) => prev.filter((item) => item.id !== id));
-            alert('Duyuru başarıyla silindi!');
         } catch (error) {
             alert(error.message || 'Silme işlemi sırasında bir şeyler yanlış gitti.');
         }
     };
 
     const handleAddSuccess = (newAnnouncement) => {
-        setAnnouncements(prev => [...prev, newAnnouncement]);
+        setAnnouncements(prev => [newAnnouncement, ...prev]);
     };
 
     const handleUpdateSuccess = (updatedAnnouncement) => {
@@ -94,7 +95,6 @@ export default function AnnouncementsManagementPage() {
                     </div>
                 </div>
 
-                {/* Mobil Görünüm Kartları */}
                 <div className="grid grid-cols-1 gap-4 md:hidden">
                     {isLoading ? (
                         <div className="flex justify-center items-center py-12">
@@ -138,7 +138,6 @@ export default function AnnouncementsManagementPage() {
                     )}
                 </div>
 
-                {/* Masaüstü Görünüm Tablosu */}
                 <div className="hidden md:block bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden mb-6">
                     <table className="w-full text-left border-collapse">
                         <thead>

@@ -26,27 +26,26 @@ function clearAuthCookies(response) {
 }
 
 async function tryRefresh(request) {
-    const cookieHeader = request.headers.get('cookie') ?? '';
-    console.log('[tryRefresh] outgoing cookie header:', cookieHeader); // GEÇİCİ
-
     try {
         const res = await fetch(`${API_URL}/api/auth/refresh`, {
             method: 'POST',
             headers: {
-                cookie: cookieHeader,
+                cookie: request.headers.get('cookie') ?? '',
             },
         });
 
-        console.log('[tryRefresh] status:', res.status);
-        console.log('[tryRefresh] set-cookie:', res.headers.get('set-cookie'));
+        if (res.status === 401 || res.status === 403) {
+            return { status: 'invalid' };
+        }
 
-        if (!res.ok) return null;
+        if (!res.ok) {
+            return { status: 'error' };
+        }
 
         const setCookieHeader = res.headers.get('set-cookie');
-        return setCookieHeader;
-    } catch (err) {
-        console.log('[tryRefresh] EXCEPTION:', err);
-        return null;
+        return { status: 'ok', setCookieHeader };
+    } catch {
+        return { status: 'error' };
     }
 }
 
@@ -68,23 +67,21 @@ export async function middleware(request) {
 
     // 2. Access token geçersiz/expired ama refresh token varsa: BURADA gerçekten refresh dene
     if (!isAccessTokenValid && refreshToken) {
-        const setCookieHeader = await tryRefresh(request);
+        const refreshResult = await tryRefresh(request);
 
-        if (setCookieHeader) {
-            // Refresh başarılı: yeni cookie'leri response'a bas ve yeni token'ı tekrar doğrula
-            const newAccessTokenMatch = setCookieHeader.match(/accessToken=([^;]+)/);
+        if (refreshResult.status === 'ok') {
+            const newAccessTokenMatch = refreshResult.setCookieHeader?.match(/accessToken=([^;]+)/);
             const newToken = newAccessTokenMatch ? newAccessTokenMatch[1] : null;
             payload = newToken ? await verifyToken(newToken) : null;
             isAccessTokenValid = payload !== null;
-
-            // Devam eden karar mantığında kullanılacak response'u burada hazırlayıp
-            // fonksiyon sonunda header'ları ekleyeceğiz.
-            request._pendingSetCookie = setCookieHeader; // aşağıda kullanılacak
-        } else {
-            // Refresh de başarısız: login'e at, cookie'leri temizle
+            request._pendingSetCookie = refreshResult.setCookieHeader;
+        } else if (refreshResult.status === 'invalid') {
             if (isLoginPath) return NextResponse.next();
             const response = NextResponse.redirect(new URL('/admin/login', request.url));
             return clearAuthCookies(response);
+        } else {
+            if (isLoginPath) return NextResponse.next();
+            return NextResponse.next();
         }
     }
 

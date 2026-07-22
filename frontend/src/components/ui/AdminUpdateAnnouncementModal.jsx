@@ -1,10 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { updateAnnouncement, getAnnouncementById } from '@/services/announcements';
+import { ApiError } from '@/lib/api';
 
 export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSuccess, announcementId }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
 
     const [originalData, setOriginalData] = useState({});
     const [formData, setFormData] = useState({
@@ -13,8 +16,12 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
     });
 
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            setError(null);
+        } else {
+            document.body.style.overflow = 'unset';
+        }
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
@@ -25,29 +32,26 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
             setFormData({ title: '', content: '' });
             setOriginalData({});
             setIsLoading(true);
+            setError(null);
         }
     }, [isOpen, announcementId]);
 
     const fetchAnnouncementDetails = async (id) => {
         setIsLoading(true);
+        setError(null);
         try {
-            // TODO: Implement actual API fetch here
-            // const response = await GetAnnouncementById(id);
+            const response = await getAnnouncementById(id);
+            const data = response?.data || response || {};
 
-            await new Promise(res => setTimeout(res, 1000)); // Simulate API delay
-
-            // Mock API Response
-            const data = {
-                title: 'Google Hash Code 2024 Hub Duyurusu',
-                content: 'Bu yıl Google Hash Code yarışmasına üniversitemizden katılacak takımlar için özel bir hub oluşturulmuştur. Tüm öğrencileri bekliyoruz.'
+            const fetchedData = {
+                title: data.title || '',
+                content: data.content || ''
             };
 
-            setOriginalData(data);
-            setFormData(data);
-        } catch (error) {
-            console.error('Failed to fetch announcement:', error);
-            alert('Duyuru bilgileri yüklenemedi.');
-            onClose();
+            setOriginalData(fetchedData);
+            setFormData(fetchedData);
+        } catch (err) {
+            setError('Duyuru bilgileri yüklenemedi.');
         } finally {
             setIsLoading(false);
         }
@@ -72,6 +76,7 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
 
         const changedData = getChangedFields();
         if (Object.keys(changedData).length === 0) return;
@@ -79,16 +84,13 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
         setIsSubmitting(true);
 
         try {
-            // TODO: Implement actual API update call here passing `changedData`
-            // await UpdateAnnouncement(announcementId, changedData);
-
-            await new Promise(res => setTimeout(res, 800)); // Simulate API delay
+            await updateAnnouncement(announcementId, changedData);
 
             onSuccess({ id: announcementId, ...changedData });
-            console.log(changedData);
             onClose();
-        } catch (error) {
-            alert('Güncellenirken bir hata oluştu.');
+        } catch (err) {
+            const msg = err instanceof ApiError ? err.message : 'Güncellenirken bir hata oluştu.';
+            setError(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -124,6 +126,12 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
                         </div>
 
                         <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 md:p-8">
+
+                            {error && (
+                                <div className="p-3.5 text-sm text-error bg-error-container/20 border border-error/30 rounded-xl font-medium">
+                                    {error}
+                                </div>
+                            )}
 
                             <div className="flex flex-col gap-2">
                                 <label className="font-label-md text-secondary ml-1" htmlFor="title">Duyuru Başlığı</label>

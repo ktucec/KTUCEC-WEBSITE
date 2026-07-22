@@ -7,6 +7,13 @@ export function getAnnouncements() {
     });
 }
 
+// Get single announcement by ID
+export function getAnnouncementById(id) {
+    return apiFetch(`/api/announcements/${id}`, {
+        credentials: "include"
+    });
+}
+
 // Get latest N announcements
 export function getLatestAnnouncements(count = 3) {
     return apiFetch(`/api/announcements/latest?count=${count}`, {

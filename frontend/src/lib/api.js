@@ -90,5 +90,5 @@ export async function apiFetch(path, options = {}, _isRetry = false) {
 
     if (res.status === 204 || body === null) return null;
 
-    return body.data !== undefined ? body.data : body;
+    return body !== undefined ? body : body;
 }

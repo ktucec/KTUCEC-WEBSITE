@@ -142,6 +142,7 @@ builder.Services.AddScoped<GetAllAnnouncementsHandler>();
 builder.Services.AddScoped<GetLatestAnnouncementsHandler>();
 builder.Services.AddScoped<UpdateAnnouncementHandler>();
 builder.Services.AddScoped<DeleteAnnouncementHandler>();
+builder.Services.AddScoped<GetAnnouncementByIdHandler>();
 
 // -- Events --
 builder.Services.AddScoped<AddEventHandler>();
@@ -194,6 +195,7 @@ app.MapGetAllAnnouncements();
 app.MapGetLatestAnnouncements();
 app.MapUpdateAnnouncement();
 app.MapDeleteAnnouncement();
+app.MapGetAnnouncementById();
 
 // -- Events --
 app.MapAddEvent();
