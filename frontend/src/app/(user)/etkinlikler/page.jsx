@@ -7,6 +7,8 @@ import { ApiError } from '@/lib/api';
 import { formatDate } from '@/lib/formatDate';
 import TimelineEventCard from '@/components/ui/TimelineEventCard';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+
 function buildCircuitPath(count, height) {
     if (count === 0 || height === 0) return '';
     const segH = height / count;
@@ -33,7 +35,6 @@ export default function EventsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Fetch Events from API
     useEffect(() => {
         let isCancelled = false;
 
@@ -50,8 +51,16 @@ export default function EventsPage() {
                     const mappedEvents = rawData.map((event, index) => {
                         const dateObj = new Date(event.date);
 
+                        let fullImageUrl = null;
+                        if (event.imageUrl) {
+                            fullImageUrl = event.imageUrl.startsWith("http")
+                                ? event.imageUrl
+                                : `${API_URL}${event.imageUrl.startsWith("/") ? "" : "/"}${event.imageUrl}`;
+                        }
+
                         return {
                             ...event,
+                            imageUrl: fullImageUrl,
                             dateObj,
                             displayDate: formatDate(event.date),
                             align: index % 2 === 0 ? 'right' : 'left',
@@ -147,7 +156,6 @@ export default function EventsPage() {
 
     return (
         <main className="pt-40 pb-7 overflow-x-hidden px-margin-mobile md:px-margin-desktop max-w-container-max mx-auto relative z-10">
-            {/* Title Section */}
             <section className="mb-32 text-center relative z-10">
                 <nav className="flex items-center justify-center flex-wrap gap-1.5 md:gap-2 text-on-surface-variant/60 font-label-md text-xs md:text-label-md mb-3 md:mb-4 uppercase tracking-widest">
                     <Link href="/" className="hover:text-primary transition-colors">
@@ -168,14 +176,12 @@ export default function EventsPage() {
                 </p>
             </section>
 
-            {/* Error State */}
             {error && (
                 <div className="text-center py-12">
                     <p className="text-error font-body-lg">{error}</p>
                 </div>
             )}
 
-            {/* Loading State */}
             {isLoading && !error && (
                 <div className="flex flex-col items-center justify-center min-h-[400px]">
                     <span className="material-symbols-outlined text-primary text-5xl animate-spin mb-4">
@@ -185,7 +191,6 @@ export default function EventsPage() {
                 </div>
             )}
 
-            {/* Empty State */}
             {!isLoading && !error && events.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[400px] opacity-60">
                     <span className="material-symbols-outlined text-5xl mb-3 text-on-surface-variant">
@@ -195,7 +200,6 @@ export default function EventsPage() {
                 </div>
             )}
 
-            {/* Timeline Container */}
             {!isLoading && !error && events.length > 0 && (
                 <div ref={containerRef} className="relative overflow-x-hidden w-full min-h-[1500px]">
                     <svg
@@ -212,7 +216,6 @@ export default function EventsPage() {
                         />
                     </svg>
 
-                    {/* Mapping Timeline Nodes */}
                     {events.map((event, index) => (
                         <TimelineEventCard
                             key={event.id}

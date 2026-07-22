@@ -21,6 +21,13 @@ export function getLatestAnnouncements(count = 3) {
     });
 }
 
+// Get announcements count
+export function getAnnouncementsCount() {
+    return apiFetch("/api/announcements/count", {
+        credentials: "include"
+    });
+}
+
 // Add new announcement
 export function addAnnouncement(data) {
     return apiFetch("/api/announcements", {

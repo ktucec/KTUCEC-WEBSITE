@@ -14,6 +14,7 @@ using System;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using ktucec.Infrastructure.Services.Media;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -143,6 +144,7 @@ builder.Services.AddScoped<GetLatestAnnouncementsHandler>();
 builder.Services.AddScoped<UpdateAnnouncementHandler>();
 builder.Services.AddScoped<DeleteAnnouncementHandler>();
 builder.Services.AddScoped<GetAnnouncementByIdHandler>();
+builder.Services.AddScoped<GetAnnouncementsCountHandler>();
 
 // -- Events --
 builder.Services.AddScoped<AddEventHandler>();
@@ -150,6 +152,8 @@ builder.Services.AddScoped<UpdateEventHandler>();
 builder.Services.AddScoped<DeleteEventHandler>();
 builder.Services.AddScoped<GetCurrentEventsHandler>();
 builder.Services.AddScoped<GetAllEventsHandler>();
+builder.Services.AddScoped<GetEventByIdHandler>();
+builder.Services.AddScoped<GetEventsCountHandler>();
 
 // -- ContactForms -- 
 builder.Services.AddScoped<AddContactFormHandler>();
@@ -165,7 +169,11 @@ builder.Services.AddScoped<CreateManagerHandler>();
 builder.Services.AddScoped<UpdateManagerHandler>();
 builder.Services.AddScoped<DeleteManagerHandler>();
 builder.Services.AddScoped<GetAllManagersHandler>();
-builder.Services.AddScoped<SystemRoleHandler>();
+builder.Services.AddScoped<GetMeHandler>();
+builder.Services.AddScoped<GetManagersCountHandler>();
+
+// -- Media --
+builder.Services.AddScoped<ImageService>();
 
 
 builder.Services.AddOpenApi();
@@ -178,6 +186,8 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+
+app.UseStaticFiles(); 
 
 app.UseCors("AllowFrontend");
 
@@ -196,6 +206,7 @@ app.MapGetLatestAnnouncements();
 app.MapUpdateAnnouncement();
 app.MapDeleteAnnouncement();
 app.MapGetAnnouncementById();
+app.MapGetAnnouncementsCount();
 
 // -- Events --
 app.MapAddEvent();
@@ -203,6 +214,8 @@ app.MapUpdateEvent();
 app.MapDeleteEvent();
 app.MapGetCurrentEvents();
 app.MapGetAllEvents();
+app.MapGetEventById();
+app.MapGetEventsCount();
 
 // -- ContactForms --
 app.MapAddContactForm();
@@ -218,7 +231,8 @@ app.MapCreateManager();
 app.MapUpdateManager();
 app.MapDeleteManager();
 app.MapGetAllManagers();
-app.MapSystemRole();
+app.MapGetMe();
+app.MapGetManagersCount();
 
 
 //await DatabaseSeeder.SeedAdminAsync(app);

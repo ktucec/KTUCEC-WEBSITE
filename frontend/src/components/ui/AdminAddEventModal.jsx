@@ -1,23 +1,34 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { addEvent } from '@/services/events';
+import { ApiError } from '@/lib/api';
 
 export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
-        imageUrl: '',
         title: '',
-        date: '', 
+        date: '',
         location: '',
         description: ''
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            setFormData({ title: '', date: '', location: '', description: '' });
+            setImageFile(null);
+            setImagePreview(null);
+            setError(null);
+        } else {
+            document.body.style.overflow = 'unset';
+        }
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
@@ -31,48 +42,57 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                setError('Sadece PNG, JPG veya JPEG formatında görsel yükleyebilirsiniz.');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+
+            setError(null);
+            setImageFile(file);
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
-
-            // Gerçek projede file objesini form dataya koyup backend'e gönderebilirsin
-            // Şimdilik string (URL) olarak formData'ya ekliyoruz.
-            setFormData(prev => ({ ...prev, imageUrl: previewUrl }));
         }
     };
 
-    // Yüklenen görseli temizleme
     const handleRemoveImage = (e) => {
         e.stopPropagation();
+        setImageFile(null);
         setImagePreview(null);
-        setFormData(prev => ({ ...prev, imageUrl: '' }));
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
+        setError(null);
 
         try {
-            // TODO: Gerçek API bağlantısını buraya yapacaksın
-            // await AddEvent(formData);
+            const data = new FormData();
+            data.append('Title', formData.title);
+            data.append('Description', formData.description);
+            data.append('Date', formData.date);
+            data.append('Location', formData.location);
 
-            // Simülasyon gecikmesi
-            await new Promise(res => setTimeout(res, 800));
+            if (imageFile) {
+                data.append('Image', imageFile);
+            }
 
-            onSuccess({
-                id: Date.now(),
+            const response = await addEvent(data);
+
+            const newEvent = response?.data || {
+                id: response?.id || Date.now(),
                 title: formData.title,
                 date: formData.date,
                 location: formData.location,
-                imageUrl: formData.imageUrl
-            });
+            };
 
-            setFormData({ imageUrl: '', title: '', date: '', location: '', description: '' });
-            console.log(formData)
-            setImagePreview(null);
+            onSuccess(newEvent);
             onClose();
-        } catch (error) {
-            alert('Eklerken bir hata oluştu.');
+        } catch (err) {
+            const msg = err instanceof ApiError ? err.message : "Eklerken bir hata oluştu.";
+            setError(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -102,7 +122,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                     >
                         <input
                             type="file"
-                            accept="image/*"
+                            accept=".png, .jpg, .jpeg, image/png, image/jpeg"
                             className="hidden"
                             ref={fileInputRef}
                             onChange={handleImageChange}
@@ -128,7 +148,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                             <div className="flex flex-col items-center text-secondary p-6 text-center">
                                 <span className="material-symbols-outlined text-4xl mb-2 text-primary">add_photo_alternate</span>
                                 <p className="font-label-md">Etkinlik Görseli Yükle</p>
-                                <p className="font-body-md text-xs mt-1 opacity-70">PNG, JPG veya WEBP (Önerilen 16:9)</p>
+                                <p className="font-body-md text-xs mt-1 opacity-70">Sadece PNG, JPG veya JPEG</p>
                             </div>
                         )}
                     </div>
@@ -137,6 +157,12 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                         <div className="text-center mb-2">
                             <h2 className="font-headline-sm text-xl text-on-surface">Yeni Etkinlik Oluştur</h2>
                         </div>
+
+                        {error && (
+                            <div className="p-3.5 text-sm text-error bg-error-container/20 border border-error/30 rounded-xl font-medium">
+                                {error}
+                            </div>
+                        )}
 
                         <div className="flex flex-col gap-2">
                             <label className="font-label-md text-secondary ml-1" htmlFor="title">Etkinlik Başlığı</label>
@@ -179,7 +205,6 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                             </div>
                         </div>
 
-                        {/* Açıklama Textarea */}
                         <div className="flex flex-col gap-2">
                             <label className="font-label-md text-secondary ml-1" htmlFor="description">Etkinlik Açıklaması</label>
                             <textarea
@@ -189,7 +214,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                                 rows="4"
                                 value={formData.description}
                                 onChange={handleChange}
-                                placeholder="Etkinliğin detaylarını, konuşmacıları ve ajandayı buraya yazın..."
+                                placeholder="Etkinliğin detaylarını buraya yazın..."
                                 required
                             ></textarea>
                         </div>

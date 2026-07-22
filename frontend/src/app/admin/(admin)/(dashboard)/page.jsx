@@ -1,56 +1,66 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getAnnouncementsCount } from '@/services/announcements';
+import { getEventsCount } from '@/services/events';
+import { getManagersCount } from '@/services/auth';
+import { useAdmin } from '@/components/layout/AdminProvider';
 
 export default function DashboardPage() {
+    const { adminName, isRoleLoading } = useAdmin();
+
     const [counts, setCounts] = useState({
         announcementCount: 0,
         eventCount: 0,
         adminCount: 1
     });
-    const [adminName, setAdminName] = useState("Admin");
     const [isLoading, setIsLoading] = useState(true);
 
+    const parseCount = (res) => {
+        if (typeof res === 'number') return res;
+        if (typeof res?.data === 'number') return res.data;
+        if (res?.data?.count !== undefined) return res.data.count;
+        if (res?.count !== undefined) return res.count;
+        return 0;
+    };
+
     useEffect(() => {
+        let isCancelled = false;
+
         const fetchDashboardData = async () => {
             try {
-                // TODO: Gerçek auth servisini bağladığında burayı aç
-                // const username = GetAdminUsername() || "Yönetici";
-                // setAdminName(username);
-
-                // Mock Username
-                setAdminName("Kulüp Başkanı");
-
-                // TODO: Gerçek API fonksiyonlarını bağladığında aşağıdaki Promise.all'u aç
-                /*
-                const [announcementsData, eventsData, adminsData] = await Promise.all([
-                    GetAnnouncementsNumber(),
-                    GetEventsNumber(),
-                    GetAdminsNumber()
+                const [announcementsRes, eventsRes, adminsRes] = await Promise.all([
+                    getAnnouncementsCount(),
+                    getEventsCount(),
+                    getManagersCount()
                 ]);
-                */
 
-                // Mock Data (Geçici)
-                const announcementsData = { count: 12 };
-                const eventsData = { count: 8 };
-                const adminsData = { count: 3 };
-
-                setCounts({
-                    announcementCount: announcementsData?.count ?? announcementsData ?? 0,
-                    eventCount: eventsData?.count ?? eventsData ?? 0,
-                    adminCount: adminsData?.count ?? adminsData ?? 1
-                });
+                if (!isCancelled) {
+                    setCounts({
+                        announcementCount: parseCount(announcementsRes),
+                        eventCount: parseCount(eventsRes),
+                        adminCount: parseCount(adminsRes)
+                    });
+                }
             } catch (error) {
-                console.error("Dashboard verileri yüklenirken hata oluştu:", error);
+                if (!isCancelled) {
+                    console.error("Dashboard verileri yüklenirken hata oluştu:", error);
+                }
             } finally {
-                setIsLoading(false);
+                if (!isCancelled) {
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchDashboardData();
+
+        return () => {
+            isCancelled = true;
+        };
     }, []);
 
-    if (isLoading) {
+    if (isLoading || isRoleLoading) {
         return (
             <div className="min-h-screen bg-surface flex items-center justify-center">
                 <div className="text-on-surface-variant font-body-md font-medium p-6 bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant/30 animate-pulse">

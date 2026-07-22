@@ -3,36 +3,45 @@
 import { useState, useEffect } from 'react';
 import AdminAddEventModal from '@/components/ui/AdminAddEventModal';
 import AdminUpdateEventModal from '@/components/ui/AdminUpdateEventModal';
+import { getAllEvents, deleteEvent } from '@/services/events';
 
 export default function EventsManagementPage() {
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState(null);
 
     useEffect(() => {
+        let isCancelled = false;
+
         const fetchItems = async () => {
+            setIsLoading(true);
+            setError(null);
             try {
-                // TODO: Uncomment when actual service is connected
-                // const data = await GetAllEvents();
+                const response = await getAllEvents();
 
-                // Mock Data (Temporary)
-                const data = [
-                    { id: 1, title: 'Yapay Zeka ve Gelecek Zirvesi', date: '2026-05-15', location: 'Osman Turan Kongre Merkezi' },
-                    { id: 2, title: 'Gömülü Sistemler 101 Atölyesi', date: '2026-05-22', location: 'Bilgisayar Müh. Donanım Lab' },
-                    { id: 3, title: 'Güz Dönemi Tanışma Toplantısı', date: '2025-10-10', location: 'Mimarlık Amfisi' },
-                ];
-
-                setEvents(data || []);
-            } catch (error) {
-                console.error('Error fetching data:', error);
+                if (!isCancelled) {
+                    const data = response?.data || response || [];
+                    setEvents(data);
+                }
+            } catch (err) {
+                if (!isCancelled) {
+                    setError('Sunucuya bağlanırken hata oluştu');
+                }
             } finally {
-                setIsLoading(false);
+                if (!isCancelled) {
+                    setIsLoading(false);
+                }
             }
         };
 
         fetchItems();
+
+        return () => {
+            isCancelled = true;
+        };
     }, []);
 
     const handleDelete = async (id) => {
@@ -40,11 +49,8 @@ export default function EventsManagementPage() {
         if (!confirmed) return;
 
         try {
-            // TODO: Uncomment when actual service is connected
-            // await DeleteEvent(id);
-
+            await deleteEvent(id);
             setEvents((prev) => prev.filter((item) => item.id !== id));
-            alert('Etkinlik başarıyla silindi!');
         } catch (error) {
             alert(error.message || 'Silme işlemi sırasında bir şeyler yanlış gitti.');
         }
@@ -87,16 +93,15 @@ export default function EventsManagementPage() {
 
                 <div className="grid grid-cols-1 gap-4 md:hidden">
                     {isLoading ? (
-                        Array.from({ length: 3 }).map((_, index) => (
-                            <div key={`skeleton-mob-${index}`} className="bg-surface-container-lowest border border-outline-variant/30 p-5 rounded-xl shadow-sm animate-pulse space-y-4">
-                                <div className="h-3 w-20 bg-surface-variant rounded" />
-                                <div className="h-5 w-48 bg-surface-variant rounded" />
-                                <div className="pt-3 border-t border-outline-variant/20 flex gap-4">
-                                    <div className="h-8 bg-surface-variant rounded flex-1" />
-                                    <div className="h-8 bg-surface-variant rounded flex-1" />
-                                </div>
-                            </div>
-                        ))
+                        <div className="flex justify-center items-center py-12">
+                            <span className="material-symbols-outlined text-primary text-5xl animate-spin">
+                                progress_activity
+                            </span>
+                        </div>
+                    ) : error ? (
+                        <div className="bg-error-container/20 border border-error/30 p-6 rounded-xl text-center text-sm text-error font-medium">
+                            {error}
+                        </div>
                     ) : events.length === 0 ? (
                         <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 rounded-xl text-center text-sm text-secondary font-medium">
                             Henüz hiç etkinlik eklenmemiş.
@@ -139,17 +144,19 @@ export default function EventsManagementPage() {
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                Array.from({ length: 3 }).map((_, index) => (
-                                    <tr key={`skeleton-desk-${index}`} className="border-b border-outline-variant/20 animate-pulse">
-                                        <td className="px-6 py-5">
-                                            <div className="h-5 w-64 bg-surface-variant rounded" />
-                                        </td>
-                                        <td className="px-6 py-5 flex justify-end gap-6 items-center">
-                                            <div className="h-6 w-6 bg-surface-variant rounded" />
-                                            <div className="h-6 w-6 bg-surface-variant rounded" />
-                                        </td>
-                                    </tr>
-                                ))
+                                <tr>
+                                    <td colSpan="2" className="px-6 py-12 text-center">
+                                        <span className="material-symbols-outlined text-primary text-5xl animate-spin">
+                                            progress_activity
+                                        </span>
+                                    </td>
+                                </tr>
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan="2" className="px-6 py-10 text-sm text-center text-error font-medium">
+                                        {error}
+                                    </td>
+                                </tr>
                             ) : events.length === 0 ? (
                                 <tr>
                                     <td colSpan="2" className="px-6 py-10 text-sm text-center text-secondary font-medium">

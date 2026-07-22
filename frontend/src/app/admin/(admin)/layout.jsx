@@ -1,5 +1,6 @@
 import React from 'react';
 import AdminSidebar from '@/components/layout/AdminSidebar';
+import { AdminProvider } from '@/components/layout/AdminProvider'; 
 import '@/styles/globals.css';
 
 export const metadata = {
@@ -23,13 +24,15 @@ export default function AdminRootLayout({ children }) {
 
             <body className="font-body-md bg-surface text-on-surface min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-white">
 
-                <AdminSidebar />
+                <AdminProvider>
+                    <AdminSidebar />
 
-                <div className="flex flex-1 overflow-hidden w-auto md:ml-64 md:mt-0 mt-20">
-                    <div className="mx-auto w-full lg:w-[70%] p-6 md:p-8">
-                        {children}
+                    <div className="flex flex-1 overflow-hidden w-auto md:ml-64 md:mt-0 mt-20">
+                        <div className="mx-auto w-full lg:w-[70%] p-6 md:p-8">
+                            {children}
+                        </div>
                     </div>
-                </div>
+                </AdminProvider>
 
             </body>
         </html>

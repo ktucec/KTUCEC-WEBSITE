@@ -20,37 +20,28 @@ export default function AnnouncementsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Modal States
     const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isModalLoading, setIsModalLoading] = useState(false);
 
-    // Filter States
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    // Pagination States
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(6);
 
     useScrollAnimation([isLoading, filteredAnnouncements, currentPage]);
 
-    // Handle Responsive Items Per Page (4 on mobile, 6 on desktop)
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setItemsPerPage(4);
-            } else {
-                setItemsPerPage(6);
-            }
+            setItemsPerPage(window.innerWidth < 768 ? 4 : 6);
         };
 
-        handleResize(); // Initial check
+        handleResize();
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Fetch Data
     useEffect(() => {
         let isCancelled = false;
 
@@ -62,6 +53,7 @@ export default function AnnouncementsPage() {
                 if (!isCancelled) {
                     setAnnouncements(result.data || []);
                     setFilteredAnnouncements(result.data || []);
+                    setCurrentPage(1);
                 }
             } catch (err) {
                 if (!isCancelled) {
@@ -81,7 +73,6 @@ export default function AnnouncementsPage() {
         };
     }, []);
 
-    // Handle Search Params for Modal
     useEffect(() => {
         const idParam = searchParams.get('id');
         if (idParam && announcements.length > 0) {
@@ -99,20 +90,37 @@ export default function AnnouncementsPage() {
             return;
         }
 
-        let filtered = [...announcements];
+        const filtered = announcements.filter(item => {
+            if (!item.createdAt) return false;
 
-        if (startDate) {
-            const start = new Date(startDate).getTime();
-            filtered = filtered.filter(item => new Date(item.createdAt).getTime() >= start);
-        }
+            const itemTime = new Date(item.createdAt).getTime();
+            if (isNaN(itemTime)) return false;
 
-        if (endDate) {
-            const end = new Date(endDate);
-            end.setHours(23, 59, 59, 999);
-            filtered = filtered.filter(item => new Date(item.createdAt).getTime() <= end.getTime());
-        }
+            let isValid = true;
+
+            if (startDate) {
+                const startObj = new Date(startDate);
+                startObj.setHours(0, 0, 0, 0);
+                if (itemTime < startObj.getTime()) isValid = false;
+            }
+
+            if (endDate) {
+                const endObj = new Date(endDate);
+                endObj.setHours(23, 59, 59, 999);
+                if (itemTime > endObj.getTime()) isValid = false;
+            }
+
+            return isValid;
+        });
 
         setFilteredAnnouncements(filtered);
+        setCurrentPage(1);
+    };
+
+    const handleClearFilter = () => {
+        setStartDate('');
+        setEndDate('');
+        setFilteredAnnouncements(announcements);
         setCurrentPage(1);
     };
 
@@ -121,7 +129,6 @@ export default function AnnouncementsPage() {
         setIsModalLoading(true);
         router.replace(`/duyurular?id=${announcement.id}`, { scroll: false });
 
-        // Simulating data fetch for modal
         await new Promise(resolve => setTimeout(resolve, 500));
 
         setSelectedAnnouncement(announcement);
@@ -137,8 +144,14 @@ export default function AnnouncementsPage() {
         router.replace('/duyurular', { scroll: false });
     };
 
-    // Pagination Logic
-    const totalPages = Math.ceil(filteredAnnouncements.length / itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(filteredAnnouncements.length / itemsPerPage));
+
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
+
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = filteredAnnouncements.slice(indexOfFirstItem, indexOfLastItem);
@@ -146,11 +159,13 @@ export default function AnnouncementsPage() {
     const paginate = (pageNumber) => {
         if (pageNumber > 0 && pageNumber <= totalPages) {
             setCurrentPage(pageNumber);
-            window.scrollTo({ top: document.getElementById('announcements-list').offsetTop - 100, behavior: 'smooth' });
+            const listElement = document.getElementById('announcements-list');
+            if (listElement) {
+                window.scrollTo({ top: listElement.offsetTop - 100, behavior: 'smooth' });
+            }
         }
     };
 
-    // Generate page numbers for pagination
     const getPageNumbers = () => {
         const pageNumbers = [];
         const maxPagesToShow = 3;
@@ -172,7 +187,6 @@ export default function AnnouncementsPage() {
     return (
         <>
             <main className="pt-32 pb-24 px-gutter max-w-container-max mx-auto relative z-10">
-                {/* Hero / Breadcrumb Section */}
                 <section className="mb-12">
                     <nav className="flex items-center flex-wrap gap-1.5 md:gap-2 text-on-surface-variant/60 font-label-md text-xs md:text-label-md mb-3 md:mb-4 uppercase tracking-widest">
                         <Link href="/" className="hover:text-primary transition-colors">
@@ -191,7 +205,6 @@ export default function AnnouncementsPage() {
                     </p>
                 </section>
 
-                {/* Filtering System */}
                 <section className="fade-up mb-10 md:mb-16">
                     <div className="glass-panel p-5 sm:p-6 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm flex flex-col md:flex-row items-stretch md:items-end gap-4 md:gap-6 border-white/60">
                         <div className="w-full md:w-auto flex-1">
@@ -232,12 +245,7 @@ export default function AnnouncementsPage() {
                             </button>
                             {(startDate || endDate) && (
                                 <button
-                                    onClick={() => {
-                                        setStartDate('');
-                                        setEndDate('');
-                                        setFilteredAnnouncements(announcements);
-                                        setCurrentPage(1);
-                                    }}
+                                    onClick={handleClearFilter}
                                     className="w-full text-error text-xs md:text-sm font-medium hover:underline flex justify-center items-center cursor-pointer"
                                 >
                                     Filtreyi Temizle
@@ -285,7 +293,6 @@ export default function AnnouncementsPage() {
                                         ))}
                                     </section>
 
-                                    {/* Pagination Controls */}
                                     {totalPages > 1 && (
                                         <nav className="mt-10 md:mt-20 flex justify-center items-center gap-1.5 sm:gap-2 fade-up">
                                             <button

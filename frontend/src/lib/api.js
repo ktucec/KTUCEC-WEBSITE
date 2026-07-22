@@ -38,12 +38,15 @@ async function parseResponseBody(res) {
 
 async function rawRequest(path, options) {
     let res;
+
+    const isFormData = options.body instanceof FormData;
+
     try {
         res = await fetch(`${API_URL}${path}`, {
             ...options,
             credentials: "include",
             headers: {
-                "Content-Type": "application/json",
+                ...(isFormData ? {} : { "Content-Type": "application/json" }),
                 ...options.headers,
             },
         });

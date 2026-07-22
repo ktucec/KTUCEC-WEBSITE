@@ -1,64 +1,85 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { updateEvent, getEventById } from '@/services/events';
+import { ApiError } from '@/lib/api';
 
 export default function AdminUpdateEventModal({ isOpen, onClose, onSuccess, eventId }) {
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
 
     const [originalData, setOriginalData] = useState({});
     const [formData, setFormData] = useState({
-        imageUrl: '',
         title: '',
         date: '',
         location: '',
         description: ''
     });
 
+    const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+
     useEffect(() => {
-        if (isOpen) document.body.style.overflow = 'hidden';
-        else document.body.style.overflow = 'unset';
+        if (isOpen) {
+            document.body.style.overflow = 'hidden';
+            setError(null);
+        } else {
+            document.body.style.overflow = 'unset';
+        }
         return () => { document.body.style.overflow = 'unset'; };
     }, [isOpen]);
 
     useEffect(() => {
+        let isCancelled = false;
+
         if (isOpen && eventId) {
-            fetchEventDetails(eventId);
+            const fetchDetails = async () => {
+                setIsLoading(true);
+                setError(null);
+                try {
+                    const response = await getEventById(eventId);
+                    if (!isCancelled) {
+                        const data = response?.data || response || {};
+
+                        const formattedDate = data.date ? data.date.split('T')[0] : '';
+
+                        const fetchedData = {
+                            title: data.title || '',
+                            date: formattedDate,
+                            location: data.location || '',
+                            description: data.description || ''
+                        };
+
+                        setOriginalData(fetchedData);
+                        setFormData(fetchedData);
+
+                        if (data.imageUrl) {
+                            setImagePreview(`${API_URL}${data.imageUrl}`);
+                        } else {
+                            setImagePreview(null);
+                        }
+                    }
+                } catch (err) {
+                    if (!isCancelled) setError('Etkinlik bilgileri yüklenemedi.');
+                } finally {
+                    if (!isCancelled) setIsLoading(false);
+                }
+            };
+            fetchDetails();
         } else {
-            setFormData({ imageUrl: '', title: '', date: '', location: '', description: '' });
+            setFormData({ title: '', date: '', location: '', description: '' });
             setOriginalData({});
+            setImageFile(null);
             setImagePreview(null);
             setIsLoading(true);
         }
+
+        return () => { isCancelled = true; };
     }, [isOpen, eventId]);
-
-    const fetchEventDetails = async (id) => {
-        setIsLoading(true);
-        try {
-            await new Promise(res => setTimeout(res, 1000));
-
-            const data = {
-                imageUrl: 'https://via.placeholder.com/800x400.png?text=Event+Image',
-                title: 'Yapay Zeka ve Gelecek Zirvesi',
-                date: '2026-05-15',
-                location: 'Osman Turan Kongre Merkezi',
-                description: 'Yapay zeka alanındaki son gelişmelerin konuşulacağı, sektörden uzmanların katılacağı kapsamlı bir zirve.'
-            };
-
-            setOriginalData(data);
-            setFormData(data);
-            setImagePreview(data.imageUrl);
-        } catch (error) {
-            console.error('Failed to fetch event:', error);
-            alert('Etkinlik bilgileri yüklenemedi.');
-            onClose();
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const getChangedFields = () => {
         const changes = {};
@@ -70,7 +91,7 @@ export default function AdminUpdateEventModal({ isOpen, onClose, onSuccess, even
         return changes;
     };
 
-    const hasChanges = Object.keys(getChangedFields()).length > 0;
+    const hasChanges = Object.keys(getChangedFields()).length > 0 || imageFile !== null;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -80,35 +101,56 @@ export default function AdminUpdateEventModal({ isOpen, onClose, onSuccess, even
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                setError('Sadece PNG, JPG veya JPEG formatında görsel yükleyebilirsiniz.');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+
+            setError(null);
+            setImageFile(file);
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
-            setFormData(prev => ({ ...prev, imageUrl: previewUrl }));
         }
     };
 
     const handleRemoveImage = (e) => {
         e.stopPropagation();
+        setImageFile(null);
         setImagePreview(null);
-        setFormData(prev => ({ ...prev, imageUrl: '' }));
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
 
         const changedData = getChangedFields();
-        if (Object.keys(changedData).length === 0) return;
+
+        if (Object.keys(changedData).length === 0 && !imageFile) return;
 
         setIsSubmitting(true);
 
         try {
-            await new Promise(res => setTimeout(res, 800));
+            const data = new FormData();
+
+            if (changedData.title) data.append('Title', changedData.title);
+            if (changedData.description) data.append('Description', changedData.description);
+            if (changedData.date) data.append('Date', changedData.date);
+            if (changedData.location) data.append('Location', changedData.location);
+
+            if (imageFile) {
+                data.append('Image', imageFile);
+            }
+
+            await updateEvent(eventId, data);
 
             onSuccess({ id: eventId, ...changedData });
-            console.log(changedData);
             onClose();
-        } catch (error) {
-            alert('Güncellenirken bir hata oluştu.');
+        } catch (err) {
+            const msg = err instanceof ApiError ? err.message : 'Güncellenirken bir hata oluştu.';
+            setError(msg);
         } finally {
             setIsSubmitting(false);
         }
@@ -146,7 +188,7 @@ export default function AdminUpdateEventModal({ isOpen, onClose, onSuccess, even
                         >
                             <input
                                 type="file"
-                                accept="image/*"
+                                accept=".png, .jpg, .jpeg, image/png, image/jpeg"
                                 className="hidden"
                                 ref={fileInputRef}
                                 onChange={handleImageChange}
@@ -172,7 +214,7 @@ export default function AdminUpdateEventModal({ isOpen, onClose, onSuccess, even
                                 <div className="flex flex-col items-center text-secondary p-6 text-center">
                                     <span className="material-symbols-outlined text-4xl mb-2 text-primary">add_photo_alternate</span>
                                     <p className="font-label-md">Yeni Görsel Yükle</p>
-                                    <p className="font-body-md text-xs mt-1 opacity-70">Mevcut görseli kaldırdınız</p>
+                                    <p className="font-body-md text-xs mt-1 opacity-70">Sadece PNG, JPG veya JPEG</p>
                                 </div>
                             )}
                         </div>
@@ -181,6 +223,12 @@ export default function AdminUpdateEventModal({ isOpen, onClose, onSuccess, even
                             <div className="text-center mb-2">
                                 <h2 className="font-headline-sm text-xl text-on-surface">Etkinliği Düzenle</h2>
                             </div>
+
+                            {error && (
+                                <div className="p-3.5 text-sm text-error bg-error-container/20 border border-error/30 rounded-xl font-medium">
+                                    {error}
+                                </div>
+                            )}
 
                             <div className="flex flex-col gap-2">
                                 <label className="font-label-md text-secondary ml-1" htmlFor="title">Etkinlik Başlığı</label>
@@ -232,6 +280,7 @@ export default function AdminUpdateEventModal({ isOpen, onClose, onSuccess, even
                                     rows="4"
                                     value={formData.description}
                                     onChange={handleChange}
+                                    placeholder="Etkinliğin detaylarını buraya yazın..."
                                     required
                                 ></textarea>
                             </div>

@@ -5,6 +5,7 @@ namespace ktucec.Domain.Entities;
 
 public class User : BaseEntity
 {
+    public string ProfileUrl { get; set; } = string.Empty;
     public string NameSurname { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;

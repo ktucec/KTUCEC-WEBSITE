@@ -3,39 +3,20 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { getSystemRole } from '@/services/auth';
+import { useAdmin } from '@/components/layout/AdminProvider';
 
-export default function AdminSidebar({ userRole: propUserRole }) {
+export default function AdminSidebar() {
     const pathname = usePathname();
+    const { role } = useAdmin();
 
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const [isPanelOpen, setIsPanelOpen] = useState(false);
-    const [userRole, setUserRole] = useState(propUserRole ?? null);
 
     useEffect(() => {
         if (pathname.startsWith('/admin/announcements') || pathname.startsWith('/admin/events')) {
             setIsPanelOpen(true);
         }
     }, [pathname]);
-
-    useEffect(() => {
-        if (propUserRole !== undefined) {
-            setUserRole(propUserRole);
-            return;
-        }
-
-        const fetchUserRole = async () => {
-            try {
-                const res = await getSystemRole();
-                const role = res?.data?.role ?? res?.role;
-                setUserRole(role);
-            } catch (err) {
-                console.error('Kullanıcı rolü alınamadı:', err);
-            }
-        };
-
-        fetchUserRole();
-    }, [propUserRole]);
 
     const getLinkClass = (path, level = 1) => {
         const isActive = path === '/admin' ? pathname === '/admin' : pathname.startsWith(path);
@@ -49,7 +30,7 @@ export default function AdminSidebar({ userRole: propUserRole }) {
 
     const isPanelActive = pathname.startsWith('/admin/announcements') || pathname.startsWith('/admin/events');
 
-    const isAdmin = userRole === 2 || userRole === '2' || userRole === 'Admin';
+    const isAdmin = role === 2 || role === '2';
 
     return (
         <>

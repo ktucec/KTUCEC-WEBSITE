@@ -2,62 +2,65 @@
 using ktucec.Domain.Enums;
 using ktucec.Infrastructure.Database;
 using ktucec.Shared.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 
 namespace ktucec.Features.Auth;
 
 // 1. REQUEST & RESPONSE
-public record SystemRoleResponse(
+public record GetMeResponse(
+    string NameSurname,
+    string? ProfileUrl,
     UserRole Role,
-    string RoleName,
-    string Email,
-    string FullName
+    ManagerRole? AdminRole
 );
 
 
 // 2. HANDLER 
-public class SystemRoleHandler
+public class GetMeHandler
 {
     private readonly KtucecDbContext _context;
 
-    public SystemRoleHandler(KtucecDbContext context)
+    public GetMeHandler(KtucecDbContext context)
     {
         _context = context;
     }
 
-    public async Task<ApiResult<SystemRoleResponse>> HandleAsync(ClaimsPrincipal userClaims)
+    public async Task<ApiResult<GetMeResponse>> HandleAsync(ClaimsPrincipal userClaims)
     {
         var userIdClaim = userClaims.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
         {
-            return new ApiResult<SystemRoleResponse>(false, null!, "Kullanıcı kimliği okunamadı.");
+            return new ApiResult<GetMeResponse>(false, null!, "Kullanıcı kimliği okunamadı.");
         }
 
         var user = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null)
         {
-            return new ApiResult<SystemRoleResponse>(false, null!, "Kullanıcı bulunamadı.");
+            return new ApiResult<GetMeResponse>(false, null!, "Kullanıcı bulunamadı.");
         }
 
-        var data = new SystemRoleResponse(
+        var data = new GetMeResponse(
+            NameSurname: user.NameSurname,
+            ProfileUrl: user.ProfileUrl,
             Role: user.Role,
-            RoleName: user.Role.ToString(),
-            Email: user.Email,
-            FullName: user.NameSurname
+            AdminRole: user.ManagerRole
         );
 
-        return new ApiResult<SystemRoleResponse>(true, data, "Sistem rolü başarıyla getirildi.");
+        return new ApiResult<GetMeResponse>(true, data, "Kullanıcı bilgileri başarıyla getirildi.");
     }
 }
 
 
 // 3. ENDPOINT 
-public static class SystemRoleEndpoint
+public static class GetMeEndpoint
 {
-    public static void MapSystemRole(this IEndpointRouteBuilder app)
+    public static void MapGetMe(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/auth/system-role", async (HttpContext httpContext, SystemRoleHandler handler) =>
+        app.MapGet("/api/auth/me", async (HttpContext httpContext, GetMeHandler handler) =>
         {
             var result = await handler.HandleAsync(httpContext.User);
 

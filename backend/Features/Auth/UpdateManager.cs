@@ -1,10 +1,16 @@
 ﻿using ktucec.Domain.Enums;
 using ktucec.Infrastructure.Database;
+using ktucec.Infrastructure.Services.Media;
 using ktucec.Shared.Models;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
 
 namespace ktucec.Features.Auth;
-
 
 // 1. REQUEST & RESPONSE
 public record UpdateManagerRequest(
@@ -19,13 +25,15 @@ public record UpdateManagerResponse(int Id);
 public class UpdateManagerHandler
 {
     private readonly KtucecDbContext _context;
+    private readonly ImageService _imageService;
 
-    public UpdateManagerHandler(KtucecDbContext context)
+    public UpdateManagerHandler(KtucecDbContext context, ImageService imageService)
     {
         _context = context;
+        _imageService = imageService;
     }
 
-    public async Task<UpdateManagerResponse?> HandleAsync(int id, UpdateManagerRequest request)
+    public async Task<UpdateManagerResponse?> HandleAsync(int id, UpdateManagerRequest request, IFormFile? image)
     {
         var user = await _context.Users.FindAsync(id);
 
@@ -47,6 +55,12 @@ public class UpdateManagerHandler
         if (request.ManagerRole is not null)
             user.ManagerRole = request.ManagerRole.Value;
 
+        if (image != null)
+        {
+            _imageService.DeleteImage(user.ProfileUrl);
+            user.ProfileUrl = await _imageService.UploadImageAsync(image, "profile");
+        }
+
         await _context.SaveChangesAsync();
         return new UpdateManagerResponse(user.Id);
     }
@@ -58,17 +72,25 @@ public static class UpdateManagerEndpoint
 {
     public static void MapUpdateManager(this IEndpointRouteBuilder app)
     {
-        app.MapPatch("/api/auth/managers/{id}", async (int id, UpdateManagerRequest request, UpdateManagerHandler handler) =>
+        app.MapPatch("/api/auth/managers/{id}", async (
+            int id,
+            [FromForm] string? nameSurname,
+            [FromForm] string? email,
+            [FromForm] ManagerRole? managerRole,
+            IFormFile? image, 
+            UpdateManagerHandler handler) =>
         {
-            if (request.NameSurname is not null && string.IsNullOrWhiteSpace(request.NameSurname))
+            if (nameSurname is not null && string.IsNullOrWhiteSpace(nameSurname))
                 return Results.BadRequest(new ApiResult(false, "Yönetici adı ve soyadı boş olamaz."));
 
-            if (request.Email is not null && string.IsNullOrWhiteSpace(request.Email))
+            if (email is not null && string.IsNullOrWhiteSpace(email))
                 return Results.BadRequest(new ApiResult(false, "Yönetici e-postası boş olamaz."));
+
+            var request = new UpdateManagerRequest(nameSurname, email, managerRole);
 
             try
             {
-                var response = await handler.HandleAsync(id, request);
+                var response = await handler.HandleAsync(id, request, image);
 
                 if (response == null)
                     return Results.NotFound(new ApiResult(false, $"ID'si {id} olan yönetici bulunamadı."));
@@ -80,8 +102,17 @@ public static class UpdateManagerEndpoint
             {
                 return Results.BadRequest(new ApiResult(false, ex.Message));
             }
+            catch (ArgumentException ex) 
+            {
+                return Results.BadRequest(new ApiResult(false, ex.Message));
+            }
+            catch (Exception ex) 
+            {
+                return Results.BadRequest(new ApiResult(false, "Resim işlenirken bir hata oluştu: " + ex.Message));
+            }
         })
-        .RequireAuthorization("AdminOnly")
-        .RequireRateLimiting("StrictPolicy");
+        .RequireAuthorization("AdminAndManager")
+        .RequireRateLimiting("StrictPolicy")
+        .DisableAntiforgery(); 
     }
 }

@@ -102,8 +102,6 @@ export default function AdminSettingsPage() {
 
             await new Promise(res => setTimeout(res, 1000)); // Simulate API delay
 
-            console.log('Sending to Backend:', changedData);
-
             // Update original data with new changes
             setOriginalData(prev => ({
                 ...prev,
