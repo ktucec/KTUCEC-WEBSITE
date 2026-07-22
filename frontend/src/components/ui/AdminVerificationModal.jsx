@@ -1,10 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// auth.js dosyanızın doğru yolunu buraya ekleyin (örneğin '@/services/auth' veya '@/lib/auth')
-import { verifyCode } from '@/services/auth';
 
-export default function AdminVerificationModal({ isOpen, onClose, onSuccess, email }) {
+export default function AdminVerificationModal({ isOpen, onClose, onSuccess, onSubmit, email }) {
     const [code, setCode] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState('');
@@ -34,14 +32,11 @@ export default function AdminVerificationModal({ isOpen, onClose, onSuccess, ema
         setIsVerifying(true);
 
         try {
-            // Gerçek API isteği: auth.js içerisindeki verifyCode fonksiyonunu çağırıyoruz
-            await verifyCode(email, code);
+            await onSubmit(code);
 
-            // İstek başarılı olursa (Http-Only cookie sunucu tarafından atanır)
             onSuccess();
             onClose();
         } catch (err) {
-            // api.js içerisindeki ApiError sınıfından gelen mesajı yakalayıp ekrana basıyoruz
             setError(err.message || 'Doğrulama sırasında sunucu kaynaklı bir hata oluştu.');
         } finally {
             setIsVerifying(false);

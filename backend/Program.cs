@@ -171,6 +171,7 @@ builder.Services.AddScoped<DeleteManagerHandler>();
 builder.Services.AddScoped<GetAllManagersHandler>();
 builder.Services.AddScoped<GetMeHandler>();
 builder.Services.AddScoped<GetManagersCountHandler>();
+builder.Services.AddScoped<VerifyUpdateManagerHandler>();
 
 // -- Media --
 builder.Services.AddScoped<ImageService>();
@@ -233,6 +234,7 @@ app.MapDeleteManager();
 app.MapGetAllManagers();
 app.MapGetMe();
 app.MapGetManagersCount();
+app.MapVerifyUpdateManager();
 
 
 //await DatabaseSeeder.SeedAdminAsync(app);

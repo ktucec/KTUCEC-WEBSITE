@@ -4,15 +4,20 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { getMe } from '@/services/auth';
 
 const AdminContext = createContext({
+    id: null,
+    email: "",
     adminName: "Yönetici",
     adminRole: 3,
     role: 1,
     profileUrl: null,
-    isRoleLoading: true
+    isRoleLoading: true,
+    setAdminData: () => { }
 });
 
 export function AdminProvider({ children }) {
     const [adminData, setAdminData] = useState({
+        id: null,
+        email: "",
         adminName: "Yönetici",
         adminRole: 3,
         role: 1,
@@ -30,9 +35,11 @@ export function AdminProvider({ children }) {
                 if (!isCancelled) {
                     const data = res?.data || res || {};
                     setAdminData({
+                        id: data.id || null,
+                        email: data.email || "",
                         adminName: data.nameSurname || "Yönetici",
                         adminRole: data.adminRole || 3,
-                        role: data.role || 1, 
+                        role: data.role || 1,
                         profileUrl: data.profileUrl || null,
                         isRoleLoading: false
                     });
@@ -51,7 +58,7 @@ export function AdminProvider({ children }) {
     }, []);
 
     return (
-        <AdminContext.Provider value={adminData}>
+        <AdminContext.Provider value={{ ...adminData, setAdminData }}>
             {children}
         </AdminContext.Provider>
     );

@@ -1,59 +1,106 @@
-﻿using ktucec.Domain.Enums;
-using ktucec.Infrastructure.Database;
+﻿using ktucec.Infrastructure.Database;
+using ktucec.Infrastructure.Services.Authentication;
 using ktucec.Infrastructure.Services.Media;
 using ktucec.Shared.Models;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace ktucec.Features.Auth;
 
 // 1. REQUEST & RESPONSE
 public record UpdateManagerRequest(
+    string OtpCode,
     string? NameSurname,
     string? Email,
-    ManagerRole? ManagerRole
+    string? Password
 );
+
 public record UpdateManagerResponse(int Id);
 
-
-// 2. HANDLER
+// 2. HANDLER (değişiklik yok)
 public class UpdateManagerHandler
 {
     private readonly KtucecDbContext _context;
     private readonly ImageService _imageService;
+    private readonly PasswordHasher _passwordHasher;
 
-    public UpdateManagerHandler(KtucecDbContext context, ImageService imageService)
+    public UpdateManagerHandler(
+        KtucecDbContext context,
+        ImageService imageService,
+        PasswordHasher passwordHasher)
     {
         _context = context;
         _imageService = imageService;
+        _passwordHasher = passwordHasher;
     }
 
-    public async Task<UpdateManagerResponse?> HandleAsync(int id, UpdateManagerRequest request, IFormFile? image)
+    public async Task<ApiResult<UpdateManagerResponse>> HandleAsync(
+        HttpContext httpContext,
+        UpdateManagerRequest request,
+        IFormFile? image)
     {
-        var user = await _context.Users.FindAsync(id);
+        var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        if (user == null || user.Role != UserRole.Manager)
-            return null;
+        if (string.IsNullOrEmpty(userIdClaim))
+        {
+            return new ApiResult<UpdateManagerResponse>(false, null!, "Oturum bilgisi bulunamadı.");
+        }
+
+        var userId = int.Parse(userIdClaim);
+
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null)
+        {
+            return new ApiResult<UpdateManagerResponse>(false, null!, "Kullanıcı bulunamadı.");
+        }
+
+        if (string.IsNullOrWhiteSpace(request.OtpCode) ||
+            user.OtpCode == null ||
+            user.OtpCode != request.OtpCode ||
+            user.OtpCodeExpiresAt < DateTime.UtcNow)
+        {
+            return new ApiResult<UpdateManagerResponse>(false, null!, "Doğrulama kodu geçersiz veya süresi dolmuş.");
+        }
 
         if (request.NameSurname is not null)
+        {
+            if (string.IsNullOrWhiteSpace(request.NameSurname))
+            {
+                return new ApiResult<UpdateManagerResponse>(false, null!, "Ad soyad boş bırakılamaz.");
+            }
+
             user.NameSurname = request.NameSurname;
+        }
 
         if (request.Email is not null)
         {
-            var emailExists = await _context.Users.AnyAsync(u => u.Email == request.Email && u.Id != id);
+            if (string.IsNullOrWhiteSpace(request.Email))
+            {
+                return new ApiResult<UpdateManagerResponse>(false, null!, "Email boş bırakılamaz.");
+            }
+
+            var emailExists = await _context.Users.AnyAsync(u => u.Email == request.Email && u.Id != user.Id);
+
             if (emailExists)
-                throw new InvalidOperationException("Bu e-posta adresi başka bir kullanıcı tarafından kullanılıyor.");
+            {
+                return new ApiResult<UpdateManagerResponse>(false, null!, "Bu email başka bir kullanıcı tarafından kullanılıyor.");
+            }
 
             user.Email = request.Email;
         }
 
-        if (request.ManagerRole is not null)
-            user.ManagerRole = request.ManagerRole.Value;
+        if (request.Password is not null)
+        {
+            if (request.Password.Length < 8 || request.Password.Length > 32)
+            {
+                return new ApiResult<UpdateManagerResponse>(false, null!, "Şifre 8 ile 32 karakter arasında olmalıdır.");
+            }
+
+            user.PasswordHash = _passwordHasher.HashPassword(request.Password);
+        }
 
         if (image != null)
         {
@@ -61,58 +108,47 @@ public class UpdateManagerHandler
             user.ProfileUrl = await _imageService.UploadImageAsync(image, "profile");
         }
 
+        user.OtpCode = null;
+        user.OtpCodeExpiresAt = null;
+
         await _context.SaveChangesAsync();
-        return new UpdateManagerResponse(user.Id);
+
+        return new ApiResult<UpdateManagerResponse>(true, new UpdateManagerResponse(user.Id), "Yönetici bilgileri başarıyla güncellendi.");
     }
 }
 
-
-// 3. ENDPOINT 
+// 3. ENDPOINT — form alanları artık tek tek, complex record binding yerine
 public static class UpdateManagerEndpoint
 {
     public static void MapUpdateManager(this IEndpointRouteBuilder app)
     {
-        app.MapPatch("/api/auth/managers/{id}", async (
-            int id,
+        app.MapPatch("/api/auth/managers/update", async (
+            [FromForm] string otpCode,
             [FromForm] string? nameSurname,
             [FromForm] string? email,
-            [FromForm] ManagerRole? managerRole,
-            IFormFile? image, 
-            UpdateManagerHandler handler) =>
+            [FromForm] string? password,
+            IFormFile? image,
+            UpdateManagerHandler handler,
+            HttpContext httpContext) =>
         {
-            if (nameSurname is not null && string.IsNullOrWhiteSpace(nameSurname))
-                return Results.BadRequest(new ApiResult(false, "Yönetici adı ve soyadı boş olamaz."));
-
-            if (email is not null && string.IsNullOrWhiteSpace(email))
-                return Results.BadRequest(new ApiResult(false, "Yönetici e-postası boş olamaz."));
-
-            var request = new UpdateManagerRequest(nameSurname, email, managerRole);
-
-            try
+            if (string.IsNullOrWhiteSpace(otpCode))
             {
-                var response = await handler.HandleAsync(id, request, image);
+                return Results.BadRequest(new ApiResult(false, "Doğrulama kodu zorunludur."));
+            }
 
-                if (response == null)
-                    return Results.NotFound(new ApiResult(false, $"ID'si {id} olan yönetici bulunamadı."));
+            var request = new UpdateManagerRequest(otpCode, nameSurname, email, password);
 
-                var finalResult = new ApiResult<UpdateManagerResponse>(true, response, "Yönetici bilgileri başarıyla güncellendi!");
-                return Results.Ok(finalResult);
-            }
-            catch (InvalidOperationException ex)
+            var result = await handler.HandleAsync(httpContext, request, image);
+
+            if (!result.IsSuccess)
             {
-                return Results.BadRequest(new ApiResult(false, ex.Message));
+                return Results.BadRequest(result);
             }
-            catch (ArgumentException ex) 
-            {
-                return Results.BadRequest(new ApiResult(false, ex.Message));
-            }
-            catch (Exception ex) 
-            {
-                return Results.BadRequest(new ApiResult(false, "Resim işlenirken bir hata oluştu: " + ex.Message));
-            }
+
+            return Results.Ok(result);
         })
         .RequireAuthorization("AdminAndManager")
         .RequireRateLimiting("StrictPolicy")
-        .DisableAntiforgery(); 
+        .DisableAntiforgery();
     }
 }

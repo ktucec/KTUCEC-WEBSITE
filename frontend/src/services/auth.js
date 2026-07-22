@@ -38,10 +38,7 @@ export function logoutAdmin() {
 }
 
 export function getAllManagers() {
-    return apiFetch("/api/auth/managers", {
-        method: "GET",
-        credentials: "include",
-    });
+    return apiFetch("/api/auth/managers");
 }
 
 export function getManagersCount() {
@@ -55,12 +52,12 @@ export function createManager(data) {
     return apiFetch("/api/auth/managers", {
         method: "POST",
         credentials: "include",
-        body: data,
+        body: JSON.stringify(data),
     });
 }
 
-export function updateManager(id, data) {
-    return apiFetch(`/api/auth/managers/${id}`, {
+export function updateManager(data) {
+    return apiFetch(`/api/auth/managers/update`, {
         method: "PATCH",
         credentials: "include",
         body: data,
@@ -70,6 +67,13 @@ export function updateManager(id, data) {
 export function deleteManager(id) {
     return apiFetch(`/api/auth/managers/${id}`, {
         method: "DELETE",
+        credentials: "include",
+    });
+}
+
+export function verifyManagerUpdate() {
+    return apiFetch("/api/auth/managers/verify-update", {
+        method: "POST",
         credentials: "include",
     });
 }

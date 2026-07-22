@@ -38,13 +38,13 @@ public class VerifyCodeHandler
         // A. admin or manager
         if (user.Role == UserRole.Admin || user.Role == UserRole.Manager)
         {
-            if (string.IsNullOrEmpty(user.LoginOtpCode) || user.LoginOtpCode != request.Code || user.LoginOtpCodeExpiresAt < now)
+            if (string.IsNullOrEmpty(user.OtpCode) || user.OtpCode != request.Code || user.OtpCodeExpiresAt < now)
             {
                 return new ApiResult<VerifyCodeResponse>(false, null!, "Doğrulama kodu hatalı veya süresi dolmuş.");
             }
 
-            user.LoginOtpCode = null;
-            user.LoginOtpCodeExpiresAt = null;
+            user.OtpCode = null;
+            user.OtpCodeExpiresAt = null;
         }
 
         // B. normal member

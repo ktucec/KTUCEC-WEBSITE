@@ -2,11 +2,18 @@
 
 import { useState, useEffect, useRef } from 'react';
 import AdminVerificationModal from '@/components/ui/AdminVerificationModal';
+import { useAdmin } from '@/components/layout/AdminProvider';
+import { updateManager, verifyManagerUpdate } from '@/services/auth';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 export default function AdminSettingsPage() {
+    const adminCtx = useAdmin();
+
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
+    const [initiateError, setInitiateError] = useState(null);
 
     const [originalData, setOriginalData] = useState({
         fullName: '',
@@ -21,49 +28,45 @@ export default function AdminSettingsPage() {
         imageUrl: ''
     });
 
+    const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        const fetchProfile = async () => {
+        if (!adminCtx.isRoleLoading) {
             setIsLoading(true);
             try {
-                // TODO: Implement actual API fetch here
-                // const response = await GetAdminProfile();
-
-                await new Promise(res => setTimeout(res, 800)); // Simulate API delay
-
-                // Mock API Response (Bu, kullanıcının MEVCUT/ESKİ mailidir)
                 const data = {
-                    fullName: 'Barış',
-                    email: 'admin@ktucec.com',
-                    imageUrl: '' // Empty means no profile pic yet
+                    fullName: adminCtx.adminName || '',
+                    email: adminCtx.email || '',
+                    imageUrl: adminCtx.profileUrl || ''
                 };
 
                 setOriginalData(data);
                 setFormData({ ...data, password: '' });
-                setImagePreview(data.imageUrl || null);
+
+                if (data.imageUrl) {
+                    setImagePreview(`${process.env.NEXT_PUBLIC_API_URL}${data.imageUrl}`);
+                } else {
+                    setImagePreview(null);
+                }
             } catch (error) {
-                console.error('Failed to fetch profile:', error);
-                alert('Profil bilgileri yüklenemedi.');
+                console.error('Failed to set profile data:', error);
             } finally {
                 setIsLoading(false);
             }
-        };
-
-        fetchProfile();
-    }, []);
+        }
+    }, [adminCtx]);
 
     const getChangedFields = () => {
         const changes = {};
-        if (formData.fullName !== originalData.fullName) changes.fullName = formData.fullName;
+        if (formData.fullName !== originalData.fullName) changes.nameSurname = formData.fullName;
         if (formData.email !== originalData.email) changes.email = formData.email;
-        if (formData.imageUrl !== originalData.imageUrl) changes.imageUrl = formData.imageUrl;
         if (formData.password && formData.password.trim() !== '') changes.password = formData.password;
         return changes;
     };
 
-    const hasChanges = Object.keys(getChangedFields()).length > 0;
+    const hasChanges = Object.keys(getChangedFields()).length > 0 || imageFile !== null;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -73,9 +76,16 @@ export default function AdminSettingsPage() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validTypes.includes(file.type)) {
+                alert('Sadece PNG, JPG veya JPEG formatında görsel yükleyebilirsiniz.');
+                if (fileInputRef.current) fileInputRef.current.value = '';
+                return;
+            }
+
             const previewUrl = URL.createObjectURL(file);
             setImagePreview(previewUrl);
-            setFormData(prev => ({ ...prev, imageUrl: previewUrl }));
+            setImageFile(file);
         }
     };
 
@@ -83,42 +93,46 @@ export default function AdminSettingsPage() {
         e.preventDefault();
         if (!hasChanges) return;
 
-        // TODO: Sunucuya "Bana doğrulama kodu gönder" isteği atılmalı (örneğin sendOtpCode servisi)
-        // Çünkü login sayfasında "loginAdmin" fonksiyonu kodu otomatik gönderiyordu. 
-        // Ayarlar sayfasında isek, kaydetmeden hemen önce sunucudan bir OTP talep etmeliyiz.
-        // await sendOtpCode(originalData.email);
+        setInitiateError(null);
 
-        setIsVerificationModalOpen(true);
+        try {
+            await verifyManagerUpdate();
+            setIsVerificationModalOpen(true);
+        } catch (err) {
+            setInitiateError(err.message || 'Doğrulama kodu gönderilirken bir hata oluştu.');
+        }
     };
 
-    const handleFinalSave = async () => {
+    const handleUpdateSubmit = async (code) => {
         const changedData = getChangedFields();
-        if (Object.keys(changedData).length === 0) return;
 
         setIsSaving(true);
         try {
-            // TODO: Implement actual API update call here passing `changedData`
-            // await UpdateAdminProfile(changedData);
+            const submitData = new FormData();
 
-            await new Promise(res => setTimeout(res, 1000)); // Simulate API delay
+            if (changedData.nameSurname) submitData.append('NameSurname', changedData.nameSurname);
+            if (changedData.email) submitData.append('Email', changedData.email);
+            if (changedData.password) submitData.append('Password', changedData.password);
+            if (imageFile) submitData.append('Image', imageFile);
 
-            // Update original data with new changes
-            setOriginalData(prev => ({
-                ...prev,
-                fullName: formData.fullName,
-                email: formData.email,
-                imageUrl: formData.imageUrl
-            }));
+            submitData.append('OtpCode', code);
 
-            // Clear password field after successful update
-            setFormData(prev => ({ ...prev, password: '' }));
-
-            alert('Profil bilgileriniz başarıyla güncellendi!');
-        } catch (error) {
-            alert('Güncellenirken bir hata oluştu.');
+            await updateManager(submitData);
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleUpdateSuccess = () => {
+        setOriginalData(prev => ({
+            ...prev,
+            fullName: formData.fullName,
+            email: formData.email,
+        }));
+
+        setFormData(prev => ({ ...prev, password: '' }));
+        setImageFile(null);
+        alert('Profil bilgileriniz başarıyla güncellendi!');
     };
 
     return (
@@ -149,6 +163,13 @@ export default function AdminSettingsPage() {
 
                         <form onSubmit={handleInitiateSave}>
 
+                            {initiateError && (
+                                <div className="mx-8 mt-6 p-4 text-sm text-error bg-error-container/30 border border-error/20 rounded-xl flex items-center gap-3">
+                                    <span className="material-symbols-outlined text-xl">error</span>
+                                    <span className="font-medium">{initiateError}</span>
+                                </div>
+                            )}
+
                             <div className="p-8 border-b border-outline-variant/20 flex flex-col sm:flex-row items-center gap-8">
                                 <div
                                     className="relative w-28 h-28 rounded-full bg-surface-container border-4 border-surface shadow-md flex items-center justify-center cursor-pointer overflow-hidden group shrink-0"
@@ -156,7 +177,7 @@ export default function AdminSettingsPage() {
                                 >
                                     <input
                                         type="file"
-                                        accept="image/*"
+                                        accept=".png, .jpg, .jpeg, image/png, image/jpeg"
                                         className="hidden"
                                         ref={fileInputRef}
                                         onChange={handleImageChange}
@@ -173,7 +194,9 @@ export default function AdminSettingsPage() {
 
                                 <div className="text-center sm:text-left">
                                     <h2 className="font-headline-sm text-2xl text-on-surface">{originalData.fullName}</h2>
-                                    <p className="font-label-md text-primary mt-1 uppercase tracking-wider">Sistem Yöneticisi</p>
+                                    <p className="font-label-md text-primary mt-1 uppercase tracking-wider">
+                                        {adminCtx.adminRole === 1 ? 'President' : adminCtx.adminRole === 2 ? 'Vice President' : 'Board Member'}
+                                    </p>
                                     <p className="font-body-md text-secondary text-sm mt-2">Profil fotoğrafınızı değiştirmek için görsele tıklayın.</p>
                                 </div>
                             </div>
@@ -239,10 +262,8 @@ export default function AdminSettingsPage() {
             <AdminVerificationModal
                 isOpen={isVerificationModalOpen}
                 onClose={() => setIsVerificationModalOpen(false)}
-                onSuccess={handleFinalSave}
-                // DİKKAT: Burada formData.email DEĞİL, originalData.email gönderiliyor.
-                // Böylece kullanıcı input'a ne yazarsa yazsın, doğrulama kodu 
-                // her zaman sisteme önceden kayıtlı olan (eski) mail adresine gidecektir.
+                onSuccess={handleUpdateSuccess}
+                onSubmit={handleUpdateSubmit}
                 email={originalData.email}
             />
 

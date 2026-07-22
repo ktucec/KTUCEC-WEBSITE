@@ -5,10 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ktucec.Features.Auth;
 
-
 // 1. RESPONSE 
-public record GetAllManagersResponse(int Id, string NameSurname, string Email, string ManagerRole);
-
+public record GetAllManagersResponse(int Id, string NameSurname, string Email, string ManagerRole, string? ProfileUrl);
 
 // 2. HANDLER 
 public class GetAllManagersHandler
@@ -28,12 +26,12 @@ public class GetAllManagersHandler
                 u.Id,
                 u.NameSurname,
                 u.Email,
-                u.ManagerRole.ToString() 
+                u.ManagerRole.ToString(),
+                u.ProfileUrl
             ))
             .ToListAsync();
     }
 }
-
 
 // 3. ENDPOINT 
 public static class GetAllManagersEndpoint
@@ -47,7 +45,6 @@ public static class GetAllManagersEndpoint
             var finalResult = new ApiResult<List<GetAllManagersResponse>>(true, managers, "Tüm kulüp yöneticileri başarıyla listelendi.");
             return Results.Ok(finalResult);
         })
-        .RequireAuthorization("AdminOnly")
         .RequireRateLimiting("FlexPolicy");
     }
 }

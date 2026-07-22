@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminVerificationModal from '@/components/ui/AdminVerificationModal';
-import { loginAdmin } from '@/services/auth';
+import { loginAdmin, verifyCode } from '@/services/auth';
 
 export default function AdminLoginPage() {
     const router = useRouter();
@@ -39,22 +39,20 @@ export default function AdminLoginPage() {
         setIsLoading(true);
 
         try {
-            // TODO: auth.js içerisindeki loginAdmin servisini çağırdık
             await loginAdmin(formData.email, formData.password);
-
-            // İstek başarılı olursa (hata fırlatılmazsa) 2FA modalını aç
             setIsVerificationModalOpen(true);
         } catch (err) {
-            // api.js içerisindeki ApiError sınıfı sayesinde dönen hata mesajını yakalıyoruz
             setError(err.message || 'Giriş başarısız. Bilgilerinizi kontrol edin.');
         } finally {
             setIsLoading(false);
         }
     };
 
+    const handleVerifySubmit = async (code) => {
+        await verifyCode(formData.email, code);
+    };
+
     const handleVerificationSuccess = async () => {
-        // Modal içerisinde verifyCode başarılı olduğunda, sunucu nihai oturum
-        // cookie'sini (HTTP-Only) atamış olacaktır. Sadece yönlendirme yapmamız yeterli.
         router.push('/admin/');
     };
 
@@ -163,11 +161,11 @@ export default function AdminLoginPage() {
 
             </main>
 
-            {/* Modal bileşenine doğrulama için email'i gönderdik */}
             <AdminVerificationModal
                 isOpen={isVerificationModalOpen}
                 onClose={() => setIsVerificationModalOpen(false)}
                 onSuccess={handleVerificationSuccess}
+                onSubmit={handleVerifySubmit}
                 email={formData.email}
             />
 

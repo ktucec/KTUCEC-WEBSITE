@@ -47,8 +47,8 @@ public class LoginHandler
         {
             var otpCode = new Random().Next(100000, 999999).ToString();
 
-            user.LoginOtpCode = otpCode;
-            user.LoginOtpCodeExpiresAt = DateTime.UtcNow.AddMinutes(5);
+            user.OtpCode = otpCode;
+            user.OtpCodeExpiresAt = DateTime.UtcNow.AddMinutes(5);
 
             await _context.SaveChangesAsync();
 

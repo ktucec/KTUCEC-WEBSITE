@@ -11,12 +11,13 @@ namespace ktucec.Features.Auth;
 
 // 1. REQUEST & RESPONSE
 public record GetMeResponse(
+    int Id,
+    string Email,
     string NameSurname,
     string? ProfileUrl,
     UserRole Role,
     ManagerRole? AdminRole
 );
-
 
 // 2. HANDLER 
 public class GetMeHandler
@@ -44,6 +45,8 @@ public class GetMeHandler
         }
 
         var data = new GetMeResponse(
+            Id: user.Id,
+            Email: user.Email,
             NameSurname: user.NameSurname,
             ProfileUrl: user.ProfileUrl,
             Role: user.Role,
@@ -53,7 +56,6 @@ public class GetMeHandler
         return new ApiResult<GetMeResponse>(true, data, "Kullanıcı bilgileri başarıyla getirildi.");
     }
 }
-
 
 // 3. ENDPOINT 
 public static class GetMeEndpoint

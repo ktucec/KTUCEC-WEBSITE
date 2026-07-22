@@ -19,9 +19,8 @@ public class User : BaseEntity
     public string? EmailConfirmationToken { get; set; }
     public DateTime? EmailConfirmationTokenExpiresAt { get; set; }
 
-    // 2fa system for admin and manager roles
-    public string? LoginOtpCode { get; set; }
-    public DateTime? LoginOtpCodeExpiresAt { get; set; }
+    public string? OtpCode { get; set; }
+    public DateTime? OtpCodeExpiresAt { get; set; }
 
     // Refresh token
     public string? RefreshToken { get; set; }
