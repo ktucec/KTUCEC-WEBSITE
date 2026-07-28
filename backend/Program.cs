@@ -18,11 +18,9 @@ using ktucec.Infrastructure.Services.Media;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<KtucecDbContext>(options =>
     options.UseSqlServer(connectionString));
-
 
 builder.Services.AddRateLimiter(options =>
 {
@@ -73,12 +71,9 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddHttpClient<TelegramService>();
 builder.Services.AddScoped<TelegramService>();
 
-
 builder.Services.AddScoped<PasswordHasher>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<JwtProvider>();
-
-
 
 var jwtSecret = builder.Configuration["Jwt:Secret"];
 
@@ -110,7 +105,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-
 // AUTHORIZATION POLICIES
 builder.Services.AddAuthorization(options =>
 {
@@ -121,19 +115,22 @@ builder.Services.AddAuthorization(options =>
         policy.RequireClaim(ClaimTypes.Role, UserRole.Admin.ToString(), UserRole.Manager.ToString()));
 });
 
-// CORS policy
+// CORS policy 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         policy =>
         {
-            policy.WithOrigins("http://localhost:3000")
-      .AllowAnyHeader()
-      .AllowAnyMethod()
-      .AllowCredentials();
+            policy.WithOrigins(
+                    "http://localhost:3000",
+                    "https://ktucec.com",
+                    "https://www.ktucec.com"
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials(); 
         });
 });
-
 
 // ----------- Service Registration --------------
 
@@ -176,7 +173,6 @@ builder.Services.AddScoped<VerifyUpdateManagerHandler>();
 // -- Media --
 builder.Services.AddScoped<ImageService>();
 
-
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
@@ -186,9 +182,12 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-//app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
-app.UseStaticFiles(); 
+app.UseStaticFiles();
 
 app.UseCors("AllowFrontend");
 
@@ -196,7 +195,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseRateLimiter();
-
 
 // ----------- Endpoint Mapping --------------
 
@@ -235,8 +233,5 @@ app.MapGetAllManagers();
 app.MapGetMe();
 app.MapGetManagersCount();
 app.MapVerifyUpdateManager();
-
-
-//await DatabaseSeeder.SeedAdminAsync(app);
 
 app.Run();
