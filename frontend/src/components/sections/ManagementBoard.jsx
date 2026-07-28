@@ -139,7 +139,6 @@ export default function ManagementBoard() {
         return () => { isCancelled = true; };
     }, []);
 
-    // Görünürlük Animasyonu
     useEffect(() => {
         const el = sectionRef.current;
         if (!el || isLoading) return;
@@ -170,7 +169,7 @@ export default function ManagementBoard() {
     }
 
     return (
-        <section className="pt-16 md:pt-24 relative px-margin-mobile md:px-margin-desktop" id="yonetim" ref={sectionRef}>
+        <section className="pt-16 md:pt-24 relative" id="yonetim" ref={sectionRef}>
             <style>{`
                 @keyframes mb-pulse-glow {
                     0% { transform: scale(0.95); opacity: 0.8; }
@@ -320,7 +319,6 @@ export default function ManagementBoard() {
                                     className="flex overflow-x-auto select-none cursor-grab active:cursor-grabbing hide-scrollbar"
                                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                                 >
-                                    {/* SORUN BURADAN KAYNAKLANIYORDU. 2 kopya yerine 12 kopya bastık.  */}
                                     {[...Array(4)].map((_, setIndex) => (
                                         <div
                                             key={setIndex}

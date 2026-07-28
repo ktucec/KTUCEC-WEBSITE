@@ -75,6 +75,16 @@ export default function AdminSidebar() {
                             <span>Dashboard</span>
                         </Link>
 
+                        {/* Yeni Eklenen Contact Forms Butonu */}
+                        <Link
+                            href="/admin/contactforms"
+                            className={getLinkClass('/admin/contactforms', 1)}
+                            onClick={() => setIsMobileOpen(false)}
+                        >
+                            <span className="material-symbols-outlined">mail</span>
+                            <span>Contact Forms</span>
+                        </Link>
+
                         <div className="pt-1">
                             <button
                                 onClick={() => setIsPanelOpen(!isPanelOpen)}

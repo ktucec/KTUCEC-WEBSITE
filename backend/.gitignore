@@ -17,6 +17,7 @@ out/
 ## appsettings
 appsettings.Development.json
 appsettings.Local.json
+appsettings.Production.json
 *.env
 
 ## Logs

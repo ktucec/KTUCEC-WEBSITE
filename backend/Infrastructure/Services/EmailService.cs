@@ -18,11 +18,20 @@ public class EmailService
         var smtpSection = _configuration.GetSection("Smtp");
         var host = smtpSection["Host"];
         var port = int.Parse(smtpSection["Port"] ?? "587");
-        var fromEmail = smtpSection["Email"];
+
+        var fromEmail = smtpSection["Email"]?.Trim();
         var password = smtpSection["Password"];
 
-        if (string.IsNullOrEmpty(fromEmail) || string.IsNullOrEmpty(password))
-            return;
+        if (string.IsNullOrWhiteSpace(fromEmail) || string.IsNullOrWhiteSpace(password))
+        {
+            throw new InvalidOperationException("SMTP ayarları appsettings içinde bulunamadı veya eksik!");
+        }
+
+        var cleanToEmail = toEmail?.Trim();
+        if (string.IsNullOrWhiteSpace(cleanToEmail))
+        {
+            throw new ArgumentException("Alıcı e-posta adresi boş olamaz.", nameof(toEmail));
+        }
 
         using var client = new SmtpClient(host, port)
         {
@@ -32,12 +41,13 @@ public class EmailService
 
         using var mailMessage = new MailMessage
         {
-            From = new MailAddress(fromEmail),
+            From = new MailAddress(fromEmail, "KTUCEC Yönetimi"),
             Subject = subject,
             Body = body,
             IsBodyHtml = true
         };
-        mailMessage.To.Add(toEmail);
+
+        mailMessage.To.Add(cleanToEmail);
 
         await client.SendMailAsync(mailMessage);
     }
