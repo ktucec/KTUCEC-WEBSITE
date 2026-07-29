@@ -81,7 +81,8 @@ export async function middleware(request) {
             return clearAuthCookies(response);
         } else {
             if (isLoginPath) return NextResponse.next();
-            return NextResponse.next();
+            const response = NextResponse.redirect(new URL('/admin/login', request.url));
+            return clearAuthCookies(response);
         }
     }
 
