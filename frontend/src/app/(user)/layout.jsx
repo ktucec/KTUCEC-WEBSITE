@@ -17,8 +17,13 @@ const montserrat = Montserrat({
 });
 
 export const metadata = {
-    title: 'KTUCEC - Engineering the Future',
+    title: 'KTUCEC - Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü',
     description: 'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü Resmi Web Sitesi',
+    icons: {
+        icon: '/favicon.png',
+        shortcut: '/favicon.png',
+        apple: '/favicon.png',
+    },
 };
 
 export default function RootLayout({ children }) {
@@ -31,8 +36,7 @@ export default function RootLayout({ children }) {
                 />
             </head>
             <body
-                className={`antialiased relative min-h-screen overflow-x-hidden
-  selection:bg-primary-container selection:text-white`}
+                className={`antialiased relative min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-white`}
             >
                 {/* Global WebGL Background */}
                 <BackgroundCanvas />
@@ -44,7 +48,6 @@ export default function RootLayout({ children }) {
 
                 {/* Footer */}
                 <Footer />
-
             </body>
         </html>
     );

@@ -50,7 +50,7 @@ export default function HomeAbout() {
                     <div className="relative aspect-[4/3] rounded-[16px] md:rounded-[24px] overflow-hidden shadow-2xl border border-white/20 md:border-white/50">
                         <div
                             className="w-full h-full bg-cover bg-center"
-                            style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBhub4AuCLvCWqJUW5HJr0f8GoUkTKdvyFbMLuDPs41JRukuuoLjd4XCMWkOcY4bYPy1PtOmGsyGdtewry5PO_XOwEMy9bLkmSfD8O-dIjJahjDUMWmCb6-lC4LZ-Q4QfwSiYXV2aGQN0jzBOqp01eZ4no_pkKBD_e50NiH97awlEHBYobYllYGeisMlmed2LFxAWUp6Hn1gFlTCbPtCEKpKgEVGNWlMHeDoGKdnUR9k6yIc8MdIyzHqNlJFgBMCLI5cU_z7SA3KuyG')" }}
+                            style={{ backgroundImage: "url('/home-bizkimiz.jpg')" }}
                         ></div>
                     </div>
                 </div>
