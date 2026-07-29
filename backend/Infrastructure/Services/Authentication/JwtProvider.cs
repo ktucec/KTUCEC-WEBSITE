@@ -39,7 +39,7 @@ public class JwtProvider
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(15), 
+            expires: DateTime.UtcNow.AddMinutes(15),
             signingCredentials: creds
         );
 
@@ -58,29 +58,34 @@ public class JwtProvider
     {
         var isSecure = !_environment.IsDevelopment();
 
-        var accessOptions = new CookieOptions
+        var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
             Secure = isSecure,
-            SameSite = SameSiteMode.Lax,
-            Expires = refreshExpiresAt
+            SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
+            Expires = refreshExpiresAt,
+            Path = "/",
+            Domain = isSecure ? ".ktucec.com" : null
         };
 
-        var refreshOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = isSecure,
-            SameSite = SameSiteMode.Lax,
-            Expires = refreshExpiresAt
-        };
-
-        context.Response.Cookies.Append("accessToken", accessToken, accessOptions);
-        context.Response.Cookies.Append("refreshToken", refreshToken, refreshOptions);
+        context.Response.Cookies.Append("accessToken", accessToken, cookieOptions);
+        context.Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 
     public void ClearCookies(HttpContext context)
     {
-        context.Response.Cookies.Delete("accessToken");
-        context.Response.Cookies.Delete("refreshToken");
+        var isSecure = !_environment.IsDevelopment();
+
+        var deleteOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = isSecure,
+            SameSite = isSecure ? SameSiteMode.None : SameSiteMode.Lax,
+            Path = "/",
+            Domain = isSecure ? ".ktucec.com" : null
+        };
+
+        context.Response.Cookies.Delete("accessToken", deleteOptions);
+        context.Response.Cookies.Delete("refreshToken", deleteOptions);
     }
 }
