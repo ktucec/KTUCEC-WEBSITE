@@ -17,12 +17,18 @@ const montserrat = Montserrat({
 });
 
 export const metadata = {
-    title: 'KTUCEC - Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü',
+    metadataBase: new URL('https://www.ktucec.com'),
+    title: 'KTUCEC | KTÜ Bilgisayar Mühendisliği Kulübü',
     description: 'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü Resmi Web Sitesi',
     icons: {
-        icon: '/favicon.png',
+        icon: [
+            { url: '/favicon.png', sizes: '48x48', type: 'image/png' },
+            { url: '/favicon.png', sizes: '192x192', type: 'image/png' },
+        ],
         shortcut: '/favicon.png',
-        apple: '/favicon.png',
+        apple: [
+            { url: '/favicon.png', sizes: '180x180', type: 'image/png' }
+        ],
     },
 };
 
