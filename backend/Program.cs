@@ -174,6 +174,7 @@ builder.Services.AddScoped<VerifyUpdateManagerHandler>();
 // -- Forms --
 builder.Services.AddScoped<AddFormHandler>();
 builder.Services.AddScoped<AddApplicationHandler>();
+builder.Services.AddScoped<GetFormApplicationsHandler>();
 
 
 // -- Media --
@@ -243,5 +244,6 @@ app.MapVerifyUpdateManager();
 // -- Forms --
 app.MapAddForm();
 app.MapAddApplication();
+app.MapGetFormApplications();
 
 app.Run();
