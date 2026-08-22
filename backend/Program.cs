@@ -15,6 +15,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using ktucec.Infrastructure.Services.Media;
+using ktucec.Features.Forms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -170,6 +171,10 @@ builder.Services.AddScoped<GetMeHandler>();
 builder.Services.AddScoped<GetManagersCountHandler>();
 builder.Services.AddScoped<VerifyUpdateManagerHandler>();
 
+// -- Forms --
+builder.Services.AddScoped<AddFormHandler>();
+
+
 // -- Media --
 builder.Services.AddScoped<ImageService>();
 
@@ -233,5 +238,8 @@ app.MapGetAllManagers();
 app.MapGetMe();
 app.MapGetManagersCount();
 app.MapVerifyUpdateManager();
+
+// -- Forms --
+app.MapAddForm();
 
 app.Run();
