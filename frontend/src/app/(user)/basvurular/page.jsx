@@ -27,7 +27,7 @@ function ApplicationFormContent() {
 
         async function fetchInitialData() {
             if (!formIdParam) {
-                setError("Geçerli bir form ID'si bulunamadı.");
+                setError("Geçerli bir form bağlantısı (ID) bulunamadı.");
                 setIsLoading(false);
                 return;
             }
@@ -41,20 +41,21 @@ function ApplicationFormContent() {
                 ]);
 
                 if (!isCancelled) {
-                    if (formResult.status === 'fulfilled' && formResult.value.isSuccess) {
+                    if (formResult.status === 'fulfilled' && formResult.value?.isSuccess) {
                         setForm(formResult.value.data);
                     } else {
-                        throw new Error("Form bulunamadı veya kapalı.");
+                        // Eğer backend 404 atarsa promise rejected olur
+                        setError("Aradığınız başvuru formu sistemde bulunamadı veya bağlantı hatalı.");
                     }
 
                     // Eğer 401 dönerse authResult rejected olacaktır, bu durumda user null kalır (Misafir)
                     if (authResult.status === 'fulfilled') {
-                        setUser(authResult.value.data);
+                        setUser(authResult.value?.data);
                     }
                 }
             } catch (err) {
                 if (!isCancelled) {
-                    setError(err.message || "Form yüklenirken bir hata oluştu.");
+                    setError("Form bilgileri alınırken sunucu tarafında bir hata oluştu.");
                 }
             } finally {
                 if (!isCancelled) {
@@ -99,6 +100,7 @@ function ApplicationFormContent() {
         setError(null);
         setSuccessMessage(null);
 
+        // Kullanıcı giriş yapmışsa submit öncesi token'ı doğrula (ping at)
         if (user) {
             try {
                 await getMe();
@@ -139,6 +141,7 @@ function ApplicationFormContent() {
         }
     };
 
+    // --- SENARYO 1: YÜKLENİYOR ---
     if (isLoading) {
         return (
             <div className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10 flex flex-col items-center">
@@ -148,14 +151,20 @@ function ApplicationFormContent() {
         );
     }
 
+    // --- SENARYO 2: FORM BULUNAMADI VEYA HATA ---
     if (error && !form) {
         return (
-            <div className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10 text-center">
-                <div className="glass-panel rounded-3xl p-12 inline-block">
-                    <span className="material-symbols-outlined text-5xl text-error mb-4">error</span>
-                    <h2 className="font-headline-md text-on-surface mb-2">Eyvah!</h2>
-                    <p className="font-body-lg text-on-surface-variant">{error}</p>
-                    <Link href="/" className="btn-glow bg-primary text-white px-6 py-3 rounded-xl mt-6 inline-block font-label-md">
+            <div className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10 text-center fade-up visible">
+                <div className="glass-panel rounded-3xl p-10 md:p-16 inline-block max-w-lg border-white/60 shadow-lg">
+                    <div className="w-20 h-20 bg-error-container/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span className="material-symbols-outlined text-4xl text-error">search_off</span>
+                    </div>
+                    <h2 className="font-headline-sm text-on-surface mb-3">Form Bulunamadı</h2>
+                    <p className="font-body-md text-on-surface-variant mb-8 leading-relaxed">
+                        {error}
+                    </p>
+                    <Link href="/" className="btn-glow bg-primary text-white font-label-md py-3.5 px-8 rounded-xl inline-flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[20px]">home</span>
                         Ana Sayfaya Dön
                     </Link>
                 </div>
@@ -163,6 +172,28 @@ function ApplicationFormContent() {
         );
     }
 
+    // --- SENARYO 3: FORM VAR AMA SÜRESİ DOLMUŞ / KAPALI ---
+    if (form && form.isActive === false) {
+        return (
+            <div className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10 text-center fade-up visible">
+                <div className="glass-panel rounded-3xl p-10 md:p-16 inline-block max-w-lg border-white/60 shadow-lg">
+                    <div className="w-20 h-20 bg-surface-container-high rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span className="material-symbols-outlined text-4xl text-secondary">timer_off</span>
+                    </div>
+                    <h2 className="font-headline-sm text-on-surface mb-3">Başvurular Kapandı</h2>
+                    <p className="font-body-md text-on-surface-variant mb-8 leading-relaxed">
+                        İlginiz için teşekkür ederiz! <b>"{form.title}"</b> için başvuru süresi dolmuş veya yönetici tarafından erişime kapatılmıştır.
+                    </p>
+                    <Link href="/" className="btn-glow bg-primary text-white font-label-md py-3.5 px-8 rounded-xl inline-flex items-center gap-2">
+                        <span className="material-symbols-outlined text-[20px]">home</span>
+                        Ana Sayfaya Dön
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    // --- SENARYO 4: FORM AÇIK VE SORUNSUZ (NORMAL RENDER) ---
     return (
         <main className="flex-grow pt-32 pb-24 px-gutter max-w-3xl mx-auto w-full relative z-10 fade-up visible">
             {/* Header Section */}
@@ -194,7 +225,7 @@ function ApplicationFormContent() {
             {/* Form Section */}
             <div className="glass-panel rounded-[24px] md:rounded-[32px] p-6 md:p-10 relative overflow-hidden shadow-lg border-white/60">
                 {successMessage ? (
-                    <div className="text-center py-10">
+                    <div className="text-center py-10 animate-fade-in">
                         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <span className="material-symbols-outlined text-4xl text-green-600">check_circle</span>
                         </div>
@@ -202,8 +233,9 @@ function ApplicationFormContent() {
                         <p className="font-body-md text-on-surface-variant mb-8">{successMessage}</p>
                         <button
                             onClick={() => router.push('/')}
-                            className="btn-glow bg-primary-container text-white font-label-md py-3 px-8 rounded-xl"
+                            className="btn-glow bg-primary-container text-white font-label-md py-3.5 px-8 rounded-xl flex items-center gap-2 mx-auto"
                         >
+                            <span className="material-symbols-outlined text-[20px]">home</span>
                             Ana Sayfaya Dön
                         </button>
                     </div>
@@ -325,7 +357,7 @@ function ApplicationFormContent() {
                             </small>
                             <button
                                 disabled={isSubmitting}
-                                className="btn-glow bg-primary-container text-white font-label-md py-4 px-10 rounded-xl flex items-center gap-2 w-full md:w-auto justify-center disabled:opacity-50 transition-all"
+                                className="btn-glow bg-primary-container text-white font-label-md py-4 px-10 rounded-xl flex items-center gap-2 w-full md:w-auto justify-center disabled:opacity-50 transition-all cursor-pointer"
                                 type="submit"
                             >
                                 <span>{isSubmitting ? 'Gönderiliyor...' : 'Başvuruyu Tamamla'}</span>

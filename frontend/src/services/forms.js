@@ -38,3 +38,20 @@ export function getForms() {
         credentials: "include"
     });
 }
+
+// 6. Delete application (Admin/Manager)
+export function deleteFormApplication(applicationId) {
+    return apiFetch(`/api/forms/applications/${applicationId}`, {
+        method: "DELETE",
+        credentials: "include",
+    });
+}
+
+// 7. Update form (Admin/Manager)
+export function updateForm(id, data) {
+    return apiFetch(`/api/forms/${id}`, {
+        method: "PATCH",
+        credentials: "include",
+        body: JSON.stringify(data),
+    });
+}

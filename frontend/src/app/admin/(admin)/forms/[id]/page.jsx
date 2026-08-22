@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { getFormApplications } from '@/services/forms';
+import { getFormApplications, deleteFormApplication } from '@/services/forms';
 import { formatDate } from '@/lib/formatDate';
+import { ApiError } from '@/lib/api';
 
 export default function FormApplicationsPage() {
     const params = useParams();
@@ -13,6 +14,7 @@ export default function FormApplicationsPage() {
     const [data, setData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         let isCancelled = false;
@@ -47,33 +49,37 @@ export default function FormApplicationsPage() {
         };
     }, [formId]);
 
-    const handleDelete = (applicationId) => {
+    const handleDelete = async (applicationId) => {
         const confirmed = window.confirm('Bu başvuruyu silmek istediğinize emin misiniz?');
         if (!confirmed) return;
 
-        alert(`ID: ${applicationId} numaralı başvuru silindi. (Backend bağlantısı eklenecek)`);
+        setDeletingId(applicationId);
+        try {
+            await deleteFormApplication(applicationId);
 
-        setData(prev => ({
-            ...prev,
-            rows: prev.rows.filter(row => row.applicationId !== applicationId)
-        }));
+            setData(prev => ({
+                ...prev,
+                rows: prev.rows.filter(row => row.applicationId !== applicationId)
+            }));
+        } catch (err) {
+            const msg = err instanceof ApiError ? err.message : 'Başvuru silinirken bir hata oluştu.';
+            alert(msg);
+        } finally {
+            setDeletingId(null);
+        }
     };
 
-    // --- DIŞA AKTAR (CSV) FONKSİYONU ---
     const exportToCSV = () => {
         if (!data || !data.rows || data.rows.length === 0) {
             alert('Dışa aktarılacak veri bulunamadı.');
             return;
         }
 
-        // 1. Sütun Başlıklarını Hazırla
         const baseHeaders = ['ID', 'Ad Soyad', 'E-posta'];
-        const dynamicHeaders = data.headers; // Backend'den gelen sorular
+        const dynamicHeaders = data.headers;
         const endHeaders = ['Tarih'];
         const allHeaders = [...baseHeaders, ...dynamicHeaders, ...endHeaders];
 
-        // Excel'in hücre içindeki virgülleri ve satır atlamalarını (enter) 
-        // sütun kayması olarak algılamaması için filtreleme yapıyoruz.
         const escapeCSV = (str) => {
             if (str == null) return '""';
             const stringVal = String(str);
@@ -83,33 +89,26 @@ export default function FormApplicationsPage() {
             return `"${stringVal}"`;
         };
 
-        // 2. Satırları Oluştur
         const csvRows = [];
-
-        // Önce başlıkları ekle
         csvRows.push(allHeaders.map(escapeCSV).join(','));
 
-        // Sonra verileri dönerek ekle
         data.rows.forEach(row => {
             const rowData = [
                 row.applicationId,
                 row.userNameSurname || 'Misafir',
                 row.userEmail || '-',
-                ...row.values, // Forma verilen dinamik yanıtların dizisi
+                ...row.values,
                 formatDate(row.submittedAt)
             ];
             csvRows.push(rowData.map(escapeCSV).join(','));
         });
 
-        // 3. Blob Oluştur ve İndirmeyi Tetikle
         const csvString = csvRows.join('\n');
-        // \uFEFF BOM (Byte Order Mark) işaretidir. Türkçe karakterlerin Excel'de bozulmasını engeller.
         const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
 
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
 
-        // Dosya ismini dinamik oluşturuyoruz (Örn: Form_Yanitlari_2026-08-22.csv)
         const safeTitle = (data.formTitle || 'Form_Yanitlari').replace(/[^a-z0-9]/gi, '_').toLowerCase();
         const dateStr = new Date().toISOString().slice(0, 10);
 
@@ -122,8 +121,8 @@ export default function FormApplicationsPage() {
     };
 
     return (
-        <main className="flex-1 overflow-y-auto bg-surface md:p-4">
-            <div className="max-w-[95%] mx-auto">
+        <main className="flex-1 min-w-0 max-w-full overflow-y-auto overflow-x-hidden bg-surface md:p-4">
+            <div className="w-full max-w-full min-w-0 mx-auto">
 
                 <div className="mb-6">
                     <Link
@@ -152,8 +151,8 @@ export default function FormApplicationsPage() {
                     )}
                 </div>
 
-                {/* Table Container */}
-                <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-x-auto mb-6">
+                {/* Horizontal scroll lives ONLY here, no sticky columns, so it never depends on parent layout being min-w-0 correct */}
+                <div className="w-full max-w-full min-w-0 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm mb-6 relative">
                     {isLoading ? (
                         <div className="flex justify-center items-center py-20">
                             <span className="material-symbols-outlined text-primary text-5xl animate-spin">
@@ -173,73 +172,84 @@ export default function FormApplicationsPage() {
                             <p className="text-sm mt-1">Bu form için henüz bir başvuru yapılmamış.</p>
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse whitespace-nowrap min-w-max">
-                            <thead>
-                                <tr className="bg-surface-container-low border-b border-outline-variant/30">
-                                    <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider sticky left-0 z-10 bg-surface-container-low border-r border-outline-variant/20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] align-top">ID</th>
-                                    <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider sticky left-[60px] z-10 bg-surface-container-low border-r border-outline-variant/20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] align-top">Kullanıcı</th>
-
-                                    {data.headers.map((headerText, index) => (
-                                        <th key={index} className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider min-w-[200px] max-w-[300px] whitespace-normal break-words align-top">
-                                            {headerText}
+                        <div className="w-full max-w-full overflow-x-scroll [-webkit-overflow-scrolling:touch]" style={{ maxWidth: '100%' }}>
+                            <table className="border-collapse whitespace-nowrap" style={{ minWidth: 'max-content' }}>
+                                <thead>
+                                    <tr className="bg-surface-container-low border-b border-outline-variant/30">
+                                        <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider sticky top-0 z-10 bg-surface-container-low align-top w-[80px]">
+                                            ID
                                         </th>
-                                    ))}
+                                        <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider sticky top-0 z-10 bg-surface-container-low align-top min-w-[200px]">
+                                            Kullanıcı
+                                        </th>
 
-                                    <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider align-top">Tarih</th>
-                                    <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider text-right sticky right-0 z-10 bg-surface-container-low border-l border-outline-variant/20 shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] align-top">İşlemler</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {data.rows.map((row) => (
-                                    <tr
-                                        key={row.applicationId}
-                                        className="border-b border-outline-variant/20 last:border-0 hover:bg-surface-container-low/50 transition-colors group"
-                                    >
-                                        <td className="px-5 py-4 font-label-md text-on-surface-variant sticky left-0 z-10 bg-surface-container-lowest group-hover:bg-surface-container-low/50 border-r border-outline-variant/20 align-top">
-                                            #{row.applicationId}
-                                        </td>
-                                        <td className="px-5 py-4 sticky left-[60px] z-10 bg-surface-container-lowest group-hover:bg-surface-container-low/50 border-r border-outline-variant/20 align-top">
-                                            {row.userId ? (
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="font-body-md text-on-surface font-semibold">{row.userNameSurname}</span>
-                                                    <span className="font-body-md text-xs text-on-surface-variant">{row.userEmail}</span>
-                                                </div>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-md text-xs font-semibold text-secondary">
-                                                    <span className="material-symbols-outlined text-[14px]">person_off</span>
-                                                    Misafir
-                                                </span>
-                                            )}
-                                        </td>
-
-                                        {row.values.map((val, index) => (
-                                            <td key={index} className="px-5 py-4 align-top">
-                                                <div className="max-h-[120px] min-w-[200px] max-w-[300px] overflow-y-auto whitespace-pre-wrap break-words pr-2 font-body-md text-on-surface-variant text-sm md:text-base leading-relaxed [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-outline-variant/60 hover:[&::-webkit-scrollbar-thumb]:bg-outline-variant/90 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors">
-                                                    {val || '-'}
-                                                </div>
-                                            </td>
+                                        {data.headers.map((headerText, index) => (
+                                            <th key={index} className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider sticky top-0 z-10 bg-surface-container-low min-w-[200px] max-w-[300px] whitespace-normal break-words align-top">
+                                                {headerText}
+                                            </th>
                                         ))}
 
-                                        <td className="px-5 py-4 font-body-md text-sm text-on-surface-variant align-top">
-                                            {formatDate(row.submittedAt)}
-                                        </td>
-                                        <td className="px-5 py-4 text-right sticky right-0 z-10 bg-surface-container-lowest group-hover:bg-surface-container-low/50 border-l border-outline-variant/20 align-top">
-                                            <button
-                                                onClick={() => handleDelete(row.applicationId)}
-                                                className="text-error hover:text-on-error-container transition-colors bg-transparent border-0 p-2 rounded-lg hover:bg-error-container/30 cursor-pointer inline-flex items-center"
-                                                title="Başvuruyu Sil"
-                                            >
-                                                <span className="material-symbols-outlined text-xl">delete</span>
-                                            </button>
-                                        </td>
+                                        <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider sticky top-0 z-10 bg-surface-container-low align-top">Tarih</th>
+
+                                        <th className="px-5 py-4 font-label-md text-secondary uppercase tracking-wider text-right sticky top-0 z-10 bg-surface-container-low align-top">
+                                            İşlemler
+                                        </th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {data.rows.map((row) => (
+                                        <tr
+                                            key={row.applicationId}
+                                            className="border-b border-outline-variant/20 last:border-0 hover:bg-surface-container-low transition-colors"
+                                        >
+                                            <td className="px-5 py-4 font-label-md text-on-surface-variant align-top w-[80px]">
+                                                #{row.applicationId}
+                                            </td>
+                                            <td className="px-5 py-4 align-top min-w-[200px]">
+                                                {row.userId ? (
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <span className="font-body-md text-on-surface font-semibold">{row.userNameSurname}</span>
+                                                        <span className="font-body-md text-xs text-on-surface-variant">{row.userEmail}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1 bg-surface-container px-2.5 py-1 rounded-md text-xs font-semibold text-secondary">
+                                                        <span className="material-symbols-outlined text-[14px]">person_off</span>
+                                                        Misafir
+                                                    </span>
+                                                )}
+                                            </td>
+
+                                            {row.values.map((val, index) => (
+                                                <td key={index} className="px-5 py-4 align-top">
+                                                    <div className="max-h-[120px] min-w-[200px] max-w-[300px] overflow-y-auto whitespace-pre-wrap break-words pr-2 font-body-md text-on-surface-variant text-sm md:text-base leading-relaxed [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-outline-variant/60 hover:[&::-webkit-scrollbar-thumb]:bg-outline-variant/90 [&::-webkit-scrollbar-thumb]:rounded-full transition-colors">
+                                                        {val || '-'}
+                                                    </div>
+                                                </td>
+                                            ))}
+
+                                            <td className="px-5 py-4 font-body-md text-sm text-on-surface-variant align-top">
+                                                {formatDate(row.submittedAt)}
+                                            </td>
+                                            <td className="px-5 py-4 text-right align-top">
+                                                <button
+                                                    disabled={deletingId === row.applicationId}
+                                                    onClick={() => handleDelete(row.applicationId)}
+                                                    className="text-error hover:text-on-error-container transition-colors bg-transparent border-0 p-2 rounded-lg hover:bg-error-container/30 cursor-pointer inline-flex items-center disabled:opacity-50"
+                                                    title="Başvuruyu Sil"
+                                                >
+                                                    <span className="material-symbols-outlined text-xl">
+                                                        {deletingId === row.applicationId ? 'progress_activity' : 'delete'}
+                                                    </span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
 
-                {/* --- EXPORT BUTTON --- */}
                 {!isLoading && !error && data?.rows?.length > 0 && (
                     <div className="flex justify-end pb-8">
                         <button

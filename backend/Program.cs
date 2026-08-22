@@ -123,7 +123,6 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins(
-                    "http://localhost:3000",
                     "https://ktucec.com",
                     "https://www.ktucec.com"
                 )
@@ -177,6 +176,8 @@ builder.Services.AddScoped<AddApplicationHandler>();
 builder.Services.AddScoped<GetFormApplicationsHandler>();
 builder.Services.AddScoped<GetFormByIdHandler>();
 builder.Services.AddScoped<GetAllFormsHandler>();
+builder.Services.AddScoped<DeleteApplicationHandler>();
+builder.Services.AddScoped<UpdateFormHandler>();
 
 
 // -- Media --
@@ -249,5 +250,7 @@ app.MapAddApplication();
 app.MapGetFormApplications();
 app.MapGetFormById();
 app.MapGetAllForms();
+app.MapDeleteApplication();
+app.MapUpdateForm();
 
 app.Run();

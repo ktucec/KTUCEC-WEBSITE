@@ -5,6 +5,7 @@ import { getForms } from '@/services/forms';
 import { formatDate } from '@/lib/formatDate';
 import Link from 'next/link';
 import AdminAddFormModal from '@/components/ui/AdminAddFormModal';
+import AdminUpdateFormModal from '@/components/ui/AdminUpdateFormModal';
 
 export default function FormsManagementPage() {
     const [forms, setForms] = useState([]);
@@ -12,9 +13,10 @@ export default function FormsManagementPage() {
     const [error, setError] = useState(null);
 
     // Modal States
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [selectedFormId, setSelectedFormId] = useState(null);
 
-    // Verileri çekme metodunu dışarı aldık ki form eklenince tekrar çağırabilelim
     const fetchForms = async (isCancelled = false) => {
         setIsLoading(true);
         setError(null);
@@ -33,7 +35,6 @@ export default function FormsManagementPage() {
                     list = response.forms;
                 }
 
-                // En son eklenen formun en üstte çıkması için ters çevirebilirsin (opsiyonel)
                 setForms(list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
             }
         } catch (err) {
@@ -55,14 +56,14 @@ export default function FormsManagementPage() {
         };
     }, []);
 
-    // Form modal'ından başarı yanıtı gelince tabloyu güncelle
-    const handleAddSuccess = () => {
-        fetchForms(); // Tabloyu yenile
-        // Veya manuel olarak listeye ekleyebilirsin: setForms(prev => [newForm, ...prev])
+    // Form eklendiğinde VEYA güncellendiğinde tabloyu yenile
+    const handleSuccess = () => {
+        fetchForms();
     };
 
-    const handlePlaceholderUpdate = (formTitle) => {
-        alert(`"${formTitle}" için güncelleme özelliği bir sonraki aşamada aktif edilecektir.`);
+    const handleUpdateClick = (id) => {
+        setSelectedFormId(id);
+        setIsUpdateModalOpen(true);
     };
 
     return (
@@ -78,9 +79,8 @@ export default function FormsManagementPage() {
                         </p>
                     </div>
 
-                    {/* LİNK YERİNE MODALI AÇAN BUTON */}
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={() => setIsAddModalOpen(true)}
                         className="btn-glow bg-primary text-white font-label-md px-5 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-container transition-colors shrink-0 self-start sm:self-auto cursor-pointer border-none"
                     >
                         <span className="material-symbols-outlined text-xl">add_circle</span>
@@ -138,7 +138,7 @@ export default function FormsManagementPage() {
                                         Yanıtlar
                                     </Link>
                                     <button
-                                        onClick={() => handlePlaceholderUpdate(item.title)}
+                                        onClick={() => handleUpdateClick(item.id)}
                                         className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high px-3 py-2 rounded-md cursor-pointer inline-flex items-center gap-1 font-label-md flex-1 justify-center border-none"
                                     >
                                         <span className="material-symbols-outlined text-base">edit</span>
@@ -214,9 +214,9 @@ export default function FormsManagementPage() {
                                                     <span className="material-symbols-outlined text-xl">table_chart</span>
                                                 </Link>
                                                 <button
-                                                    onClick={() => handlePlaceholderUpdate(item.title)}
+                                                    onClick={() => handleUpdateClick(item.id)}
                                                     className="text-secondary hover:text-on-surface transition-colors bg-transparent border-0 p-2 rounded-lg hover:bg-surface-container cursor-pointer inline-flex items-center"
-                                                    title="Formu Güncelle (Yakında)"
+                                                    title="Formu Güncelle"
                                                 >
                                                     <span className="material-symbols-outlined text-xl">edit</span>
                                                 </button>
@@ -231,9 +231,17 @@ export default function FormsManagementPage() {
 
                 {/* --- ADD FORM MODAL --- */}
                 <AdminAddFormModal
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    onSuccess={handleAddSuccess}
+                    isOpen={isAddModalOpen}
+                    onClose={() => setIsAddModalOpen(false)}
+                    onSuccess={handleSuccess}
+                />
+
+                {/* --- UPDATE FORM MODAL --- */}
+                <AdminUpdateFormModal
+                    isOpen={isUpdateModalOpen}
+                    onClose={() => setIsUpdateModalOpen(false)}
+                    onSuccess={handleSuccess}
+                    formId={selectedFormId}
                 />
 
             </div>
