@@ -1,45 +1,65 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { getForms } from '@/services/forms';
 import { formatDate } from '@/lib/formatDate';
+import Link from 'next/link';
+import AdminAddFormModal from '@/components/ui/AdminAddFormModal';
 
 export default function FormsManagementPage() {
     const [forms, setForms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Modal States
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // Verileri çekme metodunu dışarı aldık ki form eklenince tekrar çağırabilelim
+    const fetchForms = async (isCancelled = false) => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await getForms();
+
+            if (!isCancelled) {
+                let list = [];
+                if (Array.isArray(response)) {
+                    list = response;
+                } else if (Array.isArray(response?.data)) {
+                    list = response.data;
+                } else if (Array.isArray(response?.data?.forms)) {
+                    list = response.data.forms;
+                } else if (Array.isArray(response?.forms)) {
+                    list = response.forms;
+                }
+
+                // En son eklenen formun en üstte çıkması için ters çevirebilirsin (opsiyonel)
+                setForms(list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+            }
+        } catch (err) {
+            if (!isCancelled) {
+                setError('Formlar yüklenirken bir hata oluştu.');
+            }
+        } finally {
+            if (!isCancelled) {
+                setIsLoading(false);
+            }
+        }
+    };
+
     useEffect(() => {
         let isCancelled = false;
-
-        const fetchForms = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await getForms();
-
-                if (!isCancelled) {
-                    const data = response?.data || response || [];
-                    setForms(data);
-                }
-            } catch (err) {
-                if (!isCancelled) {
-                    setError('Formlar yüklenirken bir hata oluştu.');
-                }
-            } finally {
-                if (!isCancelled) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchForms();
-
+        fetchForms(isCancelled);
         return () => {
             isCancelled = true;
         };
     }, []);
+
+    // Form modal'ından başarı yanıtı gelince tabloyu güncelle
+    const handleAddSuccess = () => {
+        fetchForms(); // Tabloyu yenile
+        // Veya manuel olarak listeye ekleyebilirsin: setForms(prev => [newForm, ...prev])
+    };
 
     const handlePlaceholderUpdate = (formTitle) => {
         alert(`"${formTitle}" için güncelleme özelliği bir sonraki aşamada aktif edilecektir.`);
@@ -58,13 +78,14 @@ export default function FormsManagementPage() {
                         </p>
                     </div>
 
-                    <Link
-                        href="/admin/forms/create"
-                        className="btn-glow bg-primary text-white font-label-md px-5 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-container transition-colors shrink-0 self-start sm:self-auto cursor-pointer"
+                    {/* LİNK YERİNE MODALI AÇAN BUTON */}
+                    <button
+                        onClick={() => setIsModalOpen(true)}
+                        className="btn-glow bg-primary text-white font-label-md px-5 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-container transition-colors shrink-0 self-start sm:self-auto cursor-pointer border-none"
                     >
                         <span className="material-symbols-outlined text-xl">add_circle</span>
                         <span>Yeni Form Ekle</span>
-                    </Link>
+                    </button>
                 </div>
 
                 {/* Mobile View (Cards) */}
@@ -118,7 +139,7 @@ export default function FormsManagementPage() {
                                     </Link>
                                     <button
                                         onClick={() => handlePlaceholderUpdate(item.title)}
-                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high px-3 py-2 rounded-md cursor-pointer inline-flex items-center gap-1 font-label-md flex-1 justify-center"
+                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high px-3 py-2 rounded-md cursor-pointer inline-flex items-center gap-1 font-label-md flex-1 justify-center border-none"
                                     >
                                         <span className="material-symbols-outlined text-base">edit</span>
                                         Güncelle
@@ -207,6 +228,13 @@ export default function FormsManagementPage() {
                         </tbody>
                     </table>
                 </div>
+
+                {/* --- ADD FORM MODAL --- */}
+                <AdminAddFormModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    onSuccess={handleAddSuccess}
+                />
 
             </div>
         </main>

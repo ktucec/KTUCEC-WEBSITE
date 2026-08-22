@@ -99,11 +99,19 @@ function ApplicationFormContent() {
         setError(null);
         setSuccessMessage(null);
 
-        // Backend'in beklediği formata dönüştür
+        if (user) {
+            try {
+                await getMe();
+            } catch (err) {
+                setError("Oturum süreniz tamamen dolmuş. Lütfen sayfayı yenileyip tekrar giriş yapın.");
+                setIsSubmitting(false);
+                return;
+            }
+        }
+
         const payloadAnswers = visibleQuestions.map(q => {
             let val = answers[q.id];
 
-            // Eğer çoklu seçimse ve dizi ise, virgülle ayrılmış stringe çevir (veya backend nasıl bekliyorsa)
             if (Array.isArray(val)) {
                 val = val.join(', ');
             }
