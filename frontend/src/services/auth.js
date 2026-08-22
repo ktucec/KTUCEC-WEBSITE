@@ -20,6 +20,7 @@ export function getMe() {
     return apiFetch("/api/auth/me", {
         method: "GET",
         credentials: "include",
+        skipRedirectOn401: true, 
     });
 }
 

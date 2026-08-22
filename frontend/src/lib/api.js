@@ -68,7 +68,8 @@ export async function apiFetch(path, options = {}, _isRetry = false) {
         if (refreshed) {
             return apiFetch(path, options, true);
         }
-        if (typeof window !== "undefined") {
+        
+        if (!options.skipRedirectOn401 && typeof window !== "undefined") {
             window.location.href = "/admin/login";
         }
         throw new ApiError("Oturum süreniz doldu, lütfen tekrar giriş yapın.", 401);
