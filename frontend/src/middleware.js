@@ -9,7 +9,7 @@ async function verifyToken(token) {
         const { payload } = await jwtVerify(token, secret);
         return payload;
     } catch {
-        return null; // imza geçersiz VEYA süresi dolmuş (jose exp'i kendi kontrol eder)
+        return null;
     }
 }
 
@@ -42,8 +42,13 @@ async function tryRefresh(request) {
             return { status: 'error' };
         }
 
-        const setCookieHeader = res.headers.get('set-cookie');
-        return { status: 'ok', setCookieHeader };
+        // getSetCookie() keeps each Set-Cookie header separate; .get() would merge them into one broken string
+        const setCookies =
+            typeof res.headers.getSetCookie === 'function'
+                ? res.headers.getSetCookie()
+                : (res.headers.get('set-cookie') ? [res.headers.get('set-cookie')] : []);
+
+        return { status: 'ok', setCookies };
     } catch {
         return { status: 'error' };
     }
@@ -56,7 +61,6 @@ export async function middleware(request) {
     const refreshToken = request.cookies.get('refreshToken')?.value;
     const isLoginPath = pathname === '/admin/login';
 
-    // 1. Hiçbir token yoksa
     if (!token && !refreshToken) {
         if (isLoginPath) return NextResponse.next();
         return NextResponse.redirect(new URL('/admin/login', request.url));
@@ -65,16 +69,16 @@ export async function middleware(request) {
     let payload = token ? await verifyToken(token) : null;
     let isAccessTokenValid = payload !== null;
 
-    // 2. Access token geçersiz/expired ama refresh token varsa: BURADA gerçekten refresh dene
     if (!isAccessTokenValid && refreshToken) {
         const refreshResult = await tryRefresh(request);
 
         if (refreshResult.status === 'ok') {
-            const newAccessTokenMatch = refreshResult.setCookieHeader?.match(/accessToken=([^;]+)/);
+            const newTokenCookie = refreshResult.setCookies.find((c) => c.startsWith('accessToken='));
+            const newAccessTokenMatch = newTokenCookie ? newTokenCookie.match(/accessToken=([^;]+)/) : null;
             const newToken = newAccessTokenMatch ? newAccessTokenMatch[1] : null;
             payload = newToken ? await verifyToken(newToken) : null;
             isAccessTokenValid = payload !== null;
-            request._pendingSetCookie = refreshResult.setCookieHeader;
+            request._pendingSetCookies = refreshResult.setCookies;
         } else if (refreshResult.status === 'invalid') {
             if (isLoginPath) return NextResponse.next();
             const response = NextResponse.redirect(new URL('/admin/login', request.url));
@@ -86,22 +90,24 @@ export async function middleware(request) {
         }
     }
 
-    // 3. Login sayfasındaysa
     if (isLoginPath) {
         if (isAccessTokenValid) {
-            return NextResponse.redirect(new URL('/admin', request.url));
+            const response = NextResponse.redirect(new URL('/admin', request.url));
+            if (request._pendingSetCookies) {
+                for (const cookie of request._pendingSetCookies) {
+                    response.headers.append('set-cookie', cookie);
+                }
+            }
+            return response;
         }
         return NextResponse.next();
     }
 
-    // 4. Hâlâ geçerli token yoksa (refresh de yapıldıysa ve olmadıysa buraya düşmemesi lazım,
-    // ama savunma amaçlı bırakıyoruz)
     if (!isAccessTokenValid) {
         const response = NextResponse.redirect(new URL('/admin/login', request.url));
         return clearAuthCookies(response);
     }
 
-    // RBAC
     const roleClaim =
         payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ??
         payload.role ??
@@ -118,9 +124,11 @@ export async function middleware(request) {
         finalResponse = NextResponse.next();
     }
 
-    // Refresh sırasında backend'den gelen yeni cookie'leri response'a taşı
-    if (request._pendingSetCookie) {
-        finalResponse.headers.set('set-cookie', request._pendingSetCookie);
+    // append (not set) so each cookie stays a separate Set-Cookie header
+    if (request._pendingSetCookies) {
+        for (const cookie of request._pendingSetCookies) {
+            finalResponse.headers.append('set-cookie', cookie);
+        }
     }
 
     return finalResponse;
