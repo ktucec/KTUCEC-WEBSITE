@@ -25,6 +25,52 @@ function clearAuthCookies(response) {
     return response;
 }
 
+function applyCookies(response, setCookiesArray) {
+    if (!setCookiesArray || setCookiesArray.length === 0) return;
+
+    setCookiesArray.forEach((cookieStr) => {
+        const parts = cookieStr.split(';');
+        if (parts.length === 0) return;
+
+        const nameValue = parts.shift().trim();
+        const eqIndex = nameValue.indexOf('=');
+        if (eqIndex === -1) return;
+
+        const name = nameValue.substring(0, eqIndex);
+        const value = nameValue.substring(eqIndex + 1);
+
+        const cookieOptions = {};
+
+        parts.forEach((part) => {
+            const attr = part.trim();
+            const attrEqIndex = attr.indexOf('=');
+            let attrName = attr;
+            let attrValue = true;
+
+            if (attrEqIndex !== -1) {
+                attrName = attr.substring(0, attrEqIndex).toLowerCase();
+                attrValue = attr.substring(attrEqIndex + 1);
+            } else {
+                attrName = attr.toLowerCase();
+            }
+
+            if (attrName === 'httponly') cookieOptions.httpOnly = true;
+            else if (attrName === 'secure') cookieOptions.secure = true;
+            else if (attrName === 'samesite') cookieOptions.sameSite = attrValue.toLowerCase();
+            else if (attrName === 'path') cookieOptions.path = attrValue;
+            else if (attrName === 'domain') cookieOptions.domain = attrValue;
+            else if (attrName === 'expires') cookieOptions.expires = new Date(attrValue);
+            else if (attrName === 'max-age') cookieOptions.maxAge = parseInt(attrValue, 10);
+        });
+
+        response.cookies.set({
+            name,
+            value,
+            ...cookieOptions,
+        });
+    });
+}
+
 async function tryRefresh(request) {
     try {
         const res = await fetch(`${API_URL}/api/auth/refresh`, {
@@ -42,7 +88,6 @@ async function tryRefresh(request) {
             return { status: 'error' };
         }
 
-        // getSetCookie() keeps each Set-Cookie header separate; .get() would merge them into one broken string
         const setCookies =
             typeof res.headers.getSetCookie === 'function'
                 ? res.headers.getSetCookie()
@@ -93,10 +138,10 @@ export async function middleware(request) {
     if (isLoginPath) {
         if (isAccessTokenValid) {
             const response = NextResponse.redirect(new URL('/admin', request.url));
+
+            // DÜZELTME: headers.append yerine oluşturduğumuz yardımcı fonksiyonu çağırıyoruz
             if (request._pendingSetCookies) {
-                for (const cookie of request._pendingSetCookies) {
-                    response.headers.append('set-cookie', cookie);
-                }
+                applyCookies(response, request._pendingSetCookies);
             }
             return response;
         }
@@ -124,11 +169,8 @@ export async function middleware(request) {
         finalResponse = NextResponse.next();
     }
 
-    // append (not set) so each cookie stays a separate Set-Cookie header
     if (request._pendingSetCookies) {
-        for (const cookie of request._pendingSetCookies) {
-            finalResponse.headers.append('set-cookie', cookie);
-        }
+        applyCookies(finalResponse, request._pendingSetCookies);
     }
 
     return finalResponse;
