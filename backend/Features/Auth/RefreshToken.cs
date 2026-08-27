@@ -9,7 +9,6 @@ namespace ktucec.Features.Auth;
 // 1. RESPONSE 
 public record RefreshTokenResponse(string NameSurname, string Role, string ManagerRole);
 
-
 // 2. HANDLER
 public class RefreshTokenHandler
 {
@@ -31,7 +30,8 @@ public class RefreshTokenHandler
 
         var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == currentRefreshToken);
 
-        if (user == null || user.RefreshTokenExpiresAt < DateTime.UtcNow)
+        // Handle Nullable DateTime correctly (.HasValue and .Value)
+        if (user == null || !user.RefreshTokenExpiresAt.HasValue || user.RefreshTokenExpiresAt.Value < DateTime.UtcNow)
         {
             return new ApiResult<RefreshTokenResponse>(false, null!, "Oturum süresi dolmuş, tekrar giriş yapmalısınız.");
         }
@@ -40,11 +40,12 @@ public class RefreshTokenHandler
 
         // Keep the existing refresh token by default to prevent race conditions during concurrent requests
         var activeRefreshToken = user.RefreshToken;
-        var activeRtExpiresAt = user.RefreshTokenExpiresAt;
+        DateTime activeRtExpiresAt = user.RefreshTokenExpiresAt.Value; // Safely cast to non-nullable DateTime
         var requiresDbSave = false;
 
         // Rotate the refresh token only if it expires in less than 1 day
-        if ((user.RefreshTokenExpiresAt - DateTime.UtcNow).TotalDays < 1)
+        // Since activeRtExpiresAt is strict DateTime, this subtraction yields a normal TimeSpan
+        if ((activeRtExpiresAt - DateTime.UtcNow).TotalDays < 1)
         {
             var (newRefreshToken, rtExpiresAt) = _jwtProvider.GenerateRefreshToken();
             user.RefreshToken = newRefreshToken;
@@ -60,30 +61,31 @@ public class RefreshTokenHandler
             await _context.SaveChangesAsync();
         }
 
-        _jwtProvider.SetTokensInCookies(httpContext, newAccessToken, activeRefreshToken, activeRtExpiresAt);
+        // activeRtExpiresAt is non-nullable here, satisfying SetTokensInCookies signature
+        _jwtProvider.SetTokensInCookies(httpContext, newAccessToken, activeRefreshToken!, activeRtExpiresAt);
 
         var responseData = new RefreshTokenResponse(user.NameSurname, user.Role.ToString(), user.ManagerRole.ToString());
         return new ApiResult<RefreshTokenResponse>(true, responseData, "Oturumunuz başarıyla yenilendi!");
     }
+} // <- Bu süslü parantez CS1513, CS1109 ve WebApplication hatalarını düzeltecek
 
-
-    // 3. ENDPOINT
-    public static class RefreshTokenEndpoint
+// 3. ENDPOINT
+public static class RefreshTokenEndpoint
+{
+    public static void MapRefreshToken(this IEndpointRouteBuilder app)
     {
-        public static void MapRefreshToken(this IEndpointRouteBuilder app)
+        app.MapPost("/api/auth/refresh", async (RefreshTokenHandler handler, HttpContext httpContext) =>
         {
-            app.MapPost("/api/auth/refresh", async (RefreshTokenHandler handler, HttpContext httpContext) =>
+            var result = await handler.HandleAsync(httpContext);
+
+            if (!result.IsSuccess)
             {
-                var result = await handler.HandleAsync(httpContext);
+                return Results.Json(result, statusCode: StatusCodes.Status401Unauthorized);
+            }
 
-                if (!result.IsSuccess)
-                {
-                    return Results.Json(result, statusCode: StatusCodes.Status401Unauthorized);
-                }
-
-                return Results.Ok(result);
-            })
-            .AllowAnonymous()
-            .RequireRateLimiting("StrictPolicy");
-        }
+            return Results.Ok(result);
+        })
+        .AllowAnonymous()
+        .RequireRateLimiting("StrictPolicy");
     }
+}
