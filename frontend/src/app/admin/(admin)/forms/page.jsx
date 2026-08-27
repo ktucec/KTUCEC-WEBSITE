@@ -66,6 +66,12 @@ export default function FormsManagementPage() {
         setIsUpdateModalOpen(true);
     };
 
+    // Copy form URL to clipboard
+    const handleCopyLink = (id) => {
+        const url = `https://www.ktucec.com/basvurular?id=${id}`;
+        navigator.clipboard.writeText(url);
+    };
+
     return (
         <main className="flex-1 overflow-y-auto bg-surface md:p-4">
             <div className="max-w-6xl mx-auto">
@@ -130,6 +136,14 @@ export default function FormsManagementPage() {
                                 </div>
 
                                 <div className="pt-3 border-t border-outline-variant/20 flex justify-end gap-3 items-center">
+                                    <button
+                                        onClick={() => handleCopyLink(item.id)}
+                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high px-3 py-2 rounded-md cursor-pointer inline-flex items-center gap-1 font-label-md flex-1 justify-center border-none"
+                                        title="Linki Kopyala"
+                                    >
+                                        <span className="material-symbols-outlined text-base">content_copy</span>
+                                        Kopyala
+                                    </button>
                                     <Link
                                         href={`/admin/forms/${item.id}`}
                                         className="text-primary hover:text-primary-container font-label-md transition-colors inline-flex items-center gap-1 bg-primary/5 hover:bg-primary/10 px-3 py-2 rounded-md flex-1 justify-center"
@@ -206,6 +220,13 @@ export default function FormsManagementPage() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2 items-center">
+                                                <button
+                                                    onClick={() => handleCopyLink(item.id)}
+                                                    className="text-secondary hover:text-on-surface transition-colors bg-transparent border-0 p-2 rounded-lg hover:bg-surface-container cursor-pointer inline-flex items-center"
+                                                    title="Linki Kopyala"
+                                                >
+                                                    <span className="material-symbols-outlined text-xl">content_copy</span>
+                                                </button>
                                                 <Link
                                                     href={`/admin/forms/${item.id}`}
                                                     className="text-primary hover:text-primary-container font-medium transition-colors inline-flex items-center p-2 rounded-lg hover:bg-primary/5 cursor-pointer"
