@@ -24,13 +24,11 @@ public class RefreshTokenHandler
 
     public async Task<ApiResult<RefreshTokenResponse>> HandleAsync(HttpContext httpContext)
     {
-        // A. reading cookie from browser
         if (!httpContext.Request.Cookies.TryGetValue("refreshToken", out var currentRefreshToken) || string.IsNullOrEmpty(currentRefreshToken))
         {
             return new ApiResult<RefreshTokenResponse>(false, null!, "Oturum geçersiz, refresh token bulunamadı.");
         }
 
-        // B. search for user has token
         var user = await _context.Users.FirstOrDefaultAsync(u => u.RefreshToken == currentRefreshToken);
 
         if (user == null || user.RefreshTokenExpiresAt < DateTime.UtcNow)
@@ -38,39 +36,54 @@ public class RefreshTokenHandler
             return new ApiResult<RefreshTokenResponse>(false, null!, "Oturum süresi dolmuş, tekrar giriş yapmalısınız.");
         }
 
-        // C. generating new tokens
         var newAccessToken = _jwtProvider.GenerateAccessToken(user);
-        var (newRefreshToken, rtExpiresAt) = _jwtProvider.GenerateRefreshToken();
 
-        user.RefreshToken = newRefreshToken;
-        user.RefreshTokenExpiresAt = rtExpiresAt;
-        await _context.SaveChangesAsync();
+        // Keep the existing refresh token by default to prevent race conditions during concurrent requests
+        var activeRefreshToken = user.RefreshToken;
+        var activeRtExpiresAt = user.RefreshTokenExpiresAt;
+        var requiresDbSave = false;
 
-        _jwtProvider.SetTokensInCookies(httpContext, newAccessToken, newRefreshToken, rtExpiresAt);
+        // Rotate the refresh token only if it expires in less than 1 day
+        if ((user.RefreshTokenExpiresAt - DateTime.UtcNow).TotalDays < 1)
+        {
+            var (newRefreshToken, rtExpiresAt) = _jwtProvider.GenerateRefreshToken();
+            user.RefreshToken = newRefreshToken;
+            user.RefreshTokenExpiresAt = rtExpiresAt;
+
+            activeRefreshToken = newRefreshToken;
+            activeRtExpiresAt = rtExpiresAt;
+            requiresDbSave = true;
+        }
+
+        if (requiresDbSave)
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        _jwtProvider.SetTokensInCookies(httpContext, newAccessToken, activeRefreshToken, activeRtExpiresAt);
 
         var responseData = new RefreshTokenResponse(user.NameSurname, user.Role.ToString(), user.ManagerRole.ToString());
         return new ApiResult<RefreshTokenResponse>(true, responseData, "Oturumunuz başarıyla yenilendi!");
     }
-}
 
 
-// 3. ENDPOINT
-public static class RefreshTokenEndpoint
-{
-    public static void MapRefreshToken(this IEndpointRouteBuilder app)
+    // 3. ENDPOINT
+    public static class RefreshTokenEndpoint
     {
-        app.MapPost("/api/auth/refresh", async (RefreshTokenHandler handler, HttpContext httpContext) =>
+        public static void MapRefreshToken(this IEndpointRouteBuilder app)
         {
-            var result = await handler.HandleAsync(httpContext);
-
-            if (!result.IsSuccess)
+            app.MapPost("/api/auth/refresh", async (RefreshTokenHandler handler, HttpContext httpContext) =>
             {
-                return Results.Json(result, statusCode: StatusCodes.Status401Unauthorized);
-            }
+                var result = await handler.HandleAsync(httpContext);
 
-            return Results.Ok(result);
-        })
-        .AllowAnonymous()
-        .RequireRateLimiting("StrictPolicy");
+                if (!result.IsSuccess)
+                {
+                    return Results.Json(result, statusCode: StatusCodes.Status401Unauthorized);
+                }
+
+                return Results.Ok(result);
+            })
+            .AllowAnonymous()
+            .RequireRateLimiting("StrictPolicy");
+        }
     }
-}
