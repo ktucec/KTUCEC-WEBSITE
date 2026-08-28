@@ -5,7 +5,7 @@ using ktucec.Shared.Models;
 namespace ktucec.Features.Announcements;
 
 // 1. COMMAND & RESPONSE
-public record AddAnnouncementCommand(string Title, string Content);
+public record AddAnnouncementCommand(string Title, string Content, string? Link);
 public record AddAnnouncementResponse(int Id);
 
 
@@ -24,7 +24,8 @@ public class AddAnnouncementHandler
         var announcement = new Announcement
         {
             Title = command.Title,
-            Content = command.Content
+            Content = command.Content,
+            Link = string.IsNullOrWhiteSpace(command.Link) ? null : command.Link
         };
 
         _context.Announcements.Add(announcement);
@@ -42,7 +43,7 @@ public static class AddAnnouncementEndpoint
     {
         app.MapPost("/api/announcements", async (AddAnnouncementCommand command, AddAnnouncementHandler handler) =>
         {
-            if (string.IsNullOrWhiteSpace(command.Title)) 
+            if (string.IsNullOrWhiteSpace(command.Title))
                 return Results.BadRequest(new ApiResult(false, "Duyuru başlığı boş olamaz!"));
 
             if (string.IsNullOrWhiteSpace(command.Content))
@@ -52,7 +53,6 @@ public static class AddAnnouncementEndpoint
 
             var finalResult = new ApiResult<AddAnnouncementResponse>(true, response, "Duyuru eklendi.");
 
-            // standard http 201 return schema
             return Results.Created($"/api/announcements/{response.Id}", finalResult);
         })
         .RequireRateLimiting("FlexPolicy")

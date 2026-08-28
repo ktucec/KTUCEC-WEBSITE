@@ -5,7 +5,7 @@ using System;
 namespace ktucec.Features.Announcements;
 
 // 1. REQUEST & RESPONSE 
-public record UpdateAnnouncementRequest(string? Title, string? Content);
+public record UpdateAnnouncementRequest(string? Title, string? Content, string? Link, bool ClearLink = false);
 public record UpdateAnnouncementResponse(int Id);
 
 // 2. HANDLER
@@ -23,12 +23,16 @@ public class UpdateAnnouncementHandler
         if (announcement == null)
             return null;
 
-        // update only not null items
         if (request.Title is not null)
             announcement.Title = request.Title;
 
         if (request.Content is not null)
             announcement.Content = request.Content;
+
+        if (request.ClearLink)
+            announcement.Link = null;
+        else if (request.Link is not null)
+            announcement.Link = request.Link;
 
         await _context.SaveChangesAsync();
         return new UpdateAnnouncementResponse(announcement.Id);

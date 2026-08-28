@@ -20,9 +20,9 @@ public class GetLatestAnnouncementsHandler
     {
         return await _context.Announcements
             .AsNoTracking()
-            .OrderByDescending(a => a.CreatedAt) 
-            .Take(count) 
-            .Select(a => new AnnouncementDto(a.Id, a.Title, a.Content, a.CreatedAt))
+            .OrderByDescending(a => a.CreatedAt)
+            .Take(count)
+            .Select(a => new AnnouncementDto(a.Id, a.Title, a.Content, a.Link, a.CreatedAt))
             .ToListAsync();
     }
 }
@@ -33,10 +33,8 @@ public static class GetLatestAnnouncementsEndpoint
 {
     public static void MapGetLatestAnnouncements(this IEndpointRouteBuilder app)
     {
-        // ex. usage: /api/announcements/latest?count=5
         app.MapGet("/api/announcements/latest", async (int? count, GetLatestAnnouncementsHandler handler) =>
         {
-            // unless there is query number, use 3.
             int limit = count ?? 3;
 
             var latestAnnouncements = await handler.HandleAsync(limit);

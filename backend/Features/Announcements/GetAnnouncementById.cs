@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace ktucec.Features.Announcements;
 
 // 1. QUERY RESPONSE
-public record GetAnnouncementByIdDto(int Id, string Title, string Content, DateTime CreatedAt);
+public record GetAnnouncementByIdDto(int Id, string Title, string Content, string? Link, DateTime CreatedAt);
 
 // 2. HANDLER
 public class GetAnnouncementByIdHandler
@@ -28,7 +28,7 @@ public class GetAnnouncementByIdHandler
         return await _context.Announcements
             .AsNoTracking()
             .Where(a => a.Id == id)
-            .Select(a => new GetAnnouncementByIdDto(a.Id, a.Title, a.Content, a.CreatedAt))
+            .Select(a => new GetAnnouncementByIdDto(a.Id, a.Title, a.Content, a.Link, a.CreatedAt))
             .FirstOrDefaultAsync();
     }
 }

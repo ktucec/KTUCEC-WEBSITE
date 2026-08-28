@@ -7,7 +7,7 @@ namespace ktucec.Features.Announcements;
 
 
 // 1. QUERY RESPONSE
-public record AnnouncementDto(int Id, string Title, string Content, DateTime CreatedAt);
+public record AnnouncementDto(int Id, string Title, string Content, string? Link, DateTime CreatedAt);
 
 
 // 2. HANDLER
@@ -23,9 +23,9 @@ public class GetAllAnnouncementsHandler
     public async Task<List<AnnouncementDto>> HandleAsync()
     {
         return await _context.Announcements
-            .AsNoTracking() 
-            .OrderByDescending(a => a.CreatedAt) 
-            .Select(a => new AnnouncementDto(a.Id, a.Title, a.Content, a.CreatedAt))
+            .AsNoTracking()
+            .OrderByDescending(a => a.CreatedAt)
+            .Select(a => new AnnouncementDto(a.Id, a.Title, a.Content, a.Link, a.CreatedAt))
             .ToListAsync();
     }
 }
