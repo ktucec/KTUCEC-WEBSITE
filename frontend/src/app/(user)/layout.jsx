@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
                 />
             </head>
             <body
-                className={`antialiased relative min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-white`}
+                className={`antialiased relative min-h-screen flex flex-col overflow-x-hidden selection:bg-primary-container selection:text-white`}
             >
                 {/* Global WebGL Background */}
                 <BackgroundCanvas />
@@ -50,7 +50,10 @@ export default function RootLayout({ children }) {
                 {/* Top Navbar */}
                 <Navbar />
 
-                {children}
+                {/* Main Content (flex-grow ile tüm boşluğu doldurur) */}
+                <main className="flex-grow">
+                    {children}
+                </main>
 
                 {/* Footer */}
                 <Footer />
