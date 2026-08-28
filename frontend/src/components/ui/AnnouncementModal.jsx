@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from 'next/link';
 
 export default function AnnouncementModal({ isOpen, onClose, announcement }) {
     useEffect(() => {
@@ -50,7 +51,14 @@ export default function AnnouncementModal({ isOpen, onClose, announcement }) {
                     <p>{announcement.content}</p>
 
                     <p className="opacity-80 text-[15px] pt-4 border-t border-outline-variant/20">
-                        Detaylı bilgi ve kayıt formu yakında KTUCEC resmi sosyal medya hesapları üzerinden paylaşılacaktır. Lütfen takipte kalın.
+                        Daha fazla bilgi için{" "}
+                        <Link
+                            href="/iletisim"
+                            className="text-sky-400 hover:text-sky-300 no-underline transition-colors font-medium"
+                        >
+                            iletişim
+                        </Link>{" "}
+                        sayfasından bizimle iletişime geçebilirsiniz.
                     </p>
                 </div>
 
@@ -59,8 +67,8 @@ export default function AnnouncementModal({ isOpen, onClose, announcement }) {
                         onClick={() => hasLink && window.open(announcement.link, "_blank", "noopener,noreferrer")}
                         disabled={!hasLink}
                         className={`px-8 py-3 rounded-xl font-label-md uppercase tracking-wider transition-all ${hasLink
-                                ? "bg-blue-600 text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
-                                : "bg-surface-container text-on-surface-variant/50 cursor-not-allowed"
+                            ? "bg-blue-600 text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
+                            : "bg-surface-container text-on-surface-variant/50 cursor-not-allowed"
                             }`}
                     >
                         Linke Git
