@@ -16,7 +16,12 @@ function ApplicationFormContent() {
     const [user, setUser] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [error, setError] = useState(null);
+
+    // Sayfa yükleme hatası: { type: 'not_found' | 'server_error', message: string }
+    const [loadError, setLoadError] = useState(null);
+
+    // Form gönderme aşamasındaki hata ve başarı mesajı
+    const [submitError, setSubmitError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
 
     // Form cevaplarını tutacağımız state. Key: questionId, Value: string veya array
@@ -27,12 +32,17 @@ function ApplicationFormContent() {
 
         async function fetchInitialData() {
             if (!formIdParam) {
-                setError("Geçerli bir form bağlantısı (ID) bulunamadı.");
+                setLoadError({
+                    type: 'not_found',
+                    message: "Geçerli bir form bağlantısı (ID) bulunamadı."
+                });
                 setIsLoading(false);
                 return;
             }
 
             setIsLoading(true);
+            setLoadError(null);
+
             try {
                 // Paralel olarak hem formu hem de oturum durumunu çekiyoruz
                 const [formResult, authResult] = await Promise.allSettled([
@@ -41,11 +51,39 @@ function ApplicationFormContent() {
                 ]);
 
                 if (!isCancelled) {
-                    if (formResult.status === 'fulfilled' && formResult.value?.isSuccess) {
-                        setForm(formResult.value.data);
+                    if (formResult.status === 'fulfilled') {
+                        if (formResult.value?.isSuccess && formResult.value.data) {
+                            setForm(formResult.value.data);
+                        } else {
+                            const status = formResult.value?.statusCode || formResult.value?.status;
+                            if (status === 404) {
+                                setLoadError({
+                                    type: 'not_found',
+                                    message: "Aradığınız başvuru formu sistemde bulunamadı veya bağlantı hatalı."
+                                });
+                            } else {
+                                setLoadError({
+                                    type: 'server_error',
+                                    message: formResult.value?.message || "Form bilgileri sunucudan alınırken bir hata oluştu."
+                                });
+                            }
+                        }
                     } else {
-                        // Eğer backend 404 atarsa promise rejected olur
-                        setError("Aradığınız başvuru formu sistemde bulunamadı veya bağlantı hatalı.");
+                        // Promise rejected durumu (ApiError veya Ağ / Sunucu Hatası)
+                        const reason = formResult.reason;
+                        const status = reason?.status || reason?.statusCode;
+
+                        if (status === 404) {
+                            setLoadError({
+                                type: 'not_found',
+                                message: reason?.message || "Aradığınız başvuru formu sistemde bulunamadı veya bağlantı hatalı."
+                            });
+                        } else {
+                            setLoadError({
+                                type: 'server_error',
+                                message: reason?.message || "Sunucuya bağlanırken bir sorun oluştu. Lütfen daha sonra tekrar deneyin."
+                            });
+                        }
                     }
 
                     // Eğer 401 dönerse authResult rejected olacaktır, bu durumda user null kalır (Misafir)
@@ -55,7 +93,10 @@ function ApplicationFormContent() {
                 }
             } catch (err) {
                 if (!isCancelled) {
-                    setError("Form bilgileri alınırken sunucu tarafında bir hata oluştu.");
+                    setLoadError({
+                        type: 'server_error',
+                        message: "Form bilgileri alınırken beklenmeyen bir sunucu hatası oluştu."
+                    });
                 }
             } finally {
                 if (!isCancelled) {
@@ -97,7 +138,7 @@ function ApplicationFormContent() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        setError(null);
+        setSubmitError(null);
         setSuccessMessage(null);
 
         // Kullanıcı giriş yapmışsa submit öncesi token'ı doğrula (ping at)
@@ -105,7 +146,7 @@ function ApplicationFormContent() {
             try {
                 await getMe();
             } catch (err) {
-                setError("Oturum süreniz tamamen dolmuş. Lütfen sayfayı yenileyip tekrar giriş yapın.");
+                setSubmitError("Oturum süreniz dolmuş. Lütfen sayfayı yenileyip tekrar giriş yapın.");
                 setIsSubmitting(false);
                 return;
             }
@@ -135,7 +176,7 @@ function ApplicationFormContent() {
             // Formu temizle
             setAnswers({});
         } catch (err) {
-            setError(err instanceof ApiError ? err.message : "Başvuru gönderilirken beklenmeyen bir hata oluştu.");
+            setSubmitError(err instanceof ApiError ? err.message : "Başvuru gönderilirken beklenmeyen bir hata oluştu.");
         } finally {
             setIsSubmitting(false);
         }
@@ -151,8 +192,8 @@ function ApplicationFormContent() {
         );
     }
 
-    // --- SENARYO 2: FORM BULUNAMADI VEYA HATA ---
-    if (error && !form) {
+    // --- HATA SENARYOSU 1: FORM BULUNAMADI (404 / ID HATALI) ---
+    if (loadError?.type === 'not_found' && !form) {
         return (
             <div className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10 text-center fade-up visible">
                 <div className="glass-panel rounded-3xl p-10 md:p-16 inline-block max-w-lg border-white/60 shadow-lg">
@@ -161,7 +202,7 @@ function ApplicationFormContent() {
                     </div>
                     <h2 className="font-headline-sm text-on-surface mb-3">Form Bulunamadı</h2>
                     <p className="font-body-md text-on-surface-variant mb-8 leading-relaxed">
-                        {error}
+                        {loadError.message}
                     </p>
                     <Link href="/" className="btn-glow bg-primary text-white font-label-md py-3.5 px-8 rounded-xl inline-flex items-center gap-2">
                         <span className="material-symbols-outlined text-[20px]">home</span>
@@ -172,7 +213,40 @@ function ApplicationFormContent() {
         );
     }
 
-    // --- SENARYO 3: FORM VAR AMA SÜRESİ DOLMUŞ / KAPALI ---
+    // --- HATA SENARYOSU 2: SUNUCU / BAĞLANTI HATASI (500 / NETWORK ERROR) ---
+    if (loadError?.type === 'server_error' && !form) {
+        return (
+            <div className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10 text-center fade-up visible">
+                <div className="glass-panel rounded-3xl p-10 md:p-16 inline-block max-w-lg border-white/60 shadow-lg">
+                    <div className="w-20 h-20 bg-amber-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <span className="material-symbols-outlined text-4xl text-amber-500">dns</span>
+                    </div>
+                    <h2 className="font-headline-sm text-on-surface mb-3">Sunucu Hatası</h2>
+                    <p className="font-body-md text-on-surface-variant mb-8 leading-relaxed">
+                        {loadError.message}
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="btn-glow bg-primary text-white font-label-md py-3.5 px-6 rounded-xl inline-flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                            <span className="material-symbols-outlined text-[20px]">refresh</span>
+                            Sayfayı Yenile
+                        </button>
+                        <Link
+                            href="/"
+                            className="bg-surface-container-high text-on-surface font-label-md py-3.5 px-6 rounded-xl inline-flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors"
+                        >
+                            <span className="material-symbols-outlined text-[20px]">home</span>
+                            Ana Sayfaya Dön
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // --- HATA SENARYOSU 3: BAŞVURULAR KAPANDI (FORM VAR AMA PASİF) ---
     if (form && form.isActive === false) {
         return (
             <div className="flex-grow pt-32 pb-24 px-gutter max-w-container-max mx-auto w-full relative z-10 text-center fade-up visible">
@@ -193,7 +267,7 @@ function ApplicationFormContent() {
         );
     }
 
-    // --- SENARYO 4: FORM AÇIK VE SORUNSUZ (NORMAL RENDER) ---
+    // --- NORMAL RENDER (FORM AÇIK VE KULLANIMA HAZIR) ---
     return (
         <main className="flex-grow pt-32 pb-24 px-gutter max-w-3xl mx-auto w-full relative z-10 fade-up visible">
             {/* Header Section */}
@@ -233,7 +307,7 @@ function ApplicationFormContent() {
                         <p className="font-body-md text-on-surface-variant mb-8">{successMessage}</p>
                         <button
                             onClick={() => router.push('/')}
-                            className="btn-glow bg-primary-container text-white font-label-md py-3.5 px-8 rounded-xl flex items-center gap-2 mx-auto"
+                            className="btn-glow bg-primary-container text-white font-label-md py-3.5 px-8 rounded-xl flex items-center gap-2 mx-auto cursor-pointer"
                         >
                             <span className="material-symbols-outlined text-[20px]">home</span>
                             Ana Sayfaya Dön
@@ -241,16 +315,15 @@ function ApplicationFormContent() {
                     </div>
                 ) : (
                     <form onSubmit={handleSubmit} className="flex flex-col gap-6 md:gap-8 relative z-10">
-                        {error && (
+                        {submitError && (
                             <div className="p-4 text-sm text-error bg-error/10 rounded-xl border border-error/20 flex items-center gap-3">
                                 <span className="material-symbols-outlined">warning</span>
-                                {error}
+                                {submitError}
                             </div>
                         )}
 
                         {visibleQuestions.map((q) => (
                             <div key={q.id} className="flex flex-col gap-2 fade-up visible">
-                                {/* Type 5 (Tekli Onay Checkbox'ı) hariç tüm sorular için üst başlık */}
                                 {q.type !== 5 && (
                                     <label className="font-label-md text-sm md:text-base text-secondary ml-1 flex items-center gap-1">
                                         {q.label}
@@ -258,7 +331,6 @@ function ApplicationFormContent() {
                                     </label>
                                 )}
 
-                                {/* 0 = Text, 2 = Number, 6 = Date, 7 = Email, 8 = Phone */}
                                 {(q.type === 0 || q.type === 2 || q.type === 6 || q.type === 7 || q.type === 8) && (
                                     <input
                                         type={
@@ -275,7 +347,6 @@ function ApplicationFormContent() {
                                     />
                                 )}
 
-                                {/* 1 = TextArea */}
                                 {q.type === 1 && (
                                     <textarea
                                         className="input-glass rounded-xl px-5 py-4 font-body-md text-on-background w-full resize-y min-h-[120px]"
@@ -286,7 +357,6 @@ function ApplicationFormContent() {
                                     />
                                 )}
 
-                                {/* 3 = SingleChoice */}
                                 {q.type === 3 && (
                                     <div className="relative">
                                         <select
@@ -306,7 +376,6 @@ function ApplicationFormContent() {
                                     </div>
                                 )}
 
-                                {/* 4 = MultiChoice */}
                                 {q.type === 4 && (
                                     <div className="flex flex-col gap-3 mt-1 bg-white/40 p-4 rounded-xl border border-white/50">
                                         {q.options?.map((opt, i) => {
@@ -329,7 +398,6 @@ function ApplicationFormContent() {
                                     </div>
                                 )}
 
-                                {/* 5 = Checkbox (Tekli Onay Kutusu) */}
                                 {q.type === 5 && (
                                     <label className="flex items-start gap-3 mt-2 cursor-pointer group select-none bg-white/40 p-4 rounded-xl border border-white/50">
                                         <div className={`w-5 h-5 rounded mt-0.5 shrink-0 flex items-center justify-center transition-all ${answers[q.id] === 'true' ? 'bg-primary border-primary' : 'bg-white border-2 border-outline-variant group-hover:border-primary/50'}`}>
