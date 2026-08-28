@@ -7,7 +7,8 @@ import { ApiError } from '@/lib/api';
 export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }) {
     const [formData, setFormData] = useState({
         title: '',
-        content: ''
+        content: '',
+        link: ''
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -16,7 +17,7 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            setFormData({ title: '', content: '' });
+            setFormData({ title: '', content: '', link: '' });
             setError(null);
         } else {
             document.body.style.overflow = 'unset';
@@ -39,13 +40,15 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
         try {
             const response = await addAnnouncement({
                 title: formData.title,
-                content: formData.content
+                content: formData.content,
+                link: formData.link.trim() === '' ? null : formData.link.trim()
             });
 
             const newAnnouncement = response?.data || {
                 id: response?.id || Date.now(),
                 title: formData.title,
-                content: formData.content
+                content: formData.content,
+                link: formData.link.trim() === '' ? null : formData.link.trim()
             };
 
             onSuccess(newAnnouncement);
@@ -80,7 +83,6 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-5 p-6 md:p-8">
 
-                    {/* Hata Mesajı Bandı */}
                     {error && (
                         <div className="p-3.5 text-sm text-error bg-error-container/20 border border-error/30 rounded-xl font-medium">
                             {error}
@@ -112,6 +114,19 @@ export default function AdminAddAnnouncementModal({ isOpen, onClose, onSuccess }
                             placeholder="Duyurunun detaylarını buraya yazın..."
                             required
                         ></textarea>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                        <label className="font-label-md text-secondary ml-1" htmlFor="link">Duyuru Linki (Opsiyonel)</label>
+                        <input
+                            className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                            id="link"
+                            name="link"
+                            type="url"
+                            value={formData.link}
+                            onChange={handleChange}
+                            placeholder="https://..."
+                        />
                     </div>
 
                     <div className="mt-4 pt-2">

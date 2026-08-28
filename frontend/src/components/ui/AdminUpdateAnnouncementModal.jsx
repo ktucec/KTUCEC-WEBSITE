@@ -12,7 +12,8 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
     const [originalData, setOriginalData] = useState({});
     const [formData, setFormData] = useState({
         title: '',
-        content: ''
+        content: '',
+        link: ''
     });
 
     useEffect(() => {
@@ -29,7 +30,7 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
         if (isOpen && announcementId) {
             fetchAnnouncementDetails(announcementId);
         } else {
-            setFormData({ title: '', content: '' });
+            setFormData({ title: '', content: '', link: '' });
             setOriginalData({});
             setIsLoading(true);
             setError(null);
@@ -45,7 +46,8 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
 
             const fetchedData = {
                 title: data.title || '',
-                content: data.content || ''
+                content: data.content || '',
+                link: data.link || ''
             };
 
             setOriginalData(fetchedData);
@@ -81,12 +83,23 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
         const changedData = getChangedFields();
         if (Object.keys(changedData).length === 0) return;
 
+        const payload = { ...changedData };
+        if ('link' in payload) {
+            const trimmedLink = payload.link.trim();
+            if (trimmedLink === '') {
+                payload.link = null;
+                payload.clearLink = true;
+            } else {
+                payload.link = trimmedLink;
+            }
+        }
+
         setIsSubmitting(true);
 
         try {
-            await updateAnnouncement(announcementId, changedData);
+            await updateAnnouncement(announcementId, payload);
 
-            onSuccess({ id: announcementId, ...changedData });
+            onSuccess({ id: announcementId, ...payload });
             onClose();
         } catch (err) {
             const msg = err instanceof ApiError ? err.message : 'Güncellenirken bir hata oluştu.';
@@ -158,6 +171,19 @@ export default function AdminUpdateAnnouncementModal({ isOpen, onClose, onSucces
                                     placeholder="Duyurunun detaylarını buraya yazın..."
                                     required
                                 ></textarea>
+                            </div>
+
+                            <div className="flex flex-col gap-2">
+                                <label className="font-label-md text-secondary ml-1" htmlFor="link">Duyuru Linki (Opsiyonel)</label>
+                                <input
+                                    className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                                    id="link"
+                                    name="link"
+                                    type="url"
+                                    value={formData.link}
+                                    onChange={handleChange}
+                                    placeholder="https://..."
+                                />
                             </div>
 
                             <div className="mt-4 pt-2">
