@@ -141,13 +141,14 @@ export default function HeroSection() {
                 ></div>
             </div>
 
-            <div className="relative z-20 w-full px-0 sm:px-4 flex flex-col items-start -translate-y-32 md:-translate-y-44">
+            <div className="relative z-20 w-full px-0 sm:px-4 flex flex-col items-start -translate-y-44 md:-translate-y-55">
                 <div className="max-w-container-max mx-auto px-gutter w-full">
-                    <h1 className="font-display-lg text-display-lg-mobile text-[60px] md:text-[80px] lg:text-[100px] xl::text-[120px] text-white mb-6 drop-shadow-2xl leading-none">
+                    <h1 className="font-display-lg text-display-lg-mobile text-[60px] md:text-[80px] lg:text-[100px] xl:text-[120px] text-white mb-6 drop-shadow-2xl leading-none -ml-1 md:-ml-1.5 tracking-tight">
                         KTUCEC
                     </h1>
                     <div className="font-headline-sm text-xl md:text-4xl text-white/90 min-h-12">
-                        {text}
+                        <span className="text-[var(--color-primary-container)] font-bold">Beraber </span>
+                        {text.slice(prefix.length)}
                         <span className="cursor h-8 md:h-12 align-middle"></span>
                     </div>
                     {/* <button className="mt-12 bg-[var(--color-primary-container)] text-white px-8 py-3 rounded-xl font-label-md text-label-md uppercase tracking-wider hover:opacity-90 transition-opacity shadow-lg shadow-primary-container/40 hover:scale-105 active:scale-95">

@@ -89,6 +89,12 @@
   --text-display-lg-mobile--font-weight: 800;
 }
 
+/* Base Styles */
+body {
+  background-color: var(--color-surface);
+  color: var(--color-on-surface);
+}
+
 /* Typewriter Cursor */
 .cursor {
   display: inline-block;
@@ -103,6 +109,7 @@
   50% { opacity: 0; }
 }
 
+/* Glass Panels & General Animations */
 .glass-panel {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
@@ -129,123 +136,360 @@
   transform: translateY(0);
 }
 
-body {
-  background-color: var(--color-surface);
-  color: var(--color-on-surface);
-}
-
-
 .shape-blob-1 { clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%); }
 .shape-blob-2 { clip-path: polygon(0% 0%, 90% 0%, 100% 100%, 10% 100%); }
 .diagonal-mask { clip-path: polygon(0 0, 100% 15%, 100% 100%, 0 85%); }
 
 .node-content {
-    opacity: 0;
-    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .node-content.reveal-left { transform: translateX(-50px); }
 .node-content.reveal-right { transform: translateX(50px); }
 .node-content.active {
-    opacity: 1;
-    transform: translateX(0);
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .vertical-text {
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    transform: rotate(180deg);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(40px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(40px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
+/* ==========================================
+   Home - Biz Kimiz (HomeAbout)
+========================================== */
+@keyframes ha-underline-grow {
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
 
-/* About Page Specific Utilities */
+.ha-underline {
+  transform-origin: left;
+  transform: scaleX(0);
+}
+
+.ha-underline.ha-underline-active {
+  animation: ha-underline-grow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes ha-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.ha-float {
+  animation: ha-float 4.5s ease-in-out infinite;
+}
+
+.ha-ghost-text {
+  -webkit-text-stroke: 1px var(--color-on-surface);
+  color: transparent;
+}
+
+.ha-tag-chip {
+  transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.ha-tag-chip:hover {
+  transform: translateY(-3px);
+}
+
+@keyframes ha-image-swim {
+  0%   { transform: scale(1.16) translate(0%, 0%); }
+  20%  { transform: scale(1.16) translate(-4.5%, 2%); }
+  40%  { transform: scale(1.16) translate(3.5%, 4%); }
+  60%  { transform: scale(1.16) translate(4.5%, -3.5%); }
+  80%  { transform: scale(1.16) translate(-3%, -4.5%); }
+  100% { transform: scale(1.16) translate(0%, 0%); }
+}
+
+@media (max-width: 767px) {
+  .ha-mobile-drift {
+    animation: ha-image-swim 14s ease-in-out infinite;
+  }
+}
+
+.ha-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "heading"
+    "image"
+    "text";
+}
+
+@media (min-width: 768px) {
+  .ha-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "heading image"
+      "text image";
+    align-items: center;
+  }
+}
+
+.ha-area-heading { grid-area: heading; }
+.ha-area-image { grid-area: image; }
+.ha-area-text { grid-area: text; }
+
+/* ==========================================
+   Home - Yönetim Kurulu (ManagementBoard)
+========================================== */
+@keyframes frame-fade-in {
+  0% { opacity: 0; transform: translateX(24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+.frame-card {
+  opacity: 0;
+  flex: 0 0 auto;
+  width: 168px;
+  scroll-snap-align: start;
+  background: #14140f;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+@media (min-width: 640px) {
+  .frame-card { width: 196px; }
+}
+
+@media (min-width: 1024px) {
+  .frame-card { width: 216px; }
+}
+
+.frame-card.frame-visible {
+  animation: frame-fade-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.frame-sprockets {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: #0c0c09;
+}
+
+.frame-sprockets span {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.frame-photo {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  background: #1f1f18;
+  overflow: hidden;
+}
+
+.frame-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(0.55) contrast(1.05);
+  transition: filter 0.4s ease, transform 0.6s ease;
+}
+
+.frame-card:hover .frame-img {
+  filter: grayscale(0) contrast(1);
+  transform: scale(1.04);
+}
+
+.frame-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.frame-index {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(0, 0, 0, 0.35);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.frame-caption {
+  padding: 12px 10px 14px;
+  text-align: center;
+  background: #14140f;
+}
+
+.frame-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.frame-role {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 0.63rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.frame-scroll {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 4px 4px 8px;
+}
+
+.frame-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.frame-nav-btn {
+  position: absolute;
+  top: 45%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background: var(--surface-container-lowest, #fff);
+  border: 1px solid var(--outline-variant, #ddd);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: opacity 0.25s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.frame-nav-btn:hover {
+  transform: translateY(-50%) scale(1.06);
+}
+
+.frame-nav-btn.frame-nav-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.frame-edge-fade {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 48px;
+  pointer-events: none;
+  z-index: 5;
+  transition: opacity 0.3s ease;
+}
+
+/* ==========================================
+   About Page Specific Utilities
+========================================== */
 .glass-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
 }
 
 .reveal {
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reveal.active {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .sponsor-ticker {
-    animation: scroll 40s linear infinite;
+  animation: scroll 40s linear infinite;
 }
 
 @keyframes scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-
-/* Contact Page Specific Styles */
+/* ==========================================
+   Contact Page Specific Styles
+========================================== */
 .fluid-bg {
-    background: linear-gradient(-45deg, #fbf9f8, #f5f3f3, #ffebee, #ffcdd2);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
+  background: linear-gradient(-45deg, #fbf9f8, #f5f3f3, #ffebee, #ffcdd2);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
 }
 
 @keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .input-glass {
-    background: rgba(255, 255, 255, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  transition: all 0.3s ease;
 }
 
 .input-glass:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 15px rgba(158, 0, 0, 0.2);
-    background: rgba(255, 255, 255, 0.95);
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 15px rgba(158, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .btn-glow {
-    transition: all 0.4s ease;
-    position: relative;
-    overflow: hidden;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-glow::after {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 60%);
-    opacity: 0;
-    transform: scale(0.5);
-    transition: opacity 0.3s, transform 0.3s;
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 0.3s, transform 0.3s;
 }
 
 .btn-glow:hover::after {
-    opacity: 1;
-    transform: scale(1);
+  opacity: 1;
+  transform: scale(1);
 }
 
 .btn-glow:hover {
-    box-shadow: 0 0 25px rgba(204, 0, 0, 0.4);
-    transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(204, 0, 0, 0.4);
+  transform: translateY(-2px);
 }

@@ -1,17 +1,91 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { getAllManagers } from "@/services/auth";
 import ManagementBoardSkeleton from "@/components/ui/Skeletons/ManagementBoardSkeleton";
-import ManagementCard, { getRoleInfo } from "@/components/ui/ManagementCard";
+import SectionHeading from "@/components/ui/SectionHeading";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const TIER_ORDER = { president: 0, vp: 1, member: 2 };
+const AUTOPLAY_INTERVAL_MS = 3000;
+
+export function getRoleInfo(manager) {
+    const role = manager.managerRole;
+    if (role == 1 || role === "President" || role === "Admin") {
+        return { label: "Başkan", tier: "president" };
+    }
+    if (role == 2 || role === "VicePresident") {
+        return { label: "Başkan Yardımcısı", tier: "vp" };
+    }
+    return { label: "Yönetim Kurulu Üyesi", tier: "member" };
+}
+
+function getInitials(name) {
+    if (!name) return "";
+    return name.split(" ").map((p) => p[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function getFullImageUrl(url) {
+    if (!url) return null;
+    if (url.startsWith("http")) return url;
+    return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function FrameCard({ manager, index, isVisible, delayMs }) {
+    const { label } = getRoleInfo(manager);
+    const photoUrl = getFullImageUrl(manager.profileUrl);
+
+    return (
+        <div
+            className={`frame-card ${isVisible ? "frame-visible" : ""}`}
+            style={{ animationDelay: `${delayMs}ms` }}
+        >
+            <div className="frame-sprockets" aria-hidden="true">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <span key={i} />
+                ))}
+            </div>
+
+            <div className="frame-photo">
+                {photoUrl ? (
+                    <img
+                        src={photoUrl}
+                        alt=""
+                        className="frame-img"
+                        draggable={false}
+                    />
+                ) : (
+                    <div className="frame-fallback">
+                        <span>{getInitials(manager.nameSurname)}</span>
+                    </div>
+                )}
+                <span className="frame-index">{String(index + 1).padStart(2, "0")}</span>
+            </div>
+
+            <div className="frame-sprockets" aria-hidden="true">
+                {Array.from({ length: 8 }).map((_, i) => (
+                    <span key={i} />
+                ))}
+            </div>
+
+            <div className="frame-caption">
+                <p className="frame-name">{manager.nameSurname}</p>
+                <span className="frame-role">{label}</span>
+            </div>
+        </div>
+    );
+}
 
 export default function ManagementBoard() {
     const sectionRef = useRef(null);
+    const scrollRef = useRef(null);
+    const directionRef = useRef(1); // 1 = sağa, -1 = sola
+    const lastActionTimeRef = useRef(0);
     const [managers, setManagers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isVisible, setIsVisible] = useState(false);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
 
     useEffect(() => {
         let isCancelled = false;
@@ -26,9 +100,7 @@ export default function ManagementBoard() {
             } catch (err) {
                 console.error("Yönetim kadrosu yüklenirken hata oluştu:", err);
             } finally {
-                if (!isCancelled) {
-                    setIsLoading(false);
-                }
+                if (!isCancelled) setIsLoading(false);
             }
         };
 
@@ -47,20 +119,112 @@ export default function ManagementBoard() {
                     observer.disconnect();
                 }
             },
-            { threshold: 0.15 }
+            { threshold: 0.1 }
         );
 
         observer.observe(el);
         return () => observer.disconnect();
     }, [isLoading]);
 
-    if (isLoading) {
-        return <ManagementBoardSkeleton />;
-    }
+    const getStep = useCallback(() => {
+        const el = scrollRef.current;
+        if (!el) return 260;
+        const card = el.querySelector(".frame-card");
+        return card ? card.offsetWidth + 20 : 260;
+    }, []);
 
-    if (managers.length === 0) {
-        return null;
-    }
+    const updateScrollState = useCallback(() => {
+        const el = scrollRef.current;
+        if (!el) return;
+        setCanScrollLeft(el.scrollLeft > 8);
+        setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 8);
+    }, []);
+
+    useEffect(() => {
+        if (isLoading || managers.length === 0) return;
+        updateScrollState();
+        const el = scrollRef.current;
+        if (!el) return;
+        el.addEventListener("scroll", updateScrollState, { passive: true });
+        window.addEventListener("resize", updateScrollState);
+        return () => {
+            el.removeEventListener("scroll", updateScrollState);
+            window.removeEventListener("resize", updateScrollState);
+        };
+    }, [isLoading, managers.length, updateScrollState]);
+
+    const stepScroll = useCallback((dir) => {
+        const el = scrollRef.current;
+        if (!el) return;
+        const maxScroll = el.scrollWidth - el.clientWidth;
+        let next = el.scrollLeft + dir * getStep();
+
+        if (next >= maxScroll - 4) {
+            next = maxScroll;
+            directionRef.current = -1;
+        } else if (next <= 4) {
+            next = 0;
+            directionRef.current = 1;
+        }
+
+        el.scrollTo({ left: next, behavior: "smooth" });
+    }, [getStep]);
+
+    useEffect(() => {
+        if (isLoading || managers.length === 0) return;
+        const el = scrollRef.current;
+        if (!el) return;
+
+        let rafId;
+
+        const tick = (timestamp) => {
+            if (lastActionTimeRef.current === 0) lastActionTimeRef.current = timestamp;
+
+            if (timestamp - lastActionTimeRef.current >= AUTOPLAY_INTERVAL_MS) {
+                lastActionTimeRef.current = timestamp;
+
+                const maxScroll = el.scrollWidth - el.clientWidth;
+                if (maxScroll > 0) {
+                    if (el.scrollLeft >= maxScroll - 4) directionRef.current = -1;
+                    else if (el.scrollLeft <= 4) directionRef.current = 1;
+
+                    stepScroll(directionRef.current);
+                }
+            }
+
+            rafId = requestAnimationFrame(tick);
+        };
+
+        rafId = requestAnimationFrame(tick);
+        return () => cancelAnimationFrame(rafId);
+    }, [isLoading, managers.length, stepScroll]);
+
+    useEffect(() => {
+        if (isLoading || managers.length === 0) return;
+        const el = scrollRef.current;
+        if (!el) return;
+
+        const markInteraction = () => {
+            lastActionTimeRef.current = performance.now();
+        };
+
+        el.addEventListener("touchstart", markInteraction, { passive: true });
+        el.addEventListener("pointerdown", markInteraction);
+
+        return () => {
+            el.removeEventListener("touchstart", markInteraction);
+            el.removeEventListener("pointerdown", markInteraction);
+        };
+    }, [isLoading, managers.length]);
+
+    const handleNavClick = (dir) => {
+        directionRef.current = dir;
+        lastActionTimeRef.current = performance.now();
+        stepScroll(dir);
+    };
+
+    if (isLoading) return <ManagementBoardSkeleton />;
+    if (managers.length === 0) return null;
 
     const orderedManagers = [...managers].sort(
         (a, b) => TIER_ORDER[getRoleInfo(a).tier] - TIER_ORDER[getRoleInfo(b).tier]
@@ -68,58 +232,54 @@ export default function ManagementBoard() {
 
     return (
         <section className="pt-16 md:pt-24 relative" id="yonetim" ref={sectionRef}>
-            <style>{`
-                @keyframes mb-fade-slide-up {
-                    0% { opacity: 0; transform: translateY(24px); }
-                    100% { opacity: 1; transform: translateY(0); }
-                }
-                .mb-animated-card {
-                    opacity: 0;
-                }
-                .mb-animated-card.mb-visible {
-                    animation: mb-fade-slide-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-                }
-            `}</style>
-
-            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none -z-10">
-                <div className="absolute top-[10%] left-[10%] w-[300px] h-[300px] bg-primary/5 rounded-full blur-[100px]"></div>
-                <div className="absolute bottom-[20%] right-[5%] w-[400px] h-[400px] bg-primary-container/10 rounded-full blur-[120px]"></div>
-            </div>
-
             <div className="max-w-7xl mx-auto relative">
-
-                <div className="flex items-center gap-3 md:gap-4 mb-10 md:mb-16 px-2">
-                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10 text-primary border border-primary/20 shadow-inner shrink-0">
-                        <span className="material-symbols-outlined text-2xl md:text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                            diversity_3
-                        </span>
-                    </div>
-                    <div>
-                        <h2 className="font-headline-md text-2xl md:text-3xl text-on-surface font-bold tracking-tight">
-                            Yönetim Kadromuz
-                        </h2>
-                        <p className="font-body-md text-on-surface-variant text-sm mt-1">
-                            Kulübümüzü geleceğe taşıyan lider takım.
-                        </p>
-                    </div>
+                <div className="mb-8 md:mb-12 px-4 sm:px-6 lg:px-8">
+                    <SectionHeading
+                        icon="diversity_3"
+                        title="Yönetim Kadromuz"
+                        subtitle="Kulübümüzü geleceğe taşıyan lider takım."
+                    />
                 </div>
 
-                <div className="bg-surface-container-lowest/50 backdrop-blur-md rounded-[32px] md:rounded-[40px] py-10 md:py-16 relative border border-outline-variant/30 shadow-2xl shadow-black/5 overflow-hidden">
+                <div className="relative">
+                    <div
+                        className="frame-edge-fade left-0 bg-gradient-to-r from-surface to-transparent"
+                        style={{ opacity: canScrollLeft ? 1 : 0 }}
+                    />
+                    <div
+                        className="frame-edge-fade right-0 bg-gradient-to-l from-surface to-transparent"
+                        style={{ opacity: canScrollRight ? 1 : 0 }}
+                    />
 
-                    <div className="relative z-10 px-6 sm:px-10 md:px-14">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 md:gap-7">
-                            {orderedManagers.map((manager, i) => (
-                                <ManagementCard
-                                    key={manager.id}
-                                    manager={manager}
-                                    index={i}
-                                    isVisible={isVisible}
-                                    animationDelayMs={(i % 10) * 80}
-                                />
-                            ))}
-                        </div>
+                    <button
+                        type="button"
+                        aria-label="Önceki"
+                        onClick={() => handleNavClick(-1)}
+                        className={`frame-nav-btn left-0 md:-left-5 ${canScrollLeft ? "" : "frame-nav-hidden"}`}
+                    >
+                        <span className="material-symbols-outlined text-on-surface">chevron_left</span>
+                    </button>
+
+                    <div ref={scrollRef} className="frame-scroll px-4 sm:px-6 lg:px-8">
+                        {orderedManagers.map((manager, i) => (
+                            <FrameCard
+                                key={manager.id}
+                                manager={manager}
+                                index={i}
+                                isVisible={isVisible}
+                                delayMs={Math.min(i, 14) * 45}
+                            />
+                        ))}
                     </div>
 
+                    <button
+                        type="button"
+                        aria-label="Sonraki"
+                        onClick={() => handleNavClick(1)}
+                        className={`frame-nav-btn right-0 md:-right-5 ${canScrollRight ? "" : "frame-nav-hidden"}`}
+                    >
+                        <span className="material-symbols-outlined text-on-surface">chevron_right</span>
+                    </button>
                 </div>
             </div>
         </section>

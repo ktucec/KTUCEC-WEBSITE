@@ -8,6 +8,7 @@ import { getLatestAnnouncements } from "@/services/announcements";
 import { ApiError } from "@/lib/api";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { formatDate } from "@/lib/formatDate";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 export default function Announcements() {
     const [announcements, setAnnouncements] = useState([]);
@@ -50,16 +51,8 @@ export default function Announcements() {
 
     return (
         <section className="pt-12 md:pt-20" id="duyurular">
-            <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-12 fade-up">
-                <span
-                    className="material-symbols-outlined text-primary text-3xl md:text-4xl shrink-0"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                    campaign
-                </span>
-                <h2 className="font-headline-md text-2xl md:text-headline-md text-(--color-on-surface)">
-                    Son Duyurular
-                </h2>
+            <div className="mb-8 md:mb-12 fade-up">
+                <SectionHeading icon="campaign" title="Son Duyurular" />
             </div>
 
             {error ? (

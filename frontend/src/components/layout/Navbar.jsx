@@ -62,7 +62,7 @@ export default function Navbar() {
         return () => { document.body.style.overflow = ''; };
     }, [isMenuOpen]);
 
-    const isScrolled = isHomePage ? scrollY > 200 : true;
+    const isScrolled = isHomePage ? scrollY > 120 : true;
 
     const navLinks = [
         { href: '/', label: 'Anasayfa' },
@@ -84,7 +84,7 @@ export default function Navbar() {
                 <div className="flex justify-between items-center h-20 px-gutter max-w-container-max mx-auto">
                     <Link
                         href="/"
-                        className={`font-display-lg text-headline-sm font-black tracking-tighter hover:scale-105 active:scale-95 transition-all duration-300 ${isScrolled ? 'text-primary' : 'text-white'
+                        className={`font-display-lg text-headline-sm font-black tracking-tighter hover:scale-105 active:scale-95 transition-all duration-300 ${isScrolled ? 'text-primary' : 'opacity-0'
                             }`}
                     >
                         KTUCEC

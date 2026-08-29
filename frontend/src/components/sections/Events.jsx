@@ -6,6 +6,7 @@ import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { ApiError } from "@/lib/api";
 import { formatDate } from "@/lib/formatDate";
 import EventCardSkeleton from "@/components/ui/Skeletons/EventCardSkeleton";
+import SectionHeading from "@/components/ui/SectionHeading";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -77,16 +78,8 @@ export default function Events() {
 
     return (
         <section className="pt-12 md:pt-20" id="etkinlikler">
-            <div className="flex items-center gap-3 md:gap-4 mb-8 md:mb-12 fade-up">
-                <span
-                    className="material-symbols-outlined text-primary text-3xl md:text-4xl shrink-0"
-                    style={{ fontVariationSettings: "'FILL' 1" }}
-                >
-                    event
-                </span>
-                <h2 className="font-headline-md text-2xl md:text-headline-md text-on-surface">
-                    Yaklaşan Etkinlikler
-                </h2>
+            <div className="mb-8 md:mb-12 fade-up">
+                <SectionHeading icon="event" title="Yaklaşan Etkinlikler" />
             </div>
 
             {error ? (
