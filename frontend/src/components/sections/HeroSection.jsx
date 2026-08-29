@@ -147,7 +147,7 @@ export default function HeroSection() {
                         KTUCEC
                     </h1>
                     <div className="font-headline-sm text-xl md:text-4xl text-white/90 min-h-12">
-                        <span className="text-[var(--color-primary-container)] font-bold">Beraber </span>
+                        <span className="text-red-600 font-bold" style={{ textShadow: "0 0 2px rgba(0,0,0,0.8)" }}>Beraber </span>
                         {text.slice(prefix.length)}
                         <span className="cursor h-8 md:h-12 align-middle"></span>
                     </div>

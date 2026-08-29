@@ -12,7 +12,6 @@ export default function FormsManagementPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Modal States
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedFormId, setSelectedFormId] = useState(null);
@@ -56,7 +55,6 @@ export default function FormsManagementPage() {
         };
     }, []);
 
-    // Form eklendiğinde VEYA güncellendiğinde tabloyu yenile
     const handleSuccess = () => {
         fetchForms();
     };
@@ -66,7 +64,6 @@ export default function FormsManagementPage() {
         setIsUpdateModalOpen(true);
     };
 
-    // Copy form URL to clipboard
     const handleCopyLink = (id) => {
         const url = `https://www.ktucec.com/basvurular?id=${id}`;
         navigator.clipboard.writeText(url);
@@ -76,7 +73,6 @@ export default function FormsManagementPage() {
         <main className="flex-1 overflow-y-auto bg-surface md:p-4">
             <div className="max-w-6xl mx-auto">
 
-                {/* Header & Action Button */}
                 <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="font-headline-md text-3xl text-on-surface">Başvuru Formları</h1>
@@ -94,7 +90,6 @@ export default function FormsManagementPage() {
                     </button>
                 </div>
 
-                {/* Mobile View (Cards) */}
                 <div className="grid grid-cols-1 gap-4 md:hidden">
                     {isLoading ? (
                         <div className="flex justify-center items-center py-12">
@@ -135,28 +130,27 @@ export default function FormsManagementPage() {
                                     <p className="font-body-md text-on-surface-variant mt-0.5">{formatDate(item.createdAt)}</p>
                                 </div>
 
-                                <div className="pt-3 border-t border-outline-variant/20 flex justify-end gap-3 items-center">
+                                <div className="pt-3 border-t border-outline-variant/20 flex justify-end gap-2 items-center">
                                     <button
                                         onClick={() => handleCopyLink(item.id)}
-                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high px-3 py-2 rounded-md cursor-pointer inline-flex items-center gap-1 font-label-md flex-1 justify-center border-none"
+                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high p-2.5 rounded-lg cursor-pointer inline-flex items-center justify-center border-none"
                                         title="Linki Kopyala"
                                     >
-                                        <span className="material-symbols-outlined text-base">content_copy</span>
-                                        Kopyala
+                                        <span className="material-symbols-outlined text-xl">content_copy</span>
                                     </button>
                                     <Link
                                         href={`/admin/forms/${item.id}`}
-                                        className="text-primary hover:text-primary-container font-label-md transition-colors inline-flex items-center gap-1 bg-primary/5 hover:bg-primary/10 px-3 py-2 rounded-md flex-1 justify-center"
+                                        className="text-primary hover:text-primary-container transition-colors inline-flex items-center justify-center bg-primary/5 hover:bg-primary/10 p-2.5 rounded-lg"
+                                        title="Yanıtları Görüntüle"
                                     >
-                                        <span className="material-symbols-outlined text-base">table_chart</span>
-                                        Yanıtlar
+                                        <span className="material-symbols-outlined text-xl">table_chart</span>
                                     </Link>
                                     <button
                                         onClick={() => handleUpdateClick(item.id)}
-                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high px-3 py-2 rounded-md cursor-pointer inline-flex items-center gap-1 font-label-md flex-1 justify-center border-none"
+                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high p-2.5 rounded-lg cursor-pointer inline-flex items-center justify-center border-none"
+                                        title="Formu Güncelle"
                                     >
-                                        <span className="material-symbols-outlined text-base">edit</span>
-                                        Güncelle
+                                        <span className="material-symbols-outlined text-xl">edit</span>
                                     </button>
                                 </div>
                             </div>
@@ -164,7 +158,6 @@ export default function FormsManagementPage() {
                     )}
                 </div>
 
-                {/* Desktop View (Table) */}
                 <div className="hidden md:block bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden mb-6">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -250,14 +243,12 @@ export default function FormsManagementPage() {
                     </table>
                 </div>
 
-                {/* --- ADD FORM MODAL --- */}
                 <AdminAddFormModal
                     isOpen={isAddModalOpen}
                     onClose={() => setIsAddModalOpen(false)}
                     onSuccess={handleSuccess}
                 />
 
-                {/* --- UPDATE FORM MODAL --- */}
                 <AdminUpdateFormModal
                     isOpen={isUpdateModalOpen}
                     onClose={() => setIsUpdateModalOpen(false)}

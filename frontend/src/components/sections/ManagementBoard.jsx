@@ -79,7 +79,7 @@ function FrameCard({ manager, index, isVisible, delayMs }) {
 export default function ManagementBoard() {
     const sectionRef = useRef(null);
     const scrollRef = useRef(null);
-    const directionRef = useRef(1); // 1 = sağa, -1 = sola
+    const directionRef = useRef(1);
     const lastActionTimeRef = useRef(0);
     const [managers, setManagers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -116,6 +116,7 @@ export default function ManagementBoard() {
             ([entry]) => {
                 if (entry.isIntersecting) {
                     setIsVisible(true);
+                    lastActionTimeRef.current = performance.now();
                     observer.disconnect();
                 }
             },
@@ -171,7 +172,7 @@ export default function ManagementBoard() {
     }, [getStep]);
 
     useEffect(() => {
-        if (isLoading || managers.length === 0) return;
+        if (isLoading || managers.length === 0 || !isVisible) return;
         const el = scrollRef.current;
         if (!el) return;
 
@@ -197,7 +198,7 @@ export default function ManagementBoard() {
 
         rafId = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(rafId);
-    }, [isLoading, managers.length, stepScroll]);
+    }, [isLoading, managers.length, isVisible, stepScroll]);
 
     useEffect(() => {
         if (isLoading || managers.length === 0) return;
