@@ -8,10 +8,14 @@ namespace ktucec.Features.Events;
 public record GetAllEventsResponse(
     int Id,
     string Title,
+    string Slug, // Frontend'de URL yönlendirmeleri için eklendi (/etkinlikler/slug)
     string Description,
     DateOnly Date,
     string Location,
-    string? ImageUrl
+    string? ImageUrl,
+    string? Summary, // Kartın üzerinde ufak bir özet göstermek isteyebiliriz
+    string? ApplicationUrl, // Kartın üzerinden direkt başvuru linkine gitmek için
+    int? ParticipantCount
 );
 
 
@@ -29,14 +33,18 @@ public class GetAllEventsHandler
     {
         var allEvents = await _context.Events
             .AsNoTracking()
-            .OrderByDescending(e => e.Date) 
+            .OrderByDescending(e => e.Date)
             .Select(e => new GetAllEventsResponse(
                 e.Id,
                 e.Title,
+                e.Slug,
                 e.Description,
                 e.Date,
                 e.Location,
-                e.ImageUrl
+                e.ImageUrl,
+                e.Summary,
+                e.ApplicationUrl,
+                e.ParticipantCount
             ))
             .ToListAsync();
 
@@ -57,6 +65,6 @@ public static class GetAllEventsEndpoint
             var finalResult = new ApiResult<List<GetAllEventsResponse>>(true, response, "Tüm etkinlikler başarıyla getirildi!");
             return Results.Ok(finalResult);
         })
-        .RequireRateLimiting("FlexPolicy");
+        .RequireRateLimiting("FlexPolicy"); // Herkese açık olduğu için authorize yok, güzel
     }
 }

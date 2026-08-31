@@ -151,6 +151,7 @@ builder.Services.AddScoped<GetCurrentEventsHandler>();
 builder.Services.AddScoped<GetAllEventsHandler>();
 builder.Services.AddScoped<GetEventByIdHandler>();
 builder.Services.AddScoped<GetEventsCountHandler>();
+builder.Services.AddScoped<GetEventBySlugHandler>();
 
 // -- ContactForms -- 
 builder.Services.AddScoped<AddContactFormHandler>();
@@ -225,6 +226,7 @@ app.MapGetCurrentEvents();
 app.MapGetAllEvents();
 app.MapGetEventById();
 app.MapGetEventsCount();
+app.MapGetEventBySlug();
 
 // -- ContactForms --
 app.MapAddContactForm();

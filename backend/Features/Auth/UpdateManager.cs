@@ -19,7 +19,7 @@ public record UpdateManagerRequest(
 
 public record UpdateManagerResponse(int Id);
 
-// 2. HANDLER (değişiklik yok)
+// 2. HANDLER
 public class UpdateManagerHandler
 {
     private readonly KtucecDbContext _context;
@@ -105,7 +105,8 @@ public class UpdateManagerHandler
         if (image != null)
         {
             _imageService.DeleteImage(user.ProfileUrl);
-            user.ProfileUrl = await _imageService.UploadImageAsync(image, "profile");
+            // *** DEĞİŞİKLİK BURADA: Yeni metoda güncellendi ***
+            user.ProfileUrl = await _imageService.UploadProfileImageAsync(image);
         }
 
         user.OtpCode = null;
@@ -117,7 +118,7 @@ public class UpdateManagerHandler
     }
 }
 
-// 3. ENDPOINT — form alanları artık tek tek, complex record binding yerine
+// 3. ENDPOINT
 public static class UpdateManagerEndpoint
 {
     public static void MapUpdateManager(this IEndpointRouteBuilder app)

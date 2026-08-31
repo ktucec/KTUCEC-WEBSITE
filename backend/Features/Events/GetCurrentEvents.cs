@@ -1,6 +1,7 @@
 ﻿using ktucec.Infrastructure.Database;
 using ktucec.Shared.Models;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace ktucec.Features.Events;
 
@@ -8,10 +9,14 @@ namespace ktucec.Features.Events;
 public record GetCurrentEventsResponse(
     int Id,
     string Title,
+    string Slug, // Frontend'de detay sayfasına ( /etkinlikler/slug ) link vermek için eklendi
     string Description,
     DateOnly Date,
     string Location,
-    string? ImageUrl
+    string? ImageUrl,
+    string? Summary,
+    string? ApplicationUrl, // Yaklaşan etkinlikler için EN ÖNEMLİ alan (Hemen Başvur butonu için)
+    int? ParticipantCount
 );
 
 
@@ -30,16 +35,20 @@ public class GetCurrentEventsHandler
         var today = DateOnly.FromDateTime(DateTime.Today);
 
         var currentEvents = await _context.Events
-            .AsNoTracking() 
-            .Where(e => e.Date >= today) 
-            .OrderBy(e => e.Date)
+            .AsNoTracking()
+            .Where(e => e.Date >= today)
+            .OrderBy(e => e.Date) // En yakın tarihli yaklaşan etkinlik en başta gelsin
             .Select(e => new GetCurrentEventsResponse(
                 e.Id,
                 e.Title,
+                e.Slug,
                 e.Description,
                 e.Date,
                 e.Location,
-                e.ImageUrl
+                e.ImageUrl,
+                e.Summary,
+                e.ApplicationUrl,
+                e.ParticipantCount
             ))
             .ToListAsync();
 

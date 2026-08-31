@@ -1,6 +1,7 @@
 ﻿using ktucec.Infrastructure.Database;
 using ktucec.Infrastructure.Services.Media;
 using ktucec.Shared.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 
 namespace ktucec.Features.Events;
@@ -22,15 +23,32 @@ public class DeleteEventHandler
 
     public async Task<DeleteEventResponse?> HandleAsync(int id)
     {
-        var @event = await _context.Events.FindAsync(id);
+        // İlişkili galeri resimlerini de çekiyoruz
+        var @event = await _context.Events
+            .Include(e => e.GalleryImages)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
         if (@event == null)
             return null;
 
-        // remove the physical image file first, so we don't leave orphaned files on disk
+        // 1. FİZİKSEL SİLME: Afişi ve tüm galeri resimlerini sunucudan (wwwroot) uçur
         _imageService.DeleteImage(@event.ImageUrl);
+
+        foreach (var galleryImage in @event.GalleryImages)
+        {
+            _imageService.DeleteImage(galleryImage.ImageUrl);
+        }
+
+        // 2. VERİTABANI SİLME: 
+        // Event silinince cascade kuralıyla bunlar da silinir ama açıkça belirtmek best-practice'dir.
+        if (@event.GalleryImages.Any())
+        {
+            _context.RemoveRange(@event.GalleryImages);
+        }
 
         _context.Events.Remove(@event);
         await _context.SaveChangesAsync();
+
         return new DeleteEventResponse(@event.Id);
     }
 }

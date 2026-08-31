@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ktucec.Infrastructure.Database;
 
@@ -11,9 +12,11 @@ using ktucec.Infrastructure.Database;
 namespace ktucec.Infrastructure.Database.Migrations
 {
     [DbContext(typeof(KtucecDbContext))]
-    partial class KtucecDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260831150050_AddEventDetailFieldsAndGalleryImages")]
+    partial class AddEventDetailFieldsAndGalleryImages
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -119,7 +122,6 @@ namespace ktucec.Infrastructure.Database.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Slug")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Summary")
