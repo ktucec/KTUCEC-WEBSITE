@@ -627,19 +627,48 @@ h1 b {
   
   /* Navigasyon Mobil */
   .nav { display: none; }
-.mobile-dock {
-  position: fixed; display: flex; z-index: 50; bottom: 14px; left: 14px; right: 14px;
-  padding: 14px 10px; background: var(--glass); border: 1px solid #d633f255;
-  backdrop-filter: blur(20px); justify-content: space-around; border-radius: 16px;
-}
-.mobile-dock button {
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
-  border: 0; background: transparent; color: var(--muted);
-  font: 600 10px 'JetBrains Mono'; text-transform: uppercase;
-}
-.mobile-dock button.active { color: var(--pink); }
 
-.mobile-lang-btn { display: flex; }
+  
+  .mobile-dock {
+    position: fixed;
+    bottom: 14px;
+    left: 14px;
+    right: 14px;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 8px;
+    background: var(--glass);
+    border: 1px solid #d633f255;
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+  }
+
+  .mobile-dock button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    padding: 8px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  /* Yazıları tamamen gizle */
+  .mobile-dock button span {
+    display: none;
+  }
+
+  .mobile-dock button.active {
+    color: var(--pink);
+    background: rgba(214, 51, 242, 0.15);
+    box-shadow: 0 0 15px rgba(214, 51, 242, 0.3);
+  }
+
+  .mobile-lang-btn { display: flex; }
 
   /* Kart Yapıları Mobil (About, Stats, Bento vs) */
   .about, .stats, .split-cards, .speakers, .bento, .footer { display: flex; flex-direction: column; }
