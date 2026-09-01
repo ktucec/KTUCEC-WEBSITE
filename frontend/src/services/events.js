@@ -49,3 +49,8 @@ export function deleteEvent(id) {
         credentials: "include",
     });
 }
+
+// get by slug
+export async function getEventBySlug(slug) {
+    return await apiFetch(`/api/events/slug/${slug}`);
+}

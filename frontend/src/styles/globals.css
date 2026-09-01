@@ -90,10 +90,12 @@
 }
 
 /* Base Styles */
-body {
+html, body {
   background-color: var(--color-surface);
   color: var(--color-on-surface);
+  overflow-x: hidden;
 }
+
 
 /* Typewriter Cursor */
 .cursor {
@@ -111,11 +113,11 @@ body {
 
 /* Glass Panels & General Animations */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+  background: rgba(251, 249, 248, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 1.5rem;
 }
 
 .glass-panel-dark {
@@ -183,13 +185,24 @@ body {
   animation: ha-underline-grow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-@keyframes ha-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+/* Floating Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0px); }
 }
 
-.ha-float {
-  animation: ha-float 4.5s ease-in-out infinite;
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+@keyframes bubble {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-bubble {
+  animation: bubble 3s ease-in-out infinite;
 }
 
 .ha-ghost-text {
@@ -198,6 +211,16 @@ body {
 }
 
 .ha-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  font-family: var(--font-montserrat), sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  gap: 6px;
   transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease;
 }
 
@@ -492,4 +515,208 @@ body {
 .btn-glow:hover {
   box-shadow: 0 0 25px rgba(204, 0, 0, 0.4);
   transform: translateY(-2px);
+}
+
+/* ==========================================
+   Event Detail Page Specific Styles
+========================================== */
+.glass-action-bar {
+  background: rgba(251, 249, 248, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  color: var(--color-primary);
+  border: 1px solid rgba(204, 0, 0, 0.2);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(204, 0, 0, 0.4);
+}
+
+.ghost-text {
+  position: fixed;
+  font-size: 15vw;
+  font-weight: 800;
+  color: rgba(158, 0, 0, 0.03);
+  z-index: 0;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-5deg);
+}
+
+.ambient-glow {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(204, 0, 0, 0.15) 0%, rgba(204, 0, 0, 0) 70%);
+  border-radius: 50%;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Poster 3D tilt (Faz 1) */
+.poster-tilt {
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  transform: perspective(1200px) rotateY(var(--tilt-x)) rotateX(var(--tilt-y));
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+/* Text entrance (one-time, not continuous) */
+@keyframes title-reveal {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+.title-reveal { animation: title-reveal 0.9s cubic-bezier(0.65, 0, 0.35, 1) both; }
+
+@keyframes rise-in {
+  0% { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.rise-in { animation: rise-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+@keyframes scale-in {
+  0% { opacity: 0; transform: scale(0.96); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.scale-in { animation: scale-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Chips: one-time entrance + continuous gentle float (badges only, never body text) */
+@keyframes chip-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.chip-anim {
+  animation-name: rise-in, chip-float;
+  animation-duration: 0.6s, 3.4s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1), ease-in-out;
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: both, none;
+}
+
+/* Ambient floating orbs — background depth, used on all 3 phases */
+@keyframes orb-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -60px) scale(1.08); }
+  66% { transform: translate(-30px, 30px) scale(0.94); }
+}
+@keyframes orb-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-50px, 40px) scale(1.1); }
+}
+@keyframes orb-drift-c {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(35px, 50px); }
+}
+.orb { position: absolute; border-radius: 9999px; filter: blur(60px); pointer-events: none; }
+.orb-a { animation: orb-drift-a 14s ease-in-out infinite; }
+.orb-b { animation: orb-drift-b 18s ease-in-out infinite; }
+.orb-c { animation: orb-drift-c 11s ease-in-out infinite; }
+
+/* Floating particles ("fireflies") */
+@keyframes particle-float {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 0.7; }
+  90% { opacity: 0.35; }
+  100% { transform: translateY(-160px) translateX(18px); opacity: 0; }
+}
+.particle {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  animation: particle-float linear infinite;
+}
+
+/* Glass shine sweep across glass panels */
+
+/* Glass shine sweep across glass panels */
+@keyframes glass-shine { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+.glass-shine { position: relative; overflow: hidden; }
+.glass-shine::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: glass-shine 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Slow rotating icon (processing motif, Faz 2) */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.spin-slow { animation: spin-slow 6s linear infinite; }
+
+/* Faz 2 — pending archive shimmer sweep on poster */
+@keyframes pending-sweep {
+  0% { transform: translateX(-120%) rotate(8deg); }
+  100% { transform: translateX(120%) rotate(8deg); }
+}
+.pending-sweep {
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(100deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
+  animation: pending-sweep 3.4s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+
+/* Faz 3 — story-style archive gallery */
+.story-stage { position: relative; overflow: hidden; border-radius: 28px; background: #14110f; }
+.story-slide {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0; transform: scale(1.08);
+  transition: opacity 0.9s ease, transform 6s ease-out;
+}
+.story-slide.active { opacity: 1; transform: scale(1); z-index: 1; }
+
+.story-progress-track { height: 3px; border-radius: 999px; background: rgba(255, 255, 255, 0.25); overflow: hidden; flex: 1; }
+.story-progress-fill { display: block; height: 100%; width: 0%; background: #fff; }
+.story-progress-fill.done { width: 100%; }
+.story-progress-fill.animate { animation: story-fill linear forwards; }
+.story-progress-fill.paused { animation-play-state: paused; }
+@keyframes story-fill { from { width: 0%; } to { width: 100%; } }
+
+.archive-scrim {
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0) 0%, rgba(10, 10, 10, 0.1) 45%, rgba(10, 10, 10, 0.9) 100%);
+}
+
+.type-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 0.85em;
+  vertical-align: -0.08em;
+  margin-left: 4px;
+  background-color: var(--color-primary-container);
+  animation: blink 0.9s step-end infinite;
+}
+.cursor-fade {
+  animation: none;
+  opacity: 0;
+  transition: opacity 0.6s ease 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-reveal, .rise-in, .scale-in, .poster-tilt, .pending-sweep, .pulse-dot,
+  .story-slide, .chip-anim, .orb, .orb-a, .orb-b, .orb-c, .particle,
+  .glass-shine::before, .spin-slow, .type-cursor {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
 }

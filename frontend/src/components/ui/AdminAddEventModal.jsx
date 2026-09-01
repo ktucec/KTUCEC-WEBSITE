@@ -9,7 +9,9 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
         title: '',
         date: '',
         location: '',
-        description: ''
+        description: '',
+        applicationUrl: '',
+        participantCount: ''
     });
 
     const [imageFile, setImageFile] = useState(null);
@@ -22,7 +24,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
-            setFormData({ title: '', date: '', location: '', description: '' });
+            setFormData({ title: '', date: '', location: '', description: '', applicationUrl: '', participantCount: '' });
             setImageFile(null);
             setImagePreview(null);
             setError(null);
@@ -70,13 +72,16 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
 
         try {
             const data = new FormData();
-            data.append('Title', formData.title);
-            data.append('Description', formData.description);
-            data.append('Date', formData.date);
-            data.append('Location', formData.location);
+            data.append('title', formData.title);
+            data.append('description', formData.description);
+            data.append('date', formData.date);
+            data.append('location', formData.location);
+
+            if (formData.applicationUrl) data.append('applicationUrl', formData.applicationUrl);
+            if (formData.participantCount) data.append('participantCount', formData.participantCount);
 
             if (imageFile) {
-                data.append('Image', imageFile);
+                data.append('image', imageFile); // Backend 'image' bekliyor
             }
 
             const response = await addEvent(data);
@@ -105,7 +110,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                 onClick={onClose}
             ></div>
 
-            <div className="relative bg-surface-container-lowest w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl z-10 animate-[slideUp_0.3s_ease-out] border border-outline-variant/30 flex flex-col hide-scrollbar">
+            <div className="relative bg-surface-container-lowest w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl z-10 animate-[slideUp_0.3s_ease-out] border border-outline-variant/30 flex flex-col hide-scrollbar">
 
                 <button
                     onClick={onClose}
@@ -115,9 +120,9 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                 </button>
 
                 <form onSubmit={handleSubmit} className="flex flex-col">
-
+                    {/* Afiş Alanı */}
                     <div
-                        className={`relative w-full h-56 bg-surface-container flex flex-col items-center justify-center cursor-pointer transition-all ${imagePreview ? '' : 'border-b border-dashed border-outline-variant hover:bg-surface-container-high'}`}
+                        className={`relative w-full h-64 bg-surface-container flex flex-col items-center justify-center cursor-pointer transition-all ${imagePreview ? '' : 'border-b border-dashed border-outline-variant hover:bg-surface-container-high'}`}
                         onClick={() => fileInputRef.current?.click()}
                     >
                         <input
@@ -133,7 +138,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                                 <img src={imagePreview} alt="Etkinlik Önizleme" className="w-full h-full object-cover" />
                                 <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <span className="text-white font-label-md flex items-center gap-2">
-                                        <span className="material-symbols-outlined">change_circle</span> Görseli Değiştir
+                                        <span className="material-symbols-outlined">change_circle</span> Afişi Değiştir
                                     </span>
                                 </div>
                                 <button
@@ -147,7 +152,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                         ) : (
                             <div className="flex flex-col items-center text-secondary p-6 text-center">
                                 <span className="material-symbols-outlined text-4xl mb-2 text-primary">add_photo_alternate</span>
-                                <p className="font-label-md">Etkinlik Görseli Yükle</p>
+                                <p className="font-label-md">Etkinlik Afişi Yükle</p>
                                 <p className="font-body-md text-xs mt-1 opacity-70">Sadece PNG, JPG veya JPEG</p>
                             </div>
                         )}
@@ -168,12 +173,7 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                             <label className="font-label-md text-secondary ml-1" htmlFor="title">Etkinlik Başlığı</label>
                             <input
                                 className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
-                                id="title"
-                                name="title"
-                                value={formData.title}
-                                onChange={handleChange}
-                                placeholder="Örn: Yapay Zeka Zirvesi"
-                                required
+                                id="title" name="title" value={formData.title} onChange={handleChange} required placeholder="Örn: Yapay Zeka Zirvesi"
                             />
                         </div>
 
@@ -181,26 +181,32 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                             <div className="flex flex-col gap-2">
                                 <label className="font-label-md text-secondary ml-1" htmlFor="date">Tarih</label>
                                 <input
-                                    type="date"
-                                    className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
-                                    id="date"
-                                    name="date"
-                                    value={formData.date}
-                                    onChange={handleChange}
-                                    required
+                                    type="date" className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all appearance-none"
+                                    id="date" name="date" value={formData.date} onChange={handleChange} required
                                 />
                             </div>
-
                             <div className="flex flex-col gap-2">
                                 <label className="font-label-md text-secondary ml-1" htmlFor="location">Yer / Konum</label>
                                 <input
                                     className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
-                                    id="location"
-                                    name="location"
-                                    value={formData.location}
-                                    onChange={handleChange}
-                                    placeholder="Örn: Osman Turan Kongre Merkezi"
-                                    required
+                                    id="location" name="location" value={formData.location} onChange={handleChange} required placeholder="Örn: Osman Turan Kongre Merkezi"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div className="flex flex-col gap-2">
+                                <label className="font-label-md text-secondary ml-1" htmlFor="applicationUrl">Başvuru Linki (İsteğe Bağlı)</label>
+                                <input
+                                    type="url" className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                                    id="applicationUrl" name="applicationUrl" value={formData.applicationUrl} onChange={handleChange} placeholder="https://forms.gle/..."
+                                />
+                            </div>
+                            <div className="flex flex-col gap-2">
+                                <label className="font-label-md text-secondary ml-1" htmlFor="participantCount">Kontenjan (İsteğe Bağlı)</label>
+                                <input
+                                    type="number" min="0" className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                                    id="participantCount" name="participantCount" value={formData.participantCount} onChange={handleChange} placeholder="Örn: 50"
                                 />
                             </div>
                         </div>
@@ -209,29 +215,17 @@ export default function AdminAddEventModal({ isOpen, onClose, onSuccess }) {
                             <label className="font-label-md text-secondary ml-1" htmlFor="description">Etkinlik Açıklaması</label>
                             <textarea
                                 className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all resize-none"
-                                id="description"
-                                name="description"
-                                rows="4"
-                                value={formData.description}
-                                onChange={handleChange}
-                                placeholder="Etkinliğin detaylarını buraya yazın..."
-                                required
+                                id="description" name="description" rows="4" value={formData.description} onChange={handleChange} required placeholder="Etkinliğin detaylarını buraya yazın..."
                             ></textarea>
                         </div>
 
                         <div className="mt-4 pt-2">
                             <button
-                                disabled={isSubmitting}
-                                type="submit"
+                                disabled={isSubmitting} type="submit"
                                 className="w-full bg-primary hover:bg-primary-container text-white font-label-md py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
                             >
-                                {isSubmitting ? (
-                                    <span>Oluşturuluyor...</span>
-                                ) : (
-                                    <>
-                                        <span className="material-symbols-outlined text-[18px]">publish</span>
-                                        <span>Etkinliği Ekle</span>
-                                    </>
+                                {isSubmitting ? (<span>Oluşturuluyor...</span>) : (
+                                    <><span className="material-symbols-outlined text-[18px]">publish</span><span>Etkinliği Ekle</span></>
                                 )}
                             </button>
                         </div>

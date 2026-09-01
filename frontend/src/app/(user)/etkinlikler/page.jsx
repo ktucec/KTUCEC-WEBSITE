@@ -66,8 +66,9 @@ export default function EventsPage() {
                             align: index % 2 === 0 ? 'right' : 'left',
                             status: dateObj < today ? 'past' : 'active',
                             tag: dateObj < today ? 'Arşiv' : 'Etkinlik',
-                            buttonText: dateObj < today ? null : "Detayları Keşfet",
-                            buttonIcon: dateObj < today ? null : "arrow_forward",
+                            buttonText: dateObj < today ? "Anıları Gör" : "Detayları Keşfet", 
+                            buttonIcon: "arrow_forward",
+                            detailLink: `/etkinlikler/${event.slug}`, 
                         };
                     });
 
