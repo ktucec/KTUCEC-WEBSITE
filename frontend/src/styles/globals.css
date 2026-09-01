@@ -720,3 +720,101 @@ html, body {
     clip-path: none !important;
   }
 }
+
+
+/* =========================================
+   CODEWAVE 2026 MÜKEMMEL BUTON TASARIMI
+   ========================================= */
+
+.codewave-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 2rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: white;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); /* Dışa vuran mor neon gölge */
+}
+
+.codewave-button:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 30px rgba(217, 70, 239, 0.8), 0 0 60px rgba(126, 34, 206, 0.6);
+}
+
+.codewave-button:active {
+  transform: scale(0.95);
+}
+
+/* Dinamik Neon Arkaplan (Sürekli dönen enerjik nöron renkleri) */
+.codewave-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #581c87, #c026d3, #4f46e5, #7e22ce);
+  background-size: 300% 300%;
+  animation: codewave-gradient 4s ease infinite, codewave-pulse 2.5s infinite;
+  z-index: 0;
+}
+
+/* Üzerinden Periyodik Olarak Geçen Şimşek/Parlama (Shine) Efekti */
+.codewave-shine {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-25deg);
+  animation: codewave-shine-anim 3s infinite;
+  z-index: 10;
+}
+
+/* Cam Hissi (Glassmorphism Katmanı - Tıklamaya karşı lüks bir hissiyat yaratır) */
+.codewave-glass {
+  position: absolute;
+  inset: 2px;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 0.65rem;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  transition: background 0.3s ease;
+}
+
+.codewave-button:hover .codewave-glass {
+  background: rgba(0, 0, 0, 0.15); /* Hover olunca cam katmanı incelir, altındaki mor neon patlar */
+}
+
+/* Yazı ve İkon Katmanı */
+.codewave-text {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); /* Yazıya küçük bir iç neon */
+}
+
+/* -------- Keyframes Animasyonları -------- */
+
+@keyframes codewave-gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes codewave-shine-anim {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+@keyframes codewave-pulse {
+  0% { opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { opacity: 0.8; }
+}
