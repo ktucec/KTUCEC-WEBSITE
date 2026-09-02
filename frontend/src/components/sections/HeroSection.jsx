@@ -136,7 +136,7 @@ export default function HeroSection() {
                 <div className="absolute inset-0 bg-black/60 z-10"></div>
                 <div
                     ref={bgRef}
-                    className="w-full h-full bg-cover object-cover"
+                    className="w-full h-full bg-cover object-cover hero-bg-animate"
                     style={{ backgroundImage: "url('/hero.jpeg')", backgroundPositionY: 'center' }}
                 ></div>
             </div>

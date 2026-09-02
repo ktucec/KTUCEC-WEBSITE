@@ -818,3 +818,30 @@ html, body {
   50% { opacity: 1; }
   100% { opacity: 0.8; }
 }
+
+
+
+@keyframes hero-bg-kenburns {
+    0% {
+        transform: scale(1) translate(0, 0);
+    }
+    50% {
+        transform: scale(1.12) translate(-1.5%, -1%);
+    }
+    100% {
+        transform: scale(1) translate(0, 0);
+    }
+}
+
+.hero-bg-animate {
+    animation: hero-bg-kenburns 18s ease-in-out infinite;
+    will-change: transform;
+    transform-origin: center center;
+}
+
+@media (max-width: 767px) {
+    .hero-bg-animate {
+        animation: none;
+    }
+}
+ 
