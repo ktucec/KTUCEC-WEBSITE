@@ -371,10 +371,10 @@ export default function EventDetailPage() {
                             <TypewriterTitle
                                 key={event.id ?? event.slug}
                                 text={event.title}
-                                className="font-display-lg text-5xl md:text-6xl lg:text-7xl text-primary font-black leading-[1.05] tracking-tight drop-shadow-sm"
+                                className="font-display-lg text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-primary font-black leading-[1.1] tracking-tight drop-shadow-sm break-words hyphens-auto"
                             />
 
-                            <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed whitespace-pre-line rise-in" style={{ animationDelay: '0.3s' }}>
+                            <p className="font-body-lg text-body-lg text-on-surface-variant leading-relaxed whitespace-pre-line rise-in break-words" style={{ animationDelay: '0.3s' }}>
                                 {event.summary}
                             </p>
 
