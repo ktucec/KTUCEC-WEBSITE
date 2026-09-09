@@ -7,63 +7,76 @@ export default function Canvas() {
     useEffect(() => {
         const c = ref.current;
         if (!c) return;
-        const x = c.getContext('2d')!;
-        let w = 0, h = 0, raf = 0;
-        const pts = Array.from({ length: 70 }, () => ({
-            x: Math.random(), y: Math.random(),
-            vx: (Math.random() - .5) * .0022, vy: (Math.random() - .5) * .0022,
-            r: 1 + Math.random() * 1.8,
-            phase: Math.random() * Math.PI * 2
-        }));
+        const ctx = c.getContext('2d')!;
+        let raf = 0, t = 0;
+
+        const waves = [
+            { amp: 60, freq: 0.0022, speed: 0.35, y: 0.35, hue: 262, width: 1.6, alpha: 0.5 },
+            { amp: 40, freq: 0.003, speed: -0.25, y: 0.5, hue: 285, width: 1.2, alpha: 0.35 },
+            { amp: 80, freq: 0.0016, speed: 0.18, y: 0.65, hue: 300, width: 1.8, alpha: 0.4 },
+            { amp: 30, freq: 0.0045, speed: -0.4, y: 0.8, hue: 220, width: 1, alpha: 0.25 },
+        ];
+        const DOT_COUNT = 14;
 
         const resize = () => {
-            w = c.width = innerWidth * devicePixelRatio;
-            h = c.height = innerHeight * devicePixelRatio;
-            x.scale(devicePixelRatio, devicePixelRatio);
+            c.width = innerWidth * devicePixelRatio;
+            c.height = innerHeight * devicePixelRatio;
         };
         resize();
 
-        let t = 0;
         const draw = () => {
-            t += 0.02;
-            x.clearRect(0, 0, innerWidth, innerHeight);
-            x.fillStyle = '#030b3c'; x.fillRect(0, 0, innerWidth, innerHeight);
+            t += 0.016;
+            const W = innerWidth, H = innerHeight;
+            ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
 
-            pts.forEach(p => {
-                p.x += p.vx; p.y += p.vy;
-                if (p.x < 0 || p.x > 1) p.vx *= -1;
-                if (p.y < 0 || p.y > 1) p.vy *= -1;
+            ctx.fillStyle = '#05061a';
+            ctx.fillRect(0, 0, W, H);
 
-                // hafif nabız (pulse) efekti - boyut ve parlaklık zamanla değişiyor
-                const pulse = 0.6 + 0.4 * Math.sin(t + p.phase);
-                const radius = p.r * (0.8 + 0.5 * pulse);
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+            bgGrad.addColorStop(0, 'rgba(60,40,120,0.12)');
+            bgGrad.addColorStop(1, 'rgba(10,10,30,0)');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, W, H);
 
-                // glow efekti
-                const px = p.x * innerWidth, py = p.y * innerHeight;
-                const grad = x.createRadialGradient(px, py, 0, px, py, radius * 4);
-                grad.addColorStop(0, `rgba(214,51,242,${0.55 * pulse})`);
-                grad.addColorStop(1, 'rgba(214,51,242,0)');
-                x.fillStyle = grad;
-                x.fillRect(px - radius * 4, py - radius * 4, radius * 8, radius * 8);
-
-                x.fillStyle = `rgba(255,255,255,${0.7 * pulse})`;
-                x.beginPath();
-                x.arc(px, py, radius, 0, Math.PI * 2);
-                x.fill();
-
-                pts.forEach(q => {
-                    const d = Math.hypot((p.x - q.x) * innerWidth, (p.y - q.y) * innerHeight);
-                    if (d < 130) {
-                        x.strokeStyle = `rgba(214,51,242,${.28 * (1 - d / 130)})`;
-                        x.lineWidth = 0.8;
-                        x.beginPath(); x.moveTo(px, py);
-                        x.lineTo(q.x * innerWidth, q.y * innerHeight); x.stroke();
-                    }
-                });
+            waves.forEach((wv) => {
+                ctx.beginPath();
+                const baseY = wv.y * H;
+                for (let x = 0; x <= W; x += 6) {
+                    const yy = baseY
+                        + Math.sin(x * wv.freq + t * wv.speed) * wv.amp
+                        + Math.sin(x * wv.freq * 2.3 + t * wv.speed * 1.7) * wv.amp * 0.25;
+                    if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+                }
+                const lineGrad = ctx.createLinearGradient(0, 0, W, 0);
+                lineGrad.addColorStop(0, `hsla(${wv.hue}, 80%, 65%, 0)`);
+                lineGrad.addColorStop(0.15, `hsla(${wv.hue}, 80%, 65%, ${wv.alpha})`);
+                lineGrad.addColorStop(0.85, `hsla(${wv.hue}, 80%, 65%, ${wv.alpha})`);
+                lineGrad.addColorStop(1, `hsla(${wv.hue}, 80%, 65%, 0)`);
+                ctx.strokeStyle = lineGrad;
+                ctx.lineWidth = wv.width;
+                ctx.shadowColor = `hsla(${wv.hue}, 90%, 60%, 0.8)`;
+                ctx.shadowBlur = 8;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
             });
+
+            // seyrek, yavaş parlayan noktalar — kod parçacığı hissi, çok az sayıda ve dikkat dağıtmaz
+            for (let i = 0; i < DOT_COUNT; i++) {
+                const seed = i * 137.5;
+                const px = ((Math.sin(seed) * 0.5 + 0.5 + t * 0.006 + i * 0.013) % 1) * W;
+                const py = (Math.sin(seed * 1.7) * 0.5 + 0.5) * H;
+                const pulse = 0.5 + 0.5 * Math.sin(t * 0.8 + seed);
+                ctx.fillStyle = `hsla(280, 90%, 75%, ${0.5 * pulse})`;
+                ctx.beginPath();
+                ctx.arc(px, py, 1.5 + pulse, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
             raf = requestAnimationFrame(draw);
         };
-        addEventListener('resize', resize); draw();
+
+        addEventListener('resize', resize);
+        draw();
         return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize); };
     }, []);
 
