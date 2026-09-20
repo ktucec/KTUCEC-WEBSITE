@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { getAllManagers } from "@/services/auth";
 import ManagementBoardSkeleton from "@/components/ui/Skeletons/ManagementBoardSkeleton";
 import SectionHeading from "@/components/ui/SectionHeading";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
-const TIER_ORDER = { president: 0, vp: 1, member: 2 };
 const AUTOPLAY_INTERVAL_MS = 3000;
 
 export function getRoleInfo(manager) {
@@ -29,6 +28,15 @@ function getFullImageUrl(url) {
     if (!url) return null;
     if (url.startsWith("http")) return url;
     return `${API_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
 }
 
 function FrameCard({ manager, index, isVisible, delayMs }) {
@@ -224,12 +232,27 @@ export default function ManagementBoard() {
         stepScroll(dir);
     };
 
+    const orderedManagers = useMemo(() => {
+        const presidents = [];
+        const vps = [];
+        const members = [];
+
+        for (const manager of managers) {
+            const tier = getRoleInfo(manager).tier;
+            if (tier === "president") {
+                presidents.push(manager);
+            } else if (tier === "vp") {
+                vps.push(manager);
+            } else {
+                members.push(manager);
+            }
+        }
+
+        return [...presidents, ...shuffleArray(vps), ...shuffleArray(members)];
+    }, [managers]);
+
     if (isLoading) return <ManagementBoardSkeleton />;
     if (managers.length === 0) return null;
-
-    const orderedManagers = [...managers].sort(
-        (a, b) => TIER_ORDER[getRoleInfo(a).tier] - TIER_ORDER[getRoleInfo(b).tier]
-    );
 
     return (
         <section className="pt-16 md:pt-24 relative" id="yonetim" ref={sectionRef}>
