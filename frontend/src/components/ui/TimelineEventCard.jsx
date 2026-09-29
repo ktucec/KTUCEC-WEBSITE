@@ -18,12 +18,23 @@ const TimelineEventCard = forwardRef(({ event, index }, ref) => {
                 className={`node-content w-full md:w-[45%] flex items-center gap-8 ${event.align === 'right' ? 'reveal-right' : 'reveal-left flex-row-reverse'}`}
             >
                 {/* Date Column (Vertical Text) */}
-                <div className={`vertical-text font-display-lg opacity-50 select-none ${event.status === 'past' ? 'text-secondary' : 'text-primary'}`}>
+                <div className={`vertical-text font-display-lg font-bold opacity-50 select-none ${event.status === 'past' ? 'text-secondary' : 'text-primary'}`}>
                     {event.displayDate}
                 </div>
 
                 {/* Glass Card */}
-                <div className={`glass-panel p-10 flex-1 relative overflow-hidden ${event.align === 'right' ? 'shape-blob-1' : 'shape-blob-2'} ${event.status === 'past' ? 'grayscale' : ''}`}>
+                <div
+                    className={`glass-panel p-10 flex-1 relative overflow-hidden ${event.align === 'right' ? 'shape-blob-1' : 'shape-blob-2'} ${event.status === 'past' ? 'grayscale' : ''}`}
+                    style={{
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.62) 100%)',
+                        backdropFilter: 'blur(28px) saturate(180%)',
+                        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
+                        border: '1px solid rgba(255,255,255,0.55)',
+                        isolation: 'isolate',
+                        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+                        maskImage: 'radial-gradient(white, black)',
+                    }}
+                >
 
                     {/* Diagonal Image Mask */}
                     {event.imageUrl && (
@@ -38,7 +49,7 @@ const TimelineEventCard = forwardRef(({ event, index }, ref) => {
                             {event.tag}
                         </span>
 
-                        <h2 className={`font-headline-md mb-4 ${event.status === 'past' ? 'text-secondary' : 'text-on-surface'}`}>
+                        <h2 className={`font-headline-md text-xl font-bold mb-4 ${event.status === 'past' ? 'text-secondary' : 'text-on-surface'}`}>
                             {event.title}
                         </h2>
 

@@ -171,14 +171,14 @@ export default function EventsPage() {
                 </nav>
 
                 {/* Test Uyarı Kartı */}
-                <div className="inline-flex items-center gap-3 bg-yellow-400/30 border border-yellow-500/40 text-black px-4 py-2.5 rounded-2xl max-w-xl mx-auto mb-6 text-left backdrop-blur-sm shadow-sm">
+                {/* <div className="inline-flex items-center gap-3 bg-yellow-400/30 border border-yellow-500/40 text-black px-4 py-2.5 rounded-2xl max-w-xl mx-auto mb-6 text-left backdrop-blur-sm shadow-sm">
                     <span className="material-symbols-outlined text-yellow-600 shrink-0 text-xl md:text-2xl">
                         warning
                     </span>
                     <p className="font-body-md text-xs md:text-sm text-black font-medium leading-snug">
                         bu sayfadaki tüm etkinlikler websitesi test amacıyla yüklenmiştir, güncelleme yapılacaktır
                     </p>
-                </div>
+                </div> */}
 
                 <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">
                     Etkinlik Akışı
