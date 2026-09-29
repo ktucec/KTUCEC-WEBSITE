@@ -520,9 +520,15 @@ export default function EventDetailPage() {
                                         <span className="hidden sm:inline">Paylaş</span>
                                     </button>
                                     {event.applicationUrl ? (
-                                        <a href={event.applicationUrl} target="_blank" rel="noopener noreferrer" className="flex-[2] sm:flex-none btn-glow px-10 py-4 font-label-md text-label-md uppercase tracking-widest text-lg md:text-xl flex items-center justify-center gap-2 group cursor-pointer">
-                                            HEMEN BAŞVUR
-                                            <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                                        <a
+                                            href={event.applicationUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="relative overflow-hidden flex-[2] sm:flex-none px-6 py-3 sm:px-8 md:px-10 md:py-4 rounded-xl bg-emerald-500/80 hover:bg-emerald-500 text-white font-label-md uppercase tracking-wider md:tracking-widest text-sm sm:text-base md:text-xl flex items-center justify-center gap-2 group cursor-pointer shadow-[0_0_20px_rgba(16,185,129,0.35)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:-translate-y-0.5 active:scale-95 transition-all duration-300"
+                                        >
+                                            <span className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent transition-transform duration-700"></span>
+                                            <span className="relative">HEMEN BAŞVUR</span>
+                                            <span className="relative material-symbols-outlined text-lg md:text-2xl group-hover:translate-x-1 transition-transform">arrow_forward</span>
                                         </a>
                                     ) : (
                                         <div className="flex-[2] sm:flex-none bg-secondary/20 text-secondary px-10 py-4 rounded-xl font-label-md text-label-md uppercase tracking-widest text-lg md:text-xl flex items-center justify-center gap-2">
