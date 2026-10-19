@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import PageHeader from '@/components/ui/PageHeader';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import AnnouncementCard from '@/components/ui/AnnouncementCard';
 import AnnouncementModal from '@/components/ui/AnnouncementModal';
@@ -186,69 +186,46 @@ function AnnouncementsContent() {
 
     return (
         <>
-            <main className="pt-32 pb-24 px-gutter max-w-container-max mx-auto relative z-10">
-                <section className="mb-12">
-                    <nav className="flex items-center flex-wrap gap-1.5 md:gap-2 text-on-surface-variant/60 font-label-md text-xs md:text-label-md mb-3 md:mb-4 uppercase tracking-widest">
-                        <Link href="/" className="hover:text-primary transition-colors">
-                            Ana Sayfa
-                        </Link>
-                        <span className="material-symbols-outlined text-[12px] md:text-[14px] shrink-0">
-                            chevron_right
-                        </span>
-                        <span className="text-primary font-bold">
-                            Duyurular
-                        </span>
-                    </nav>
-                    <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">Duyurular</h1>
-                    <p className="font-size-10 font-body-lg md:text-body-lg text-on-surface-variant max-w-2xl">
-                        Bilgisayar Mühendisliği topluluğumuzdan en güncel haberler, teknik makaleler ve kariyer fırsatları.
-                    </p>
-                </section>
+            <main className="px-5 sm:px-gutter max-w-container-max mx-auto relative z-10 pb-28">
+                <PageHeader
+                    crumb="Duyurular"
+                    lines={["Duyurular"]}
+                    ghost="Yeni!"
+                    description="Kulüpten haberler, etkinlik kayıtları ve kaçırmaman gereken fırsatlar."
+                />
 
-                <section className="fade-up mb-10 md:mb-16">
-                    <div className="glass-panel p-5 sm:p-6 md:p-8 rounded-[20px] md:rounded-[24px] shadow-sm flex flex-col md:flex-row items-stretch md:items-end gap-4 md:gap-6 border-white/60">
-                        <div className="w-full md:w-auto flex-1">
-                            <label className="block font-label-md text-xs md:text-label-md text-on-surface-variant mb-1.5 md:mb-2 uppercase tracking-wider">
-                                Başlangıç Tarihi
-                            </label>
-                            <div className="relative">
-                                <input
-                                    value={startDate}
-                                    max={endDate || undefined}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    className="w-full bg-white/50 border border-outline-variant/30 rounded-xl px-3.5 py-2.5 md:px-4 md:py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all font-body-md text-sm md:text-base text-on-surface"
-                                    type="date"
-                                />
-                            </div>
-                        </div>
-                        <div className="w-full md:w-auto flex-1">
-                            <label className="block font-label-md text-xs md:text-label-md text-on-surface-variant mb-1.5 md:mb-2 uppercase tracking-wider">
-                                Bitiş Tarihi
-                            </label>
-                            <div className="relative">
-                                <input
-                                    value={endDate}
-                                    min={startDate || undefined}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-full bg-white/50 border border-outline-variant/30 rounded-xl px-3.5 py-2.5 md:px-4 md:py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all font-body-md text-sm md:text-base text-on-surface"
-                                    type="date"
-                                />
-                            </div>
-                        </div>
-                        <div className="w-full md:w-auto flex flex-col gap-2">
-                            <button
-                                onClick={handleFilter}
-                                className="w-full bg-primary text-white px-8 md:px-10 py-3 md:py-3.5 rounded-xl font-label-md text-xs md:text-label-md uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                                <span className="material-symbols-outlined text-[18px] md:text-[20px]">filter_list</span>
+                {/* Tarih filtresi */}
+                <section className="fade-up mb-10 md:mb-14">
+                    <div className="surface-glass rounded-[26px] p-4 sm:p-5 flex flex-col md:flex-row items-stretch md:items-end gap-3 md:gap-4">
+                        <label className="flex-1 block">
+                            <span className="block text-sm font-semibold text-muted mb-2 ml-1">Başlangıç tarihi</span>
+                            <input
+                                value={startDate}
+                                max={endDate || undefined}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                className="field"
+                                type="date"
+                            />
+                        </label>
+                        <label className="flex-1 block">
+                            <span className="block text-sm font-semibold text-muted mb-2 ml-1">Bitiş tarihi</span>
+                            <input
+                                value={endDate}
+                                min={startDate || undefined}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                className="field"
+                                type="date"
+                            />
+                        </label>
+                        <div className="flex gap-2">
+                            <button onClick={handleFilter} className="btn btn-primary flex-1 md:flex-none">
+                                <span className="material-symbols-outlined text-[20px]" aria-hidden="true">filter_list</span>
                                 Filtrele
                             </button>
                             {(startDate || endDate) && (
-                                <button
-                                    onClick={handleClearFilter}
-                                    className="w-full text-error text-xs md:text-sm font-medium hover:underline flex justify-center items-center cursor-pointer"
-                                >
-                                    Filtreyi Temizle
+                                <button onClick={handleClearFilter} className="btn btn-ghost" aria-label="Filtreyi temizle">
+                                    <span className="material-symbols-outlined text-[20px]" aria-hidden="true">close</span>
+                                    <span className="hidden sm:inline">Temizle</span>
                                 </button>
                             )}
                         </div>
@@ -256,83 +233,85 @@ function AnnouncementsContent() {
                 </section>
 
                 {error ? (
-                    <div className="text-center py-12">
-                        <p className="text-error font-body-lg">{error}</p>
+                    <div className="surface-card rounded-[26px] py-14 px-6 text-center">
+                        <p className="font-display text-2xl font-bold text-ink">Duyurular yüklenemedi</p>
+                        <p className="mt-2 text-muted">{error} Sayfayı yenileyip tekrar dene.</p>
                     </div>
                 ) : (
-                    <>
-                        <div id="announcements-list" className="scroll-mt-32">
-                            {isLoading ? (
-                                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    {Array.from({ length: itemsPerPage }).map((_, index) => (
-                                        <AnnouncementCardSkeleton key={index} index={index} />
+                    <div id="announcements-list" className="scroll-mt-32">
+                        {isLoading ? (
+                            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                                {Array.from({ length: itemsPerPage }).map((_, index) => (
+                                    <AnnouncementCardSkeleton key={index} index={index} />
+                                ))}
+                            </section>
+                        ) : filteredAnnouncements.length === 0 ? (
+                            <div className="surface-card rounded-[26px] py-16 px-6 text-center">
+                                <p className="font-display text-2xl font-bold text-ink">Bu aralıkta duyuru yok</p>
+                                <p className="mt-2 text-muted">Tarih aralığını genişletmeyi ya da filtreyi temizlemeyi dene.</p>
+                                {(startDate || endDate) && (
+                                    <button onClick={handleClearFilter} className="btn btn-ghost mt-6">Filtreyi temizle</button>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
+                                    {currentItems.map((item, index) => (
+                                        <AnnouncementCard
+                                            key={item.id}
+                                            title={item.title}
+                                            description={item.content}
+                                            date={formatDate(item.createdAt)}
+                                            rawDate={item.createdAt}
+                                            hasLink={!!item.link}
+                                            index={index}
+                                            onClick={() => handleOpenModal(item)}
+                                        />
                                     ))}
                                 </section>
-                            ) : filteredAnnouncements.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center text-center py-20 opacity-60">
-                                    <span className="material-symbols-outlined text-5xl mb-3 text-on-surface-variant">
-                                        campaign
-                                    </span>
-                                    <p className="font-body-lg text-on-surface-variant">
-                                        Duyuru bulunamadı.
-                                    </p>
-                                </div>
-                            ) : (
-                                <>
-                                    <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                        {currentItems.map((item, index) => (
-                                            <AnnouncementCard
-                                                key={item.id}
-                                                id={item.id}
-                                                title={item.title}
-                                                description={item.content}
-                                                date={formatDate(item.createdAt)}
-                                                index={index}
-                                                onClick={() => handleOpenModal(item)}
-                                            />
+
+                                {totalPages > 1 && (
+                                    <nav className="mt-14 md:mt-20 flex justify-center items-center gap-2 fade-up" aria-label="Sayfalar">
+                                        <button
+                                            onClick={() => paginate(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                            aria-label="Önceki sayfa"
+                                            className="grid place-items-center w-12 h-12 rounded-full border border-line text-ink hover:border-brand hover:text-brand transition-all disabled:opacity-35 disabled:pointer-events-none cursor-pointer"
+                                        >
+                                            <span className="material-symbols-outlined" aria-hidden="true">chevron_left</span>
+                                        </button>
+
+                                        {getPageNumbers().map(num => (
+                                            <button
+                                                key={num}
+                                                onClick={() => paginate(num)}
+                                                aria-current={currentPage === num ? 'page' : undefined}
+                                                className={`grid place-items-center w-12 h-12 rounded-full font-display font-bold text-lg transition-all duration-300 cursor-pointer ${currentPage === num
+                                                    ? 'bg-brand text-white scale-110 shadow-[0_10px_24px_-8px_rgba(215,20,26,0.6)]'
+                                                    : 'text-ink hover:bg-ink/5'
+                                                    }`}
+                                            >
+                                                {num}
+                                            </button>
                                         ))}
-                                    </section>
 
-                                    {totalPages > 1 && (
-                                        <nav className="mt-10 md:mt-20 flex justify-center items-center gap-1.5 sm:gap-2 fade-up">
-                                            <button
-                                                onClick={() => paginate(currentPage - 1)}
-                                                disabled={currentPage === 1}
-                                                className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                                            >
-                                                <span className="material-symbols-outlined text-sm sm:text-base md:text-xl">chevron_left</span>
-                                            </button>
+                                        {totalPages > 3 && currentPage < totalPages - 1 && (
+                                            <span className="px-1 text-muted select-none">…</span>
+                                        )}
 
-                                            {getPageNumbers().map(num => (
-                                                <button
-                                                    key={num}
-                                                    onClick={() => paginate(num)}
-                                                    className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center font-bold text-xs sm:text-sm md:text-base transition-all cursor-pointer ${currentPage === num
-                                                        ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                                        : 'glass-panel text-on-surface-variant hover:text-primary hover:border-primary'
-                                                        }`}
-                                                >
-                                                    {num}
-                                                </button>
-                                            ))}
-
-                                            {totalPages > 3 && currentPage < totalPages - 1 && (
-                                                <span className="px-1 sm:px-2 text-on-surface-variant text-xs sm:text-sm select-none">...</span>
-                                            )}
-
-                                            <button
-                                                onClick={() => paginate(currentPage + 1)}
-                                                disabled={currentPage === totalPages}
-                                                className="glass-panel w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl flex items-center justify-center text-on-surface-variant hover:text-primary hover:border-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                                            >
-                                                <span className="material-symbols-outlined text-sm sm:text-base md:text-xl">chevron_right</span>
-                                            </button>
-                                        </nav>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    </>
+                                        <button
+                                            onClick={() => paginate(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                            aria-label="Sonraki sayfa"
+                                            className="grid place-items-center w-12 h-12 rounded-full border border-line text-ink hover:border-brand hover:text-brand transition-all disabled:opacity-35 disabled:pointer-events-none cursor-pointer"
+                                        >
+                                            <span className="material-symbols-outlined" aria-hidden="true">chevron_right</span>
+                                        </button>
+                                    </nav>
+                                )}
+                            </>
+                        )}
+                    </div>
                 )}
             </main>
 
@@ -350,7 +329,7 @@ export default function AnnouncementsPage() {
     return (
         <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center">
-                <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-4 border-brand border-t-transparent rounded-full animate-spin"></div>
             </div>
         }>
             <AnnouncementsContent />

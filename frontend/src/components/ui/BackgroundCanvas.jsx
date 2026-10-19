@@ -18,9 +18,20 @@ export default function BackgroundCanvas() {
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     // ---- Tunables ----
-    const NODE_COLOR = 'rgba(20, 20, 20, OPA)';       // düğüm rengi (koyu nötr)
-    const LINK_COLOR = '20, 20, 20';                   // çizgi rengi (rgb, opacity ayrı ekleniyor)
-    const PULSE_COLOR = '128, 0, 0';                    // sinyal/pulse rengi (kırmızımsı accent)
+    // Renkler temadan okunur (globals.css: --net-node / --net-pulse); tema değişince güncellenir
+    let NODE_RGB = '20, 20, 20';
+    let LINK_COLOR = '20, 20, 20';
+    let PULSE_COLOR = '128, 0, 0';
+    const readThemeColors = () => {
+      const cs = getComputedStyle(document.documentElement);
+      const node = cs.getPropertyValue('--net-node').trim();
+      const pulse = cs.getPropertyValue('--net-pulse').trim();
+      if (node) { NODE_RGB = node; LINK_COLOR = node; }
+      if (pulse) PULSE_COLOR = pulse;
+    };
+    readThemeColors();
+    const themeObserver = new MutationObserver(readThemeColors);
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
     const LINK_DIST = 150;         // px, bu mesafeden yakın düğümler birbirine bağlanır
     const NODE_COUNT_DIVISOR = 14000; // ekran alanına göre düğüm sayısı hesaplanır
     const MAX_NODES = 140;
@@ -201,7 +212,7 @@ export default function BackgroundCanvas() {
         const radius = n.r + pulse * 0.6;
 
         ctx.beginPath();
-        ctx.fillStyle = NODE_COLOR.replace('OPA', opacity.toFixed(3));
+        ctx.fillStyle = `rgba(${NODE_RGB}, ${opacity.toFixed(3)})`;
         ctx.arc(n.x, n.y, radius, 0, Math.PI * 2);
         ctx.fill();
       }
@@ -213,6 +224,7 @@ export default function BackgroundCanvas() {
 
     return () => {
       cancelAnimationFrame(animationFrameId);
+      themeObserver.disconnect();
       if (resizeObserver) resizeObserver.disconnect();
       window.removeEventListener('mousemove', handlePointerMove);
       window.removeEventListener('mouseleave', handlePointerLeave);
@@ -220,7 +232,7 @@ export default function BackgroundCanvas() {
   }, []);
 
   return (
-    <div className="fixed inset-0 w-full h-full z-0 opacity-30 lg:opacity-20 pointer-events-none">
+    <div className="fixed inset-0 w-full h-full z-0 opacity-30 lg:opacity-20 dark:opacity-35 dark:lg:opacity-25 pointer-events-none">
       <canvas ref={canvasRef} className="block w-full h-full" />
     </div>
   );

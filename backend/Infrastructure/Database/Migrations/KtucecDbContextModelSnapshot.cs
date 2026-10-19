@@ -392,7 +392,8 @@ namespace ktucec.Infrastructure.Database.Migrations
 
                     b.HasOne("ktucec.Domain.Entities.User", "User")
                         .WithMany("FormApplications")
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Form");
 

@@ -1,20 +1,13 @@
+import '@fontsource-variable/bricolage-grotesque/wdth.css';
+import '@fontsource-variable/instrument-sans/wdth.css';
 import '@/styles/globals.css';
 import BackgroundCanvas from '@/components/ui/BackgroundCanvas';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
-import { Inter, Montserrat } from "next/font/google";
+import FxLayer from '@/components/fx/FxLayer';
 
-const inter = Inter({
-    subsets: ["latin"],
-    variable: "--font-inter",
-    display: "swap",
-});
-
-const montserrat = Montserrat({
-    subsets: ["latin"],
-    variable: "--font-montserrat",
-    display: "swap",
-});
+// Sayfa çizilmeden önce temayı uygular; açılışta beyaz/siyah yanıp sönmeyi engeller.
+const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}if(t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})();`;
 
 const SITE_URL = 'https://www.ktucec.com';
 
@@ -154,8 +147,9 @@ const organizationJsonLd = {
 
 export default function RootLayout({ children }) {
     return (
-        <html lang="tr" className={`${inter.variable} ${montserrat.variable}`}>
+        <html lang="tr" className="site" suppressHydrationWarning>
             <head>
+                <script dangerouslySetInnerHTML={{ __html: themeScript }} />
                 <link
                     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
                     rel="stylesheet"
@@ -168,8 +162,11 @@ export default function RootLayout({ children }) {
             <body
                 className={`antialiased relative min-h-screen flex flex-col overflow-x-hidden selection:bg-primary-container selection:text-white`}
             >
-                {/* Global WebGL Background */}
+                {/* Arka plandaki ağ animasyonu */}
                 <BackgroundCanvas />
+
+                {/* Scroll çubuğu, tıklama kıvılcımları, spot ışığı, sürprizler */}
+                <FxLayer />
 
                 {/* Top Navbar */}
                 <Navbar />

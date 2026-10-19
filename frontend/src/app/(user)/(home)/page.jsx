@@ -1,5 +1,6 @@
 "use client";
 import Hero from '@/components/sections/HeroSection';
+import TopicBands from '@/components/fx/TopicBands';
 import Announcements from '@/components/sections/Announcements';
 import Events from '@/components/sections/Events';
 import ManagementBoard from '@/components/sections/ManagementBoard';
@@ -12,12 +13,13 @@ export default function Home() {
     return (
         <>
             <Hero />
-            <main className="max-w-(--spacing-container-max) mx-auto px-gutter py-margin-desktop space-y-[120px] relative z-10">
+            <TopicBands />
+            <div className="max-w-container-max mx-auto px-5 sm:px-gutter pt-10 md:pt-16 pb-28 md:pb-36 space-y-28 md:space-y-40 relative z-10">
                 <Announcements />
                 <Events />
                 <ManagementBoard />
                 <About />
-            </main>
+            </div>
         </>
     );
 }

@@ -2,83 +2,90 @@
 
 import { useEffect } from "react";
 import Link from 'next/link';
+import { formatDate } from "@/lib/formatDate";
 
-export default function AnnouncementModal({ isOpen, onClose, announcement }) {
+// Duyuru detayı: arka plan bulanıklaşır, kart aşağıdan yaylanarak gelir.
+export default function AnnouncementModal({ isOpen, onClose, announcement, isLoading }) {
     useEffect(() => {
-        if (isOpen) {
-            document.body.style.overflow = "hidden";
-        } else {
-            document.body.style.overflow = "unset";
-        }
-        return () => {
-            document.body.style.overflow = "unset";
-        };
+        document.body.style.overflow = isOpen ? "hidden" : "unset";
+        return () => { document.body.style.overflow = "unset"; };
     }, [isOpen]);
 
-    if (!isOpen || !announcement) return null;
+    useEffect(() => {
+        if (!isOpen) return;
+        const onKey = (e) => e.key === "Escape" && onClose();
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [isOpen, onClose]);
 
-    const hasLink = announcement.link !== null && announcement.link !== undefined && announcement.link !== "";
+    if (!isOpen) return null;
+
+    const hasLink = !!announcement?.link;
+    const dateText = announcement ? formatDate(announcement.createdAt || announcement.date) : "";
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-6"
             onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="announcement-title"
         >
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-[fadeIn_0.3s_ease-out]"></div>
+            <div className="absolute inset-0 bg-[#070d18]/70 backdrop-blur-md animate-[fadeIn_0.3s_ease-out]" />
 
-            {/* Modal Body */}
             <div
-                className="relative bg-surface text-on-surface w-full max-w-2xl rounded-[32px] p-8 md:p-10 shadow-2xl z-10 h-auto max-h-[90vh] overflow-y-auto animate-[slideUp_0.3s_ease-out] border border-white/20"
+                className="relative w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-[30px] bg-card text-ink border border-line shadow-2xl animate-[modal-pop_0.55s_cubic-bezier(0.34,1.56,0.64,1)]"
                 onClick={(e) => e.stopPropagation()}
             >
-                <button
-                    onClick={onClose}
-                    className="absolute top-6 right-6 text-on-surface-variant hover:text-primary transition-colors bg-surface-container hover:bg-primary/10 rounded-full w-10 h-10 flex items-center justify-center"
-                >
-                    <span className="material-symbols-outlined">close</span>
-                </button>
+                <div className="h-2 bg-gradient-to-r from-brand via-brand to-sea" aria-hidden="true" />
 
-                <div className="mb-6 inline-flex items-center gap-2 text-primary bg-primary/10 px-4 py-2 rounded-full font-label-md text-[13px]">
-                    <span className="material-symbols-outlined text-[16px]">calendar_today</span>
-                    {announcement.date}
-                </div>
-
-                <h2 className="font-headline-md text-2xl md:text-3xl mb-6 pr-12 text-on-surface">
-                    {announcement.title}
-                </h2>
-
-                <div className="font-body-lg text-on-surface-variant leading-relaxed space-y-4">
-                    <p>{announcement.content}</p>
-
-                    <p className="opacity-80 text-[15px] pt-4 border-t border-outline-variant/20">
-                        Daha fazla bilgi için{" "}
-                        <Link
-                            href="/iletisim"
-                            className="text-sky-400 hover:text-sky-300 no-underline transition-colors font-medium"
-                        >
-                            iletişim
-                        </Link>{" "}
-                        sayfasından bizimle iletişime geçebilirsiniz.
-                    </p>
-                </div>
-
-                <div className="mt-10 flex justify-end gap-3">
-                    <button
-                        onClick={() => hasLink && window.open(announcement.link, "_blank", "noopener,noreferrer")}
-                        disabled={!hasLink}
-                        className={`px-8 py-3 rounded-xl font-label-md uppercase tracking-wider transition-all ${hasLink
-                            ? "bg-blue-600 text-white hover:scale-[1.02] active:scale-95 shadow-lg shadow-blue-600/20 cursor-pointer"
-                            : "bg-surface-container text-on-surface-variant/50 cursor-not-allowed"
-                            }`}
-                    >
-                        Linke Git
-                    </button>
+                <div className="p-7 md:p-10">
                     <button
                         onClick={onClose}
-                        className="bg-primary text-white px-8 py-3 rounded-xl font-label-md uppercase tracking-wider hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-primary/20"
+                        className="absolute top-6 right-5 grid place-items-center w-10 h-10 rounded-full text-ink hover:bg-ink/5 hover:rotate-90 transition-all duration-300 cursor-pointer"
+                        aria-label="Kapat"
                     >
-                        Anladım
+                        <span className="material-symbols-outlined" aria-hidden="true">close</span>
                     </button>
+
+                    {isLoading || !announcement ? (
+                        <div className="animate-pulse py-4">
+                            <div className="h-4 w-32 rounded bg-line" />
+                            <div className="mt-6 h-8 w-4/5 rounded bg-line" />
+                            <div className="mt-6 space-y-2.5">
+                                <div className="h-4 w-full rounded bg-line/70" />
+                                <div className="h-4 w-full rounded bg-line/70" />
+                                <div className="h-4 w-2/3 rounded bg-line/70" />
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {dateText && <p className="text-sm font-semibold text-brand">{dateText}</p>}
+                            <h2 id="announcement-title" className="mt-3 pr-10 font-display text-3xl md:text-4xl font-extrabold tracking-[-0.035em] leading-[1.05]">
+                                {announcement.title}
+                            </h2>
+
+                            <p className="mt-6 text-lg leading-relaxed text-muted whitespace-pre-line">{announcement.content}</p>
+
+                            <p className="mt-8 pt-6 border-t border-line text-[15px] text-muted">
+                                Sorun mu var?{" "}
+                                <Link href="/iletisim" className="font-semibold text-brand underline-offset-4 hover:underline">
+                                    İletişim sayfasından
+                                </Link>{" "}
+                                bize yazabilirsin.
+                            </p>
+
+                            <div className="mt-8 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                                <button onClick={onClose} className="btn btn-ghost">Kapat</button>
+                                {hasLink && (
+                                    <a href={announcement.link} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+                                        Bağlantıyı aç
+                                        <span className="material-symbols-outlined btn-icon text-[20px]" aria-hidden="true">arrow_outward</span>
+                                    </a>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

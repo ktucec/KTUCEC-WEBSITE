@@ -25,66 +25,63 @@ export default function Announcements() {
             setError(null);
             try {
                 const result = await getLatestAnnouncements(3);
-                if (!isCancelled) {
-                    setAnnouncements(result.data);
-                }
+                if (!isCancelled) setAnnouncements(result.data);
             } catch (err) {
                 if (!isCancelled) {
                     const msg = err instanceof ApiError ? err.message : "Duyurular yüklenirken bir hata oluştu.";
                     setError(msg);
                 }
             } finally {
-                if (!isCancelled) {
-                    setIsLoading(false);
-                }
+                if (!isCancelled) setIsLoading(false);
             }
         }
 
         fetchAnnouncements();
-
-        return () => {
-            isCancelled = true;
-        };
+        return () => { isCancelled = true; };
     }, []);
 
     const isEmpty = !isLoading && !error && announcements.length === 0;
 
     return (
-        <section className="pt-12 md:pt-20" id="duyurular">
-            <div className="mb-8 md:mb-12 fade-up">
-                <SectionHeading icon="campaign" title="Son Duyurular" />
-            </div>
+        <section id="duyurular">
+            <SectionHeading
+                title="Son duyurular"
+                action={{ href: "/duyurular", label: "Tüm duyurular" }}
+                className="mb-10 md:mb-14"
+            />
 
             {error ? (
-                <p className="text-red-500 font-body-md">{error}</p>
+                <p className="text-brand">{error}</p>
             ) : isEmpty ? (
-                <div className="flex flex-col items-center justify-center text-center py-12 md:py-16 opacity-60 fade-up">
-                    <span className="material-symbols-outlined text-4xl md:text-5xl mb-3 text-on-surface-variant">
-                        campaign
-                    </span>
-                    <p className="font-body-md text-on-surface-variant">
-                        Henüz duyuru bulunmuyor.
-                    </p>
+                <div className="surface-card rounded-[26px] py-14 px-6 text-center fade-up">
+                    <p className="font-display text-2xl font-bold text-ink">Şimdilik sessiz</p>
+                    <p className="mt-2 text-muted">Yeni bir duyuru yayınlandığında burada göreceksin.</p>
                 </div>
             ) : (
-                <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-6">
                     {isLoading
                         ? Array.from({ length: 3 }).map((_, index) => (
                             <AnnouncementCardSkeleton key={index} index={index} />
                         ))
                         : announcements.map((item, index) => (
-                            <Link key={item.id} href={`/duyurular?id=${item.id}`} className="block h-full">
+                            <Link key={item.id} href={`/duyurular?id=${item.id}`} className="block h-full rounded-[26px]">
                                 <AnnouncementCard
-                                    id={item.id}
                                     title={item.title}
                                     description={item.content}
                                     date={formatDate(item.createdAt)}
+                                    rawDate={item.createdAt}
+                                    hasLink={!!item.link}
                                     index={index}
                                 />
                             </Link>
                         ))}
-                </section>
+                </div>
             )}
+
+            <Link href="/duyurular" className="sm:hidden mt-6 inline-flex items-center gap-1.5 font-semibold text-ink">
+                Tüm duyurular
+                <span className="material-symbols-outlined text-[20px]" aria-hidden="true">arrow_outward</span>
+            </Link>
         </section>
     );
 }

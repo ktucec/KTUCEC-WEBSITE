@@ -24,7 +24,7 @@ const TimelineEventCard = forwardRef(({ event, index }, ref) => {
 
                 {/* Glass Card */}
                 <div
-                    className={`glass-panel p-10 flex-1 relative overflow-hidden ${event.align === 'right' ? 'shape-blob-1' : 'shape-blob-2'} ${event.status === 'past' ? 'grayscale' : ''}`}
+                    className={`glass-panel timeline-glass p-10 flex-1 relative overflow-hidden ${event.align === 'right' ? 'shape-blob-1' : 'shape-blob-2'} ${event.status === 'past' ? 'grayscale' : ''}`}
                     style={{
                         background: 'linear-gradient(135deg, rgba(255,255,255,0.78) 0%, rgba(255,255,255,0.62) 100%)',
                         backdropFilter: 'blur(28px) saturate(180%)',

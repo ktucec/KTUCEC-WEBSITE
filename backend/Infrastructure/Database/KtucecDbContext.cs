@@ -39,6 +39,13 @@ namespace ktucec.Infrastructure.Database
                 .WithMany(fq => fq.Answers)
                 .HasForeignKey(fqa => fqa.FormQuestionId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Bir kullanıcı silindiğinde başvuruları silinmez, UserId null'a çekilir (misafir başvurusu olarak kalır)
+            modelBuilder.Entity<FormApplication>()
+                .HasOne(fa => fa.User)
+                .WithMany(u => u.FormApplications)
+                .HasForeignKey(fa => fa.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         // -------- UpdatedAt override --------

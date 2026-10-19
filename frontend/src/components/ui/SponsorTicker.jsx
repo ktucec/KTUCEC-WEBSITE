@@ -83,12 +83,12 @@ export default function SponsorTicker({ logos }) {
                 <div
                     key={setIndex}
                     aria-hidden={setIndex === 1}
-                    className="flex shrink-0 items-center gap-32 md:gap-32 pr-32 md:pr-32 py-4"
+                    className="flex shrink-0 items-center gap-6 md:gap-8 pr-6 md:pr-8 py-4"
                 >
                     {logos.map((src, i) => (
-                        <div key={`ticker-${setIndex}-${i}`} className="shrink-0 flex items-center justify-center">
+                        <div key={`ticker-${setIndex}-${i}`} className="shrink-0 flex items-center justify-center w-[220px] h-[130px] rounded-[24px] bg-white border border-line shadow-sm px-6 transition-transform duration-500 hover:-rotate-2 hover:scale-105">
                             <img
-                                className="h-[110px] w-auto object-contain pointer-events-none"
+                                className="max-h-[90px] w-auto object-contain pointer-events-none"
                                 src={src}
                                 alt={`Sponsor Logo ${i + 1}`}
                                 draggable={false}

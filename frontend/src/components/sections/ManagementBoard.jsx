@@ -255,23 +255,21 @@ export default function ManagementBoard() {
     if (managers.length === 0) return null;
 
     return (
-        <section className="pt-16 md:pt-24 relative" id="yonetim" ref={sectionRef}>
-            <div className="max-w-7xl mx-auto relative">
-                <div className="mb-8 md:mb-12 px-4 sm:px-6 lg:px-8">
-                    <SectionHeading
-                        icon="diversity_3"
-                        title="Yönetim Kadromuz"
-                        subtitle="Kulübümüzü geleceğe taşıyan lider takım."
-                    />
-                </div>
+        <section className="relative" id="yonetim" ref={sectionRef}>
+            <div className="relative">
+                <SectionHeading
+                    title="Yönetim kadromuz"
+                    subtitle="Kulübü her gün bir adım ileri taşıyan ekip."
+                    className="mb-10 md:mb-14"
+                />
 
                 <div className="relative">
                     <div
-                        className="frame-edge-fade left-0 bg-gradient-to-r from-surface to-transparent"
+                        className="frame-edge-fade left-0 bg-gradient-to-r from-paper to-transparent"
                         style={{ opacity: canScrollLeft ? 1 : 0 }}
                     />
                     <div
-                        className="frame-edge-fade right-0 bg-gradient-to-l from-surface to-transparent"
+                        className="frame-edge-fade right-0 bg-gradient-to-l from-paper to-transparent"
                         style={{ opacity: canScrollRight ? 1 : 0 }}
                     />
 
@@ -281,10 +279,10 @@ export default function ManagementBoard() {
                         onClick={() => handleNavClick(-1)}
                         className={`frame-nav-btn left-0 md:-left-5 ${canScrollLeft ? "" : "frame-nav-hidden"}`}
                     >
-                        <span className="material-symbols-outlined text-on-surface">chevron_left</span>
+                        <span className="material-symbols-outlined text-ink">chevron_left</span>
                     </button>
 
-                    <div ref={scrollRef} className="frame-scroll px-4 sm:px-6 lg:px-8">
+                    <div ref={scrollRef} className="frame-scroll">
                         {orderedManagers.map((manager, i) => (
                             <FrameCard
                                 key={manager.id}
@@ -302,7 +300,7 @@ export default function ManagementBoard() {
                         onClick={() => handleNavClick(1)}
                         className={`frame-nav-btn right-0 md:-right-5 ${canScrollRight ? "" : "frame-nav-hidden"}`}
                     >
-                        <span className="material-symbols-outlined text-on-surface">chevron_right</span>
+                        <span className="material-symbols-outlined text-ink">chevron_right</span>
                     </button>
                 </div>
             </div>
