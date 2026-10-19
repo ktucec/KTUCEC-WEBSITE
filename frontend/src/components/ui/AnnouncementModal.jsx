@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from 'next/link';
 import { formatDate } from "@/lib/formatDate";
 
@@ -23,9 +24,10 @@ export default function AnnouncementModal({ isOpen, onClose, announcement, isLoa
     const hasLink = !!announcement?.link;
     const dateText = announcement ? formatDate(announcement.createdAt || announcement.date) : "";
 
-    return (
+    // Modal doğrudan <body>'ye çizilir; böylece sayfadaki hiçbir animasyon/transform konumunu bozamaz
+    return createPortal(
         <div
-            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-3 sm:p-6"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -34,7 +36,7 @@ export default function AnnouncementModal({ isOpen, onClose, announcement, isLoa
             <div className="absolute inset-0 bg-[#070d18]/70 backdrop-blur-md animate-[fadeIn_0.3s_ease-out]" />
 
             <div
-                className="relative w-full max-w-2xl max-h-[88vh] overflow-y-auto rounded-[30px] bg-card text-ink border border-line shadow-2xl animate-[modal-pop_0.55s_cubic-bezier(0.34,1.56,0.64,1)]"
+                className="relative w-full max-w-2xl max-h-[88vh] max-h-[88dvh] overflow-y-auto overscroll-contain rounded-[30px] bg-card text-ink border border-line shadow-2xl animate-[modal-pop_0.55s_cubic-bezier(0.34,1.56,0.64,1)]"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="h-2 bg-gradient-to-r from-brand via-brand to-sea" aria-hidden="true" />
@@ -88,6 +90,7 @@ export default function AnnouncementModal({ isOpen, onClose, announcement, isLoa
                     )}
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

@@ -5,6 +5,11 @@ import Link from 'next/link';
 import ScrambleText from '@/components/fx/ScrambleText';
 import { getCurrentEvents } from '@/services/events';
 
+// Mobilde arka planın saniyede kaç "%" kayacağı ve kayma sınırları (eski ayarlar)
+const BG_PAN_SPEED_PERCENT_PER_SEC = 4;
+const BG_PAN_MIN = 7;
+const BG_PAN_MAX = 90;
+
 const phrases = [
     "beraber proje düzenleyelim",
     "beraber işbirliği kuralım",
@@ -129,75 +134,59 @@ function NextEventTicket() {
 
 export default function HeroSection() {
     const typed = useTypewriter();
-    const sectionRef = useRef(null);
-    const lensRef = useRef(null);
-    const ringRef = useRef(null);
     const contentRef = useRef(null);
-    const bgRef = useRef(null);
+    const photoRef = useRef(null);
 
-    // Fotoğraf kırmızı duotone; mouse'un olduğu yerde gerçek renkli hali bir mercekle açılır.
-    // Dokunmatik cihazlarda mercek kendi kendine yavaşça dolaşır.
+    // Fotoğraf yatay (yan yana ~10 kişi). Mobilde ekran dikey olduğu için sadece ortadakiler görünür;
+    // bu yüzden mobilde fotoğraf yavaşça bir sağa bir sola kayar. Masaüstünde ortada sabit durur.
     useEffect(() => {
-        const section = sectionRef.current;
-        const lens = lensRef.current;
-        const ring = ringRef.current;
-        if (!section || !lens || !ring) return;
+        const mediaQuery = window.matchMedia('(max-width: 767px)');
+        let rafId = null;
+        let lastTimestamp = null;
+        let position = 50;
+        let direction = 1;
 
-        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (reduceMotion) return;
+        const animate = (timestamp) => {
+            if (lastTimestamp === null) lastTimestamp = timestamp;
+            const deltaSeconds = (timestamp - lastTimestamp) / 1000;
+            lastTimestamp = timestamp;
 
-        const finePointer = window.matchMedia('(pointer: fine)').matches;
-        const pos = { x: section.clientWidth * 0.68, y: section.clientHeight * 0.45 };
-        const target = { ...pos };
-        let radius = 0;
-        let targetRadius = finePointer ? 0 : 110;
-        let rafId;
-        let start = performance.now();
-
-        const onMove = (e) => {
-            const r = section.getBoundingClientRect();
-            target.x = e.clientX - r.left;
-            target.y = e.clientY - r.top;
-            targetRadius = 170;
-        };
-        const onLeave = () => { targetRadius = 0; };
-
-        const loop = (now) => {
-            if (!finePointer) {
-                const t = (now - start) / 1000;
-                target.x = section.clientWidth * (0.5 + 0.32 * Math.sin(t * 0.35));
-                target.y = section.clientHeight * (0.42 + 0.18 * Math.sin(t * 0.53 + 1));
+            position += direction * BG_PAN_SPEED_PERCENT_PER_SEC * deltaSeconds;
+            if (position >= BG_PAN_MAX) {
+                position = BG_PAN_MAX;
+                direction = -1;
+            } else if (position <= BG_PAN_MIN) {
+                position = BG_PAN_MIN;
+                direction = 1;
             }
-            pos.x += (target.x - pos.x) * 0.14;
-            pos.y += (target.y - pos.y) * 0.14;
-            radius += (targetRadius - radius) * 0.12;
 
-            // Fotoğraf %4 taşmalı yerleştirildiği için koordinatları ona göre kaydır
-            const ox = section.clientWidth * 0.04;
-            const oy = section.clientHeight * 0.04;
-            lens.style.setProperty('--lx', `${pos.x + ox}px`);
-            lens.style.setProperty('--ly', `${pos.y + oy}px`);
-            lens.style.setProperty('--lr', `${radius}px`);
-            ring.style.transform = `translate(${pos.x - radius}px, ${pos.y - radius}px)`;
-            ring.style.width = ring.style.height = `${radius * 2}px`;
-            ring.style.opacity = radius > 4 ? 1 : 0;
-            rafId = requestAnimationFrame(loop);
+            if (photoRef.current) photoRef.current.style.backgroundPositionX = `${position}%`;
+            rafId = requestAnimationFrame(animate);
         };
 
-        if (finePointer) {
-            section.addEventListener('pointermove', onMove);
-            section.addEventListener('pointerleave', onLeave);
-        }
-        rafId = requestAnimationFrame(loop);
+        const start = () => {
+            if (rafId) return;
+            lastTimestamp = null;
+            rafId = requestAnimationFrame(animate);
+        };
+        const stop = () => {
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            if (photoRef.current) photoRef.current.style.backgroundPositionX = '50%';
+        };
+        const handleChange = (e) => (e.matches ? start() : stop());
 
+        if (mediaQuery.matches) start();
+        mediaQuery.addEventListener('change', handleChange);
         return () => {
-            cancelAnimationFrame(rafId);
-            section.removeEventListener('pointermove', onMove);
-            section.removeEventListener('pointerleave', onLeave);
+            mediaQuery.removeEventListener('change', handleChange);
+            stop();
         };
     }, []);
 
-    // Hafif paralaks: aşağı kaydırınca yazı yukarı kayıp söner, fotoğraf yakınlaşır
+    // Aşağı kaydırınca yazılar hafifçe yukarı kayıp söner (fotoğrafa dokunulmaz)
     useEffect(() => {
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         let ticking = false;
@@ -208,7 +197,6 @@ export default function HeroSection() {
                 contentRef.current.style.transform = `translateY(${y * -0.18}px)`;
                 contentRef.current.style.opacity = String(1 - p * 1.1);
             }
-            if (bgRef.current) bgRef.current.style.transform = `scale(${1 + p * 0.12})`;
             ticking = false;
         };
         const onScroll = () => {
@@ -223,18 +211,17 @@ export default function HeroSection() {
 
     return (
         <section
-            ref={sectionRef}
             className="relative h-[100svh] min-h-[640px] w-full overflow-hidden bg-[#070d18] text-white"
         >
-            {/* Fotoğraf katmanları */}
-            <div ref={bgRef} className="absolute inset-0 will-change-transform" aria-hidden="true">
-                <div className="hero-duo" style={{ backgroundImage: "url('/hero.jpeg')" }} />
-                <div className="hero-duo-red" />
-                <div ref={lensRef} className="hero-lens" style={{ backgroundImage: "url('/hero.jpeg')" }} />
-            </div>
-            <div className="hero-duo-tint" aria-hidden="true" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#070d18] via-[#070d18]/30 to-transparent" aria-hidden="true" />
-            <div ref={ringRef} className="hero-lens-ring" style={{ opacity: 0 }} aria-hidden="true" />
+            {/* Fotoğraf: doğal renginde; sadece yazılar okunsun diye altta ve solda koyu geçiş var */}
+            <div
+                ref={photoRef}
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: "url('/hero.jpeg')" }}
+                aria-hidden="true"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#070d18] via-[#070d18]/45 to-[#070d18]/30" aria-hidden="true" />
+            <div className="absolute inset-0 hidden md:block bg-gradient-to-r from-[#070d18]/70 via-[#070d18]/20 to-transparent" aria-hidden="true" />
 
             {/* İçerik */}
             <div
@@ -249,7 +236,7 @@ export default function HeroSection() {
                         </p>
 
                         <h1 className="hero-title mt-4 -ml-[0.04em] select-none">
-                            <ScrambleText text="KTUCEC" />
+                            <ScrambleText text="KTUCEC" replayOnHover={false} />
                         </h1>
 
                         <p className="mt-5 font-display text-[1.45rem] sm:text-3xl md:text-[2.4rem] font-semibold tracking-[-0.02em] min-h-[1.3em]" aria-live="polite">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 // Mesaj gönderildi onayı: tik işareti çizilir, etrafa konfeti saçılır.
 export default function ContactModal({ isOpen, onClose }) {
@@ -20,7 +21,8 @@ export default function ContactModal({ isOpen, onClose }) {
 
     const confetti = Array.from({ length: 18 });
 
-    return (
+    // Modal doğrudan <body>'ye çizilir; böylece sayfadaki hiçbir animasyon/transform konumunu bozamaz
+    return createPortal(
         <>
             <style>{`
                 @keyframes check-draw { to { stroke-dashoffset: 0; } }
@@ -70,6 +72,7 @@ export default function ContactModal({ isOpen, onClose }) {
                     <button onClick={onClose} className="btn btn-primary w-full mt-8">Tamam</button>
                 </div>
             </div>
-        </>
+        </>,
+        document.body
     );
 }
