@@ -1,7 +1,6 @@
-import { redirect } from 'next/navigation';
+import Holding from '@/editions/2026/components/Holding';
 
-// GEÇİCİ: CODEWAVE 2026 sitesi hazır olunca bu dosya o sayfayla değişecek.
-// O zamana kadar ziyaretçiler mevcut siteyi görmeye devam etsin diye 2025'e yönlendiriyoruz.
+// GEÇİCİ: CODEWAVE 2026 sitesi hazır olunca bu sayfa onunla değişecek.
 export default function Page() {
-  redirect('/2025');
+  return <Holding />;
 }

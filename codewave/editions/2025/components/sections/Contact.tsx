@@ -1,86 +1,58 @@
 'use client';
-import { MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
+import { Mail, ArrowUpRight } from 'lucide-react';
 import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import { SOCIALS } from '@/editions/2025/data';
 import Reveal from '@/editions/2025/components/ui/Reveal';
+import SplitText from '@/editions/2025/components/ui/SplitText';
+import SpotCard from '@/editions/2025/components/ui/SpotCard';
+import Magnetic from '@/editions/2025/components/ui/Magnetic';
 
 export default function Contact() {
-    const { d, lang } = useCodewave();
-
-    const mapsUrl = "https://maps.google.com/?q=KTÜ+Prof.+Dr.+Osman+Turan+Kültür+ve+Kongre+Merkezi";
-    const embedMapsUrl = "https://maps.google.com/maps?q=KT%C3%9C%20Prof.%20Dr.%20Osman%20Turan%20K%C3%BClt%C3%BCr%20ve%20Kongre%20Merkezi&t=&z=15&ie=UTF8&iwloc=&output=embed";
+    const { d } = useCodewave();
 
     return (
         <section id="contact" className="section">
             <Reveal>
-                <p className="label">07 / {lang === 'TR' ? 'İLETİŞİM' : 'CONNECT'}</p>
-                <h2 className="contact-heading">{d.contact}</h2>
+                <p className="label">06 / CONNECT</p>
             </Reveal>
+            <h2 className="contact-heading">
+                <SplitText text={d.contact} />
+            </h2>
 
             <div className="contact-grid">
                 <Reveal>
-                    <article className="premium-border-card">
-                        <div className="premium-border-card-inner contact-info-inner">
-                            <h3 className="info-title">
-                                {lang === 'TR' ? 'Bize Ulaşın' : 'Reach Out'}
-                            </h3>
-                            <p className="info-desc">
-                                {lang === 'TR'
-                                    ? 'Sponsorluk, iş birlikleri ve tüm sorularınız için bizimle iletişime geçebilirsiniz.'
-                                    : 'Feel free to contact us for sponsorships, partnerships, and all your inquiries.'}
-                            </p>
+                    <SpotCard as="article" className="contact-card">
+                        <p className="info-desc">{d.contactDesc}</p>
 
-                            <div className="contact-links">
-                                <a href="tel:+905436657210" className="contact-link">
-                                    <div className="icon-box"><Phone size={20} /></div>
-                                    <span>+90 (543) 665 72 10</span>
-                                </a>
-                                <a href="mailto:turkalinehir@gmail.com" className="contact-link">
-                                    <div className="icon-box"><Mail size={20} /></div>
-                                    <span>turkalinehir@gmail.com</span>
-                                </a>
-                                <a href="mailto:ktucec@ceng.ktu.edu.tr" className="contact-link">
-                                    <div className="icon-box"><Mail size={20} /></div>
-                                    <span>ktucec@ceng.ktu.edu.tr</span>
-                                </a>
-                            </div>
+                        <a href={SOCIALS.mail} className="contact-link">
+                            <span className="icon-box"><Mail size={20} /></span>
+                            <span>ktucec@ceng.ktu.edu.tr</span>
+                        </a>
+
+                        <p className="label follow">{d.followUs}</p>
+                        <div className="social-pills">
+                            <a href={SOCIALS.instagram} target="_blank" rel="noopener noreferrer">Instagram</a>
+                            <a href={SOCIALS.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                            <a href={SOCIALS.x} target="_blank" rel="noopener noreferrer">X</a>
                         </div>
-                    </article>
+                    </SpotCard>
                 </Reveal>
 
-                <Reveal>
-                    <article className="premium-border-card">
-                        <div className="premium-border-card-inner map-inner">
-                            <div className="map-header">
-                                <p className="label">{d.location}</p>
-                                <a
-                                    href={mapsUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="maps-open-btn"
-                                >
-                                    <span>{lang === 'TR' ? 'Haritalarda Aç' : 'Open in Maps'}</span>
-                                    <ExternalLink size={14} />
+                <Reveal delay={140}>
+                    <article className="next-wave">
+                        <div className="nw-border" aria-hidden="true" />
+                        <div className="nw-inner">
+                            <p className="label">{d.nextWave}</p>
+                            <h3>
+                                {d.nextWaveTitle[0]} <em>{d.nextWaveTitle[1]}</em>
+                            </h3>
+                            <p className="nw-text">{d.nextWaveText}</p>
+                            <Magnetic>
+                                <a className="btn btn-primary" href="/">
+                                    <span>{d.nextWaveCta}</span>
+                                    <ArrowUpRight size={16} />
                                 </a>
-                            </div>
-
-                            {/* Gerçek Google Maps Etkileşimli Alanı */}
-                            <div className="map-embed-container">
-                                <iframe
-                                    title="KTÜ Prof. Dr. Osman Turan Kültür ve Kongre Merkezi"
-                                    src={embedMapsUrl}
-                                    className="map-iframe"
-                                    loading="lazy"
-                                    allowFullScreen
-                                />
-                            </div>
-
-                            <div className="map-footer">
-                                <strong>
-                                    <MapPin size={16} className="inline-icon" />
-                                    KTÜ PROF. DR. OSMAN TURAN KÜLTÜR VE KONGRE MERKEZİ
-                                </strong>
-                                <small>Ortahisar / Trabzon</small>
-                            </div>
+                            </Magnetic>
                         </div>
                     </article>
                 </Reveal>

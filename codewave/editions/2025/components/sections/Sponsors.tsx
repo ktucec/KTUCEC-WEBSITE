@@ -1,42 +1,49 @@
 'use client';
 import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import { SPONSORS } from '@/editions/2025/data';
 import Reveal from '@/editions/2025/components/ui/Reveal';
+import SplitText from '@/editions/2025/components/ui/SplitText';
 
-const baseSponsors = [
-    'VESTEL', 'KAIRU', 'ÖĞRENCİ KARİYERİ', 'COLOMBIA COFFEE', 'COFFEE AND STUDY'
-];
+// Akış kesintisiz olsun diye liste tekrarlanır; iki satır zıt yönde kayar.
+const loop = Array(3).fill(SPONSORS).flat();
 
-// Akıcılığı kusursuz yapmak için array'i 4 ile çarpıp tek bir listeye düzleştiriyoruz (flatten).
-const extendedSponsors = Array(4).fill(baseSponsors).flat();
+function Row({ reverse = false }: { reverse?: boolean }) {
+    return (
+        <div className={`sponsor-row${reverse ? ' is-reverse' : ''}`}>
+            <div className="sponsor-track">
+                {[0, 1].map((k) => (
+                    <div key={k} className="sponsor-set" aria-hidden={k === 1}>
+                        {loop.map((s, i) => (
+                            <div key={i} className="sponsor-badge">
+                                <span className="sponsor-name">{s}</span>
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
 
 export default function Sponsors() {
     const { d } = useCodewave();
 
     return (
-        <section className="marquee-section">
-            {/* Sadece Başlık Kısmına Ortalanmış Reveal */}
-            <div className="section" style={{ paddingBottom: '0', paddingTop: '80px' }}>
+        <section id="sponsors" className="marquee-section">
+            <div className="section sponsors-head">
                 <Reveal>
                     <p className="label">04 / BACKED BY</p>
-                    <h2 className="sponsors-heading">{d.sponsors}</h2>
                 </Reveal>
+                <h2 className="sponsors-heading">
+                    <SplitText text={d.sponsors} />
+                </h2>
             </div>
 
-            {/* Premium Kayan Bant (Marquee) */}
             <div className="premium-marquee-wrapper">
-                {/* Sol ve Sağ Kenardaki Fade (Sis) Efektleri */}
-                <div className="marquee-fade-left"></div>
-                <div className="marquee-fade-right"></div>
-
-                <div className="premium-marquee-track">
-                    <div className="premium-marquee-content">
-                        {extendedSponsors.map((sponsor, idx) => (
-                            <div key={idx} className="sponsor-badge">
-                                <span className="sponsor-name">{sponsor}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <div className="marquee-fade-left" />
+                <div className="marquee-fade-right" />
+                <Row />
+                <Row reverse />
             </div>
         </section>
     );

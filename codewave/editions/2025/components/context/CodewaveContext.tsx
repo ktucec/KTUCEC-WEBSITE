@@ -2,51 +2,72 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+// Sayfadaki bölüm kimlikleri — Navbar ile aynı sırada.
+export const SECTION_IDS = ['hero', 'about', 'impact', 'speakers', 'gallery', 'contact'];
+
 const t = {
     TR: {
         nav: ['Ana Sayfa', 'Biz Kimiz?', 'Başarılarımız', 'Konuşmacılar', 'Galeri', 'İletişim'],
-        badge: 'KTUCEC GURURLA SUNAR',
-        title: 'Geleceğin yazılım ekosistemi Karadeniz’in en prestijli zirvesinde buluşuyor.',
-        register: 'Hemen Kaydol',
-        regClosedNote: '• Başvurular henüz başlamadı',
+        badge: 'KTUCEC · İLK DALGA',
+        title: 'Geleceğin yazılım ekosistemi, Karadeniz’in en prestijli zirvesinde buluştu.',
         explore: 'Zirveyi Keşfet',
-        countdownLabels: ['GÜN', 'SAAT', 'DAKİKA', 'SANİYE'],
+        nextEdition: 'CODEWAVE 2026’ya geç',
         scrollDiscover: 'KEŞFETMEK İÇİN KAYDIRIN',
+        heroStats: ['KATILIMCI', 'TEKNOLOJİ OTURUMU', 'DESTEKÇİ'],
         about: 'Biz Kimiz?',
         aboutText: 'KTÜ Bilgisayar Mühendisliği Öğrenci Kulübü (KTUCEC), Karadeniz Teknik Üniversitesi’nin en köklü ve aktif öğrenci topluluklarından biridir. 2006 yılında kurulmuş olan kulübümüz; teknolojiye ve mühendisliğe ilgi duyan tüm öğrencilere hitap eden resmi bir öğrenci topluluğudur. Her yıl artan üye sayımız ve çeşitlenen faaliyetlerimizle, üniversitemizde teknoloji, inovasyon ve girişimcilik alanında öncü bir rol üstleniyoruz.',
-        stats: ['Toplam Üye', 'Toplam Etkinlik', 'Geliştirilen Proje', '25-26 Dönemi Üye', '25-26 Dönemi Etkinlik', 'Toplam Ortak'],
-        speakers: '2025 zirvesi ilham veren konuşmacılarımız',
-        sponsors: 'Bize ilk yılımızda inanan değerli destekçilerimiz',
-        vision: 'Bu yıl bizi neler bekliyor?',
-        gallery: 'Codewave atmosferi ve unutulmaz anlar',
-        contact: 'Sponsorluk & İletişim Koordinasyon',
-        location: 'Etkinlik Alanı',
+        stats: ['Toplam Üye', 'Toplam Etkinlik', 'Geliştirilen Proje', 'Toplam Ortak'],
+        whatIsText: 'Bilgisayar ve yazılım ekosistemine katılmaya hazırlanan yetenekleri sektörün öncü profesyonelleriyle bir araya getiren prestijli bir zirve.',
+        firstWaveTitle: 'KATILIMCI',
+        firstWaveText: 'İlk zirvemizde bölgesel çapta büyük bir etki yarattık.',
         firstWaveMetrics: ['KATILIMCI', 'TEKNOLOJİ OTURUMU', 'ORGANİK BÜYÜME'],
         impactHeading: ['GENEL OLARAK', 'BİZ'],
         whatIsTitle: ['CODEWAVE', 'NEDİR?'],
+        speakers: '2025 zirvesi ilham veren konuşmacılarımız',
+        speaker: 'KONUŞMACI',
+        sponsors: 'Bize ilk yılımızda inanan değerli destekçilerimiz',
+        gallery: 'Codewave atmosferi ve unutulmaz anlar',
+        expand: 'BÜYÜT',
+        swipe: '← Kaydırarak Geçiş Yapın →',
+        contact: 'Bize Ulaşın',
+        contactDesc: 'Sorularınız, iş birlikleri ve önerileriniz için KTUCEC ile iletişime geçebilirsiniz.',
+        followUs: 'Bizi takip edin',
+        nextWave: 'SIRADAKİ DALGA',
+        nextWaveTitle: ['CODEWAVE', '2026'],
+        nextWaveText: 'CODEWAVE her yıl yeni bir temayla geri dönüyor. Sıradaki zirveyi görmek için 2026 sayfasına geçin.',
+        nextWaveCta: '2026 sayfasına git',
     },
     EN: {
         nav: ['Home', 'About Us', 'Impact', 'Speakers', 'Gallery', 'Contact'],
-        badge: 'KTUCEC PROUDLY PRESENTS',
-        title: 'The future of software gathers at the Black Sea’s most prestigious summit.',
-        register: 'Register Now',
-        regClosedNote: '• Applications have not opened yet',
+        badge: 'KTUCEC · FIRST WAVE',
+        title: 'The future of software gathered at the Black Sea’s most prestigious summit.',
         explore: 'Explore Summit',
-        countdownLabels: ['DAYS', 'HOURS', 'MINUTES', 'SECONDS'],
+        nextEdition: 'Go to CODEWAVE 2026',
         scrollDiscover: 'SCROLL TO DISCOVER',
+        heroStats: ['PARTICIPANTS', 'TECH SESSIONS', 'SUPPORTERS'],
         about: 'Who Are We?',
         aboutText: 'KTU Computer Engineering Student Club (KTUCEC) is one of the oldest and most active student communities at Karadeniz Technical University. Founded in 2006, our official student community welcomes everyone interested in technology and engineering. With a growing membership and diverse programs, we lead technology, innovation and entrepreneurship on campus.',
-        stats: ['Total Members', 'Total Events', 'Completed Projects', 'Active Term Members', 'Term Events', 'Global Partners'],
-        speakers: 'Inspiring speakers from the 2025 summit',
-        sponsors: 'Valuable supporters who believed in us from year one',
-        vision: 'What awaits us this year?',
-        gallery: 'The Codewave atmosphere and unforgettable moments',
-        contact: 'Sponsorship & Communications',
-        location: 'Event Venue',
+        stats: ['Total Members', 'Total Events', 'Completed Projects', 'Global Partners'],
+        whatIsText: 'A prestigious summit connecting emerging software talent with leading industry professionals.',
+        firstWaveTitle: 'PARTICIPANTS',
+        firstWaveText: 'Our first summit created a major regional impact.',
         firstWaveMetrics: ['PARTICIPANTS', 'TECH SESSIONS', 'ORGANIC GROWTH'],
         impactHeading: ['OVERALL,', 'WE'],
         whatIsTitle: ['WHAT IS', 'CODEWAVE?'],
-    }
+        speakers: 'Inspiring speakers from the 2025 summit',
+        speaker: 'SPEAKER',
+        sponsors: 'Valuable supporters who believed in us from year one',
+        gallery: 'The Codewave atmosphere and unforgettable moments',
+        expand: 'EXPAND',
+        swipe: '← Swipe to Navigate →',
+        contact: 'Get in Touch',
+        contactDesc: 'Feel free to contact KTUCEC for questions, partnerships and suggestions.',
+        followUs: 'Follow us',
+        nextWave: 'NEXT WAVE',
+        nextWaveTitle: ['CODEWAVE', '2026'],
+        nextWaveText: 'CODEWAVE returns every year with a brand-new theme. Head to the 2026 page to see the next summit.',
+        nextWaveCta: 'Go to the 2026 page',
+    },
 };
 
 type Lang = 'TR' | 'EN';
@@ -85,8 +106,23 @@ export function CodewaveProvider({ children }: { children: ReactNode }) {
 
     const nav = (i: number) => {
         setActive(i);
-        document.getElementById(['hero', 'about', 'impact', 'speakers', 'gallery', 'contact'][i])?.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById(SECTION_IDS[i])?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    // Kaydırırken aktif bölümü takip et (nav ve mobil dock buna göre vurgulanır)
+    useEffect(() => {
+        const els = SECTION_IDS.map((id) => document.getElementById(id));
+        const io = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((e) => {
+                    if (e.isIntersecting) setActive(SECTION_IDS.indexOf(e.target.id));
+                });
+            },
+            { rootMargin: '-45% 0px -50% 0px' }
+        );
+        els.forEach((el) => el && io.observe(el));
+        return () => io.disconnect();
+    }, []);
 
     return (
         <CodewaveContext.Provider value={{ lang, setLang, active, setActive, nav, d }}>
