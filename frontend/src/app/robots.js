@@ -1,4 +1,4 @@
-const SITE_URL = 'https://www.ktucec.com';
+import { SITE_URL } from '@/lib/site';
 
 export default function robots() {
     return {
@@ -6,7 +6,9 @@ export default function robots() {
             {
                 userAgent: '*',
                 allow: '/',
-                disallow: ['/admin', '/api'],
+                // Yönetim paneli ve API indekslenmesin. _next/ kasıtlı olarak engellenmedi:
+                // Google sayfayı çizebilmek için CSS/JS dosyalarına erişebilmeli.
+                disallow: ['/admin', '/admin/', '/api/'],
             },
         ],
         sitemap: `${SITE_URL}/sitemap.xml`,

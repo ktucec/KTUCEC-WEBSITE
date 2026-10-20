@@ -3,6 +3,7 @@ import '@/styles/globals.css';
 export const metadata = {
     title: 'Admin Login - KTUCEC',
     description: 'KTUCEC Yönetim paneli güvenli giriş sayfası.',
+    robots: { index: false, follow: false },
 };
 
 export default function AdminAuthLayout({ children }) {
@@ -23,4 +24,4 @@ export default function AdminAuthLayout({ children }) {
             </body>
         </html>
     );
-}
+}

@@ -6,6 +6,7 @@ import '@/styles/globals.css';
 export const metadata = {
     title: 'KTUCEC Admin',
     description: 'Admin Panel Management System',
+    robots: { index: false, follow: false },
 };
 
 export default function AdminRootLayout({ children }) {
@@ -37,4 +38,4 @@ export default function AdminRootLayout({ children }) {
             </body>
         </html>
     );
-}
+}

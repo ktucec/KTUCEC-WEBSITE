@@ -5,11 +5,11 @@ import BackgroundCanvas from '@/components/ui/BackgroundCanvas';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import FxLayer from '@/components/fx/FxLayer';
+import { SITE_URL } from '@/lib/site';
 
 // Sayfa çizilmeden önce temayı uygular; açılışta beyaz/siyah yanıp sönmeyi engeller.
 const themeScript = `(function(){try{var t=localStorage.getItem('theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}if(t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})();`;
 
-const SITE_URL = 'https://www.ktucec.com';
 
 export const metadata = {
     metadataBase: new URL(SITE_URL),
@@ -70,10 +70,6 @@ export const metadata = {
         telephone: false,
     },
 
-    alternates: {
-        canonical: SITE_URL,
-    },
-
     openGraph: {
         type: 'website',
         locale: 'tr_TR',
@@ -111,17 +107,6 @@ export const metadata = {
             'max-video-preview': -1,
         },
     },
-
-    icons: {
-        icon: [
-            { url: '/favicon.png', sizes: '48x48', type: 'image/png' },
-            { url: '/favicon.png', sizes: '192x192', type: 'image/png' },
-        ],
-        shortcut: '/favicon.png',
-        apple: [
-            { url: '/favicon.png', sizes: '180x180', type: 'image/png' }
-        ],
-    },
 };
 
 const organizationJsonLd = {
@@ -145,6 +130,16 @@ const organizationJsonLd = {
     ],
 };
 
+// Google'ın sonuçlarda "KTÜCEC" site adını doğru göstermesi için.
+const websiteJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'KTÜCEC',
+    alternateName: ['KTUCEC', 'KTÜ Bilgisayar Mühendisliği Kulübü'],
+    url: SITE_URL,
+    inLanguage: 'tr-TR',
+};
+
 export default function RootLayout({ children }) {
     return (
         <html lang="tr" className="site" suppressHydrationWarning>
@@ -157,6 +152,10 @@ export default function RootLayout({ children }) {
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
                 />
             </head>
             <body
@@ -181,4 +180,4 @@ export default function RootLayout({ children }) {
             </body>
         </html>
     );
-}
+}
