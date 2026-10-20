@@ -1,7 +1,7 @@
 'use client';
 import { createElement } from 'react';
 import { Globe2, Radio, Users, Zap, CircleUserRound, Play, Mail } from 'lucide-react';
-import { useCodewave } from '@/components/context/CodewaveContext';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
 
 export default function Navbar() {
     const { lang, setLang, active, nav, d } = useCodewave();

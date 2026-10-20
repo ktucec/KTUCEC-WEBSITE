@@ -1,6 +1,6 @@
 'use client';
-import { useCodewave } from '@/components/context/CodewaveContext';
-import Reveal from '@/components/ui/Reveal';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import Reveal from '@/editions/2025/components/ui/Reveal';
 
 export default function Speakers() {
     const { d, lang } = useCodewave();
@@ -11,28 +11,28 @@ export default function Speakers() {
             name: 'Mustafa Mert Kısa',
             role: lang === 'TR' ? 'Backend Geliştirici' : 'Backend Developer',
             company: 'Letgo',
-            image: '/codewave/mustafamertkisa.jpeg',
+            image: '/editions/2025/mustafamertkisa.jpeg',
             linkedin: 'https://www.linkedin.com/in/mustafamertkisa/'
         },
         {
             name: 'Muratcan İğdeli',
             role: lang === 'TR' ? 'Yapay Zekâ ve Üniversitede Girişimcilik' : 'Artificial Intelligence and Entrepreneurship in Universities',
             company: 'VC Ally',
-            image: '/codewave/muratcanigdeli.jpeg',
+            image: '/editions/2025/muratcanigdeli.jpeg',
             linkedin: 'https://www.linkedin.com/in/muratcanigdeli/'
         },
         {
             name: 'Metehan Bulut',
             role: lang === 'TR' ? 'Siber Güvenlik Uzmanı' : 'Cybersecurity Expert',
             company: 'CTI Academy',
-            image: '/codewave/metehanbulut.jpeg',
+            image: '/editions/2025/metehanbulut.jpeg',
             linkedin: 'https://www.linkedin.com/in/metehanbulut/'
         },
         {
             name: 'Doğukaan Kılıçarslan',
             role: lang === 'TR' ? 'Kıdemli iOs Yazılım Mühendisi' : 'Senior iOS Software Engineer',
             company: 'Migros One',
-            image: '/codewave/dogukaankilicarslan.jpeg',
+            image: '/editions/2025/dogukaankilicarslan.jpeg',
             linkedin: 'https://www.linkedin.com/in/dogukaan-kilicarslan/'
         }
     ];

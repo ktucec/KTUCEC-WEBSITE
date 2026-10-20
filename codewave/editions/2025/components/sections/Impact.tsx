@@ -1,9 +1,9 @@
 'use client';
 import { createElement, useState, useEffect, useRef } from 'react';
 import { Users, CalendarDays, Code2, Radio, Network, Sparkles, Loader2 } from 'lucide-react';
-import { useCodewave } from '@/components/context/CodewaveContext';
-import Reveal from '@/components/ui/Reveal';
-import Counter from '@/components/ui/Counter';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import Reveal from '@/editions/2025/components/ui/Reveal';
+import Counter from '@/editions/2025/components/ui/Counter';
 
 const statValues = [5320, 370, 9, 201, 12, 8];
 

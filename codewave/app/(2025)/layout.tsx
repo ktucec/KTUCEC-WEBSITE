@@ -1,20 +1,20 @@
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
-import './globals.css';
+import '@/editions/2025/styles/globals.css';
 
-import { CodewaveProvider } from '@/components/context/CodewaveContext';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
-import Canvas from '@/components/ui/Canvas';
+import { CodewaveProvider } from '@/editions/2025/components/context/CodewaveContext';
+import Navbar from '@/editions/2025/components/layout/Navbar';
+import Footer from '@/editions/2025/components/layout/Footer';
+import Canvas from '@/editions/2025/components/ui/Canvas';
 
 export const metadata: Metadata = {
   title: 'CODEWAVE 2026 — KTUCEC',
   description: 'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü tarafından düzenlenen CODEWAVE 2026 zirvesi.',
   generator: 'v0.app',
   icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
+    icon: '/editions/2025/logo.png',
+    shortcut: '/editions/2025/logo.png',
+    apple: '/editions/2025/logo.png',
   },
 }
 

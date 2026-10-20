@@ -1,7 +1,7 @@
 'use client';
 import { Network, Cpu, FileSearch } from 'lucide-react';
-import { useCodewave } from '@/components/context/CodewaveContext';
-import Reveal from '@/components/ui/Reveal';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import Reveal from '@/editions/2025/components/ui/Reveal';
 
 function TechFileIcon({ lang }: { lang: string }) {
     return (

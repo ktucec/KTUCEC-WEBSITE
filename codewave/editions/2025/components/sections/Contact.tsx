@@ -1,7 +1,7 @@
 'use client';
 import { MapPin, Phone, Mail, ExternalLink } from 'lucide-react';
-import { useCodewave } from '@/components/context/CodewaveContext';
-import Reveal from '@/components/ui/Reveal';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import Reveal from '@/editions/2025/components/ui/Reveal';
 
 export default function Contact() {
     const { d, lang } = useCodewave();

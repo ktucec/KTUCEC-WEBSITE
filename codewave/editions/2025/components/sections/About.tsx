@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { Terminal } from 'lucide-react';
-import { useCodewave } from '@/components/context/CodewaveContext';
-import Reveal from '@/components/ui/Reveal';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import Reveal from '@/editions/2025/components/ui/Reveal';
 
 export default function About() {
     const { d, lang } = useCodewave();

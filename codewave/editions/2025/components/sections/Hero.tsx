@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
-import { useCodewave } from '@/components/context/CodewaveContext';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
 
 export default function Hero() {
     const { d, lang, nav } = useCodewave();

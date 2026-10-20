@@ -1,45 +1,45 @@
 'use client';
 import { useState, useEffect, TouchEvent } from 'react';
 import { Maximize2, ChevronLeft, ChevronRight, X, Sparkles } from 'lucide-react';
-import { useCodewave } from '@/components/context/CodewaveContext';
-import Reveal from '@/components/ui/Reveal';
+import { useCodewave } from '@/editions/2025/components/context/CodewaveContext';
+import Reveal from '@/editions/2025/components/ui/Reveal';
 
 // Public klasöründen çekilecek bağımsız resim dizisi
 // Sonradan kendi görsellerini eklerken 'gridClass' değerleri ile puzzle düzenini değiştirebilirsin
 const galleryImages = [
     {
         id: 0,
-        src: '/codewave/gallery/IMG_4226.JPG',
+        src: '/editions/2025/gallery/IMG_4226.JPG',
         alt: 'CODEWAVE Event 1',
         gridClass: 'g-large' 
     },
     {
         id: 1,
-        src: '/codewave/gallery/IMG_4296.JPG',
+        src: '/editions/2025/gallery/IMG_4296.JPG',
         alt: 'CODEWAVE Event 2',
         gridClass: 'g-tall' 
     },
     {
         id: 2,
-        src: '/codewave/gallery/IMG_4309.JPG',
+        src: '/editions/2025/gallery/IMG_4309.JPG',
         alt: 'CODEWAVE Event 3',
         gridClass: 'g-normal'
     },
     {
         id: 3,
-        src: '/codewave/gallery/IMG_4355.JPG',
+        src: '/editions/2025/gallery/IMG_4355.JPG',
         alt: 'CODEWAVE Event 4',
         gridClass: 'g-normal'
     },
     {
         id: 4,
-        src: '/codewave/gallery/IMG_4426.JPG',
+        src: '/editions/2025/gallery/IMG_4426.JPG',
         alt: 'CODEWAVE Event 5',
         gridClass: 'g-wide' 
     },
     {
         id: 5,
-        src: '/codewave/gallery/IMG_4560.JPG',
+        src: '/editions/2025/gallery/IMG_4560.JPG',
         alt: 'CODEWAVE Event 6',
         gridClass: 'g-normal'
     }
