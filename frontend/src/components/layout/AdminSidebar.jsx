@@ -1,174 +1,96 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAdmin } from '@/components/layout/AdminProvider';
+import { Avatar, Icon } from '@/components/admin/ui';
+import { NAV_GROUPS, SETTINGS_ITEM, isActivePath } from '@/components/admin/nav';
 
-export default function AdminSidebar() {
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
+
+const ROLE_LABEL = { 1: 'President', 2: 'Vice President', 3: 'Board Member' };
+
+export default function AdminSidebar({ open, onClose, mini, onToggleMini }) {
     const pathname = usePathname();
-    const { role } = useAdmin();
-
-    const [isMobileOpen, setIsMobileOpen] = useState(false);
-    const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-    useEffect(() => {
-        if (pathname.startsWith('/admin/announcements') || pathname.startsWith('/admin/events')) {
-            setIsPanelOpen(true);
-        }
-    }, [pathname]);
-
-    const getLinkClass = (path, level = 1) => {
-        const isActive = path === '/admin' ? pathname === '/admin' : pathname.startsWith(path);
-
-        if (level === 2) {
-            return `flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors font-medium ${isActive ? 'text-primary font-bold bg-primary/5' : 'text-on-surface-variant hover:bg-surface-container'}`;
-        }
-
-        return `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group font-medium ${isActive ? 'bg-primary/10 text-primary font-bold' : 'hover:bg-surface-container text-on-surface-variant'}`;
-    };
-
-    const isPanelActive = pathname.startsWith('/admin/announcements') || pathname.startsWith('/admin/events');
-
+    const { role, adminName, adminRole, email, profileUrl, isRoleLoading } = useAdmin();
     const isAdmin = role === 2 || role === '2';
 
-    return (
-        <>
-            <button
-                onClick={() => setIsMobileOpen(true)}
-                className={`fixed top-4 left-4 z-50 md:hidden flex items-center justify-center w-10 h-10 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-primary shadow-sm hover:bg-surface-container transition-colors ${isMobileOpen ? 'hidden' : 'flex'}`}
+    const link = (item) => {
+        const active = isActivePath(pathname, item);
+        return (
+            <Link
+                key={item.href}
+                href={item.href}
+                className="ad-nav-link"
+                aria-current={active ? 'page' : undefined}
+                title={mini ? item.label : undefined}
+                onClick={onClose}
             >
-                <span className="material-symbols-outlined text-2xl">menu</span>
-            </button>
+                <Icon name={item.icon} fill={active} />
+                <span className="t">{item.label}</span>
+            </Link>
+        );
+    };
 
-            {isMobileOpen && (
-                <div
-                    onClick={() => setIsMobileOpen(false)}
-                    className="fixed inset-0 bg-black/30 backdrop-blur-sm z-30 md:hidden animate-fade-in"
-                />
-            )}
+    return (
+        <aside className={`ad-sb ${open ? 'open' : ''}`} aria-label="Ana menü">
+            <div className="ad-sb-head">
+                <Link href="/admin" className="ad-logo" aria-label="KTÜCEC Admin" onClick={onClose}>
+                    KC
+                </Link>
+                <div className="ad-brand-txt">
+                    <b>KTÜCEC</b>
+                    <small>Yönetim Paneli</small>
+                </div>
+                <button type="button" className="ad-ib ad-mob-only" style={{ marginLeft: 'auto' }} onClick={onClose} aria-label="Menüyü kapat">
+                    <Icon name="close" />
+                </button>
+            </div>
 
-            <aside className={`fixed left-0 top-0 z-40 w-64 bg-surface-container-lowest border-r border-outline-variant/30 flex flex-col h-screen flex-shrink-0 transition-transform duration-300 ease-in-out md:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-
-                <div className="flex-1 flex flex-col overflow-y-auto">
-
-                    <div className="flex items-center gap-3 p-4 border-b border-outline-variant/30 shrink-0">
-                        <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
-                            <span className="material-symbols-outlined text-xl">dashboard</span>
-                        </div>
-                        <span className="font-display-lg text-xl tracking-tight text-on-surface">
-                            KTUCEC<span className="text-primary font-bold">Admin</span>
-                        </span>
+            <nav className="ad-sb-scroll">
+                {NAV_GROUPS.filter((g) => !g.adminOnly || isAdmin).map((g, gi) => (
+                    <div key={g.label}>
+                        {mini && gi > 0 ? <div className="ad-nav-sep" /> : null}
+                        <div className="ad-nav-label">{g.label}</div>
+                        {g.items.map(link)}
                     </div>
+                ))}
+            </nav>
 
-                    <nav className="p-4 space-y-1">
-                        <p className="font-label-md text-[11px] text-secondary uppercase tracking-wider mb-3 px-2">
-                            Ana Menü
-                        </p>
-
-                        <Link
-                            href="/admin"
-                            className={getLinkClass('/admin', 1)}
-                            onClick={() => setIsMobileOpen(false)}
-                        >
-                            <span className="material-symbols-outlined">space_dashboard</span>
-                            <span>Dashboard</span>
-                        </Link>
-
-                        {/* Contact Forms Butonu */}
-                        <Link
-                            href="/admin/contactforms"
-                            className={getLinkClass('/admin/contactforms', 1)}
-                            onClick={() => setIsMobileOpen(false)}
-                        >
-                            <span className="material-symbols-outlined">mail</span>
-                            <span>Contact Forms</span>
-                        </Link>
-
-                        {/* Başvuru Formları (Forms) Butonu */}
-                        <Link
-                            href="/admin/forms"
-                            className={getLinkClass('/admin/forms', 1)}
-                            onClick={() => setIsMobileOpen(false)}
-                        >
-                            <span className="material-symbols-outlined">dynamic_form</span>
-                            <span>Forms</span>
-                        </Link>
-
-                        <div className="pt-1">
-                            <button
-                                onClick={() => setIsPanelOpen(!isPanelOpen)}
-                                className={`w-full cursor-pointer flex items-center justify-between px-3 py-2.5 rounded-lg transition-colors group font-medium ${isPanelActive ? 'bg-primary/5 text-primary font-bold' : isPanelOpen ? 'bg-surface-container text-on-surface' : 'hover:bg-surface-container text-on-surface-variant'}`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <span className="material-symbols-outlined">layers</span>
-                                    <span>Panel</span>
-                                </div>
-                                <span className={`material-symbols-outlined text-sm transition-transform duration-200 ${isPanelOpen ? 'rotate-180' : ''}`}>
-                                    expand_more
-                                </span>
-                            </button>
-
-                            {isPanelOpen && (
-                                <div className="pl-4 pr-1 py-2 space-y-1 bg-surface-container-low border-l-2 border-outline-variant/30 mt-1 rounded-r-lg">
-                                    <Link
-                                        href="/admin/announcements"
-                                        className={getLinkClass('/admin/announcements', 2)}
-                                        onClick={() => setIsMobileOpen(false)}
-                                    >
-                                        <span className="material-symbols-outlined text-base">campaign</span>
-                                        <span>Duyurular</span>
-                                    </Link>
-
-                                    <Link
-                                        href="/admin/events"
-                                        className={getLinkClass('/admin/events', 2)}
-                                        onClick={() => setIsMobileOpen(false)}
-                                    >
-                                        <span className="material-symbols-outlined text-base">event</span>
-                                        <span>Etkinlikler</span>
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-
-                        {isAdmin && (
-                            <div className="pt-1 border-t border-outline-variant/30 mt-2">
-                                <Link
-                                    href="/admin/managers"
-                                    className={getLinkClass('/admin/managers', 1)}
-                                    onClick={() => setIsMobileOpen(false)}
-                                >
-                                    <span className="material-symbols-outlined">manage_accounts</span>
-                                    <span>Managers</span>
-                                </Link>
-                            </div>
-                        )}
-
-                        <div className="pt-2 border-t border-outline-variant/30 mt-2">
-                            <Link
-                                href="/admin/settings"
-                                className={getLinkClass('/admin/settings', 1)}
-                                onClick={() => setIsMobileOpen(false)}
-                            >
-                                <span className="material-symbols-outlined">settings</span>
-                                <span>Settings</span>
-                            </Link>
-                        </div>
-                    </nav>
+            <div className="ad-sb-foot">
+                <div className="ad-user">
+                    <Avatar
+                        name={adminName}
+                        src={profileUrl ? `${API_URL}${profileUrl}` : null}
+                        size="sm"
+                    />
+                    <div className="ad-user-txt">
+                        <b>{isRoleLoading ? 'Yükleniyor…' : adminName}</b>
+                        <small>{ROLE_LABEL[adminRole] || email || 'Yönetici'}</small>
+                    </div>
                 </div>
 
-                <div className="p-4 border-t border-outline-variant/30 bg-surface-container-lowest shrink-0">
-                    <Link
-                        href="/admin/logout"
-                        className="flex items-center justify-center md:justify-start gap-3 px-3 py-2.5 text-error hover:text-[var(--color-on-error-container)] hover:bg-error-container/30 rounded-lg transition-colors font-medium w-full group"
-                    >
-                        <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">logout</span>
-                        <span>Çıkış Yap</span>
-                    </Link>
-                </div>
-
-            </aside>
-        </>
+                {link(SETTINGS_ITEM)}
+                <a href="/" target="_blank" rel="noopener noreferrer" className="ad-nav-link" title={mini ? 'Siteyi görüntüle' : undefined}>
+                    <Icon name="open_in_new" />
+                    <span className="t">Siteyi Görüntüle</span>
+                </a>
+                <Link href="/admin/logout" className="ad-nav-link" style={{ color: 'var(--ad-danger)' }} title={mini ? 'Çıkış yap' : undefined}>
+                    <Icon name="logout" />
+                    <span className="t">Çıkış Yap</span>
+                </Link>
+                <button
+                    type="button"
+                    className="ad-nav-link ad-desk-only"
+                    style={{ border: 0, background: 'transparent', cursor: 'pointer', width: '100%', font: 'inherit', fontWeight: 600, fontSize: 14.5 }}
+                    onClick={onToggleMini}
+                    aria-label={mini ? 'Menüyü genişlet' : 'Menüyü daralt'}
+                    title={mini ? 'Menüyü genişlet' : undefined}
+                >
+                    <Icon name={mini ? 'left_panel_open' : 'left_panel_close'} />
+                    <span className="t">Menüyü daralt</span>
+                </button>
+            </div>
+        </aside>
     );
 }

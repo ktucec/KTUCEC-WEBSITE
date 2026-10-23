@@ -4,11 +4,16 @@ import { useState, useEffect, useRef } from 'react';
 import AdminVerificationModal from '@/components/ui/AdminVerificationModal';
 import { useAdmin } from '@/components/layout/AdminProvider';
 import { updateManager, verifyManagerUpdate } from '@/services/auth';
+import { Avatar, Icon, PageHeader, Segmented, useToast } from '@/components/admin/ui';
+import { useAdminTheme } from '@/components/admin/theme';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 
 export default function AdminSettingsPage() {
     const adminCtx = useAdmin();
+    const toast = useToast();
+    const [theme, , setTheme] = useAdminTheme();
+    const [showPw, setShowPw] = useState(false);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -56,7 +61,7 @@ export default function AdminSettingsPage() {
                 setIsLoading(false);
             }
         }
-    }, [adminCtx]);
+    }, [adminCtx.isRoleLoading, adminCtx.adminName, adminCtx.email, adminCtx.profileUrl]);
 
     const getChangedFields = () => {
         const changes = {};
@@ -78,7 +83,7 @@ export default function AdminSettingsPage() {
         if (file) {
             const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
             if (!validTypes.includes(file.type)) {
-                alert('Sadece PNG, JPG veya JPEG formatında görsel yükleyebilirsiniz.');
+                toast.error('Sadece PNG, JPG veya JPEG formatında görsel yükleyebilirsiniz.');
                 if (fileInputRef.current) fileInputRef.current.value = '';
                 return;
             }
@@ -132,131 +137,145 @@ export default function AdminSettingsPage() {
 
         setFormData(prev => ({ ...prev, password: '' }));
         setImageFile(null);
-        alert('Profil bilgileriniz başarıyla güncellendi!');
+        toast.success('Profil bilgileriniz güncellendi.');
     };
 
+    const roleLabel = adminCtx.adminRole === 1 ? 'President' : adminCtx.adminRole === 2 ? 'Vice President' : 'Board Member';
+
     return (
-        <main className="flex-1 overflow-y-auto bg-surface md:p-4">
-            <div className="max-w-3xl mx-auto">
+        <>
+            <PageHeader title="Hesap Ayarları" description="Profil bilgilerinizi, şifrenizi ve panel görünümünüzü buradan yönetin." />
 
-                <div className="mb-8">
-                    <h1 className="font-headline-md text-3xl text-on-surface">Profil Ayarları</h1>
-                    <p className="font-body-md text-on-surface-variant mt-2">
-                        Yönetici hesabınıza ait profil, iletişim ve güvenlik bilgilerini buradan yönetebilirsiniz.
-                    </p>
-                </div>
-
+            <div style={{ display: 'grid', gap: 18, maxWidth: 860 }}>
                 {isLoading ? (
-                    <div className="flex flex-col items-center justify-center p-20 min-h-[400px] bg-surface-container-lowest border border-outline-variant/30 rounded-2xl">
-                        <span className="material-symbols-outlined text-primary text-5xl animate-spin">progress_activity</span>
-                        <p className="mt-4 font-body-md text-secondary">Profil yükleniyor...</p>
+                    <div className="ad-card ad-card-pad" aria-busy="true" style={{ display: 'grid', gap: 14 }}>
+                        <div className="ad-row" style={{ gap: 16 }}>
+                            <span className="ad-skel" style={{ width: 84, height: 84, borderRadius: '50%' }} />
+                            <div style={{ flex: 1, display: 'grid', gap: 10 }}>
+                                <span className="ad-skel" style={{ height: 18, width: '40%' }} />
+                                <span className="ad-skel" style={{ height: 14, width: '25%' }} />
+                            </div>
+                        </div>
+                        <span className="ad-skel" style={{ height: 44 }} />
+                        <span className="ad-skel" style={{ height: 44 }} />
                     </div>
                 ) : (
-                    <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl shadow-sm overflow-hidden relative">
-
+                    <form onSubmit={handleInitiateSave} className="ad-card" style={{ position: 'relative', overflow: 'hidden' }}>
                         {isSaving && (
-                            <div className="absolute inset-0 bg-surface/50 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
-                                <span className="material-symbols-outlined text-primary text-5xl animate-spin">progress_activity</span>
-                                <p className="mt-2 font-label-md text-primary">Güncelleniyor...</p>
+                            <div style={{ position: 'absolute', inset: 0, zIndex: 5, display: 'grid', placeItems: 'center', background: 'color-mix(in srgb, var(--ad-card) 70%, transparent)', backdropFilter: 'blur(3px)' }}>
+                                <span className="ad-row" style={{ gap: 8, fontWeight: 700, color: 'var(--ad-brand)' }}>
+                                    <Icon name="progress_activity" className="ad-spin" /> Güncelleniyor…
+                                </span>
                             </div>
                         )}
 
-                        <form onSubmit={handleInitiateSave}>
+                        {initiateError && (
+                            <div className="ad-err" style={{ margin: 18 }} role="alert">
+                                <Icon name="error" className="ad-ico-sm" fill />
+                                <span>{initiateError}</span>
+                            </div>
+                        )}
 
-                            {initiateError && (
-                                <div className="mx-8 mt-6 p-4 text-sm text-error bg-error-container/30 border border-error/20 rounded-xl flex items-center gap-3">
-                                    <span className="material-symbols-outlined text-xl">error</span>
-                                    <span className="font-medium">{initiateError}</span>
+                        <div className="ad-card-pad" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 20, borderBottom: '1px solid var(--ad-line)' }}>
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                aria-label="Profil fotoğrafını değiştir"
+                                style={{ position: 'relative', width: 92, height: 92, borderRadius: '50%', border: 0, padding: 0, cursor: 'pointer', overflow: 'hidden', background: 'none', flexShrink: 0 }}
+                                className="ad-avatar-btn"
+                            >
+                                <input
+                                    type="file"
+                                    accept=".png, .jpg, .jpeg, image/png, image/jpeg"
+                                    hidden
+                                    ref={fileInputRef}
+                                    onChange={handleImageChange}
+                                />
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt="Profil önizleme" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                    <span style={{ display: 'block', width: '100%', height: '100%' }}>
+                                        <Avatar name={originalData.fullName} size="lg" />
+                                    </span>
+                                )}
+                                <span className="ad-avatar-over"><Icon name="photo_camera" /></span>
+                            </button>
+                            <div style={{ minWidth: 0, flex: '1 1 220px' }}>
+                                <h2 style={{ margin: 0, fontFamily: 'var(--font-montserrat)', fontSize: 22, letterSpacing: '-0.02em' }}>{originalData.fullName}</h2>
+                                <div className="ad-row ad-wrap" style={{ gap: 8, marginTop: 8 }}>
+                                    <span className="ad-badge brand"><Icon name="shield_person" className="ad-ico-xs" />{roleLabel}</span>
+                                    <span className="ad-muted" style={{ fontSize: 13 }}>{originalData.email}</span>
                                 </div>
-                            )}
+                                <p className="ad-muted" style={{ margin: '10px 0 0', fontSize: 13 }}>Fotoğrafı değiştirmek için görsele dokunun (PNG veya JPG).</p>
+                            </div>
+                        </div>
 
-                            <div className="p-8 border-b border-outline-variant/20 flex flex-col sm:flex-row items-center gap-8">
-                                <div
-                                    className="relative w-28 h-28 rounded-full bg-surface-container border-4 border-surface shadow-md flex items-center justify-center cursor-pointer overflow-hidden group shrink-0"
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <input
-                                        type="file"
-                                        accept=".png, .jpg, .jpeg, image/png, image/jpeg"
-                                        className="hidden"
-                                        ref={fileInputRef}
-                                        onChange={handleImageChange}
-                                    />
-                                    {imagePreview ? (
-                                        <img src={imagePreview} alt="Profil Önizleme" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="material-symbols-outlined text-5xl text-secondary">person</span>
-                                    )}
-                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <span className="material-symbols-outlined text-white text-2xl">photo_camera</span>
-                                    </div>
+                        <div className="ad-card-pad" style={{ display: 'grid', gap: 18 }}>
+                            <div style={{ display: 'grid', gap: 18, gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))' }}>
+                                <div>
+                                    <label className="ad-label" htmlFor="fullName">İsim soyisim</label>
+                                    <input className="ad-input" style={{ minHeight: 46 }} id="fullName" name="fullName" value={formData.fullName} onChange={handleChange} autoComplete="name" required />
                                 </div>
-
-                                <div className="text-center sm:text-left">
-                                    <h2 className="font-headline-sm text-2xl text-on-surface">{originalData.fullName}</h2>
-                                    <p className="font-label-md text-primary mt-1 uppercase tracking-wider">
-                                        {adminCtx.adminRole === 1 ? 'President' : adminCtx.adminRole === 2 ? 'Vice President' : 'Board Member'}
-                                    </p>
-                                    <p className="font-body-md text-secondary text-sm mt-2">Profil fotoğrafınızı değiştirmek için görsele tıklayın.</p>
+                                <div>
+                                    <label className="ad-label" htmlFor="email">E-posta adresi</label>
+                                    <input className="ad-input" style={{ minHeight: 46 }} type="email" id="email" name="email" value={formData.email} onChange={handleChange} autoComplete="email" required />
                                 </div>
                             </div>
 
-                            <div className="p-8 flex flex-col gap-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-label-md text-secondary ml-1" htmlFor="fullName">İsim Soyisim</label>
-                                        <input
-                                            className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
-                                            id="fullName"
-                                            name="fullName"
-                                            value={formData.fullName}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-label-md text-secondary ml-1" htmlFor="email">E-posta Adresi</label>
-                                        <input
-                                            type="email"
-                                            className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
-                                            id="email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col gap-2 pt-2 border-t border-outline-variant/20">
-                                    <label className="font-label-md text-secondary ml-1" htmlFor="password">Yeni Şifre Belirle</label>
+                            <div>
+                                <label className="ad-label" htmlFor="password">Yeni şifre</label>
+                                <div className="ad-search">
+                                    <Icon name="lock" />
                                     <input
-                                        type="password"
-                                        className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all placeholder:opacity-50"
+                                        className="ad-input"
+                                        style={{ minHeight: 46, paddingRight: 48 }}
+                                        type={showPw ? 'text' : 'password'}
                                         id="password"
                                         name="password"
                                         value={formData.password}
                                         onChange={handleChange}
+                                        autoComplete="new-password"
                                         placeholder="Değiştirmek istemiyorsanız boş bırakın"
                                     />
-                                    <p className="text-xs text-secondary ml-1 mt-1">Sadece şifrenizi güncellemek istiyorsanız bu alanı doldurun.</p>
+                                    <button type="button" className="ad-ib clear" onClick={() => setShowPw((v) => !v)} aria-label={showPw ? 'Şifreyi gizle' : 'Şifreyi göster'}>
+                                        <Icon name={showPw ? 'visibility_off' : 'visibility'} className="ad-ico-sm" />
+                                    </button>
                                 </div>
+                                <p className="ad-muted" style={{ margin: '8px 2px 0', fontSize: 12.5 }}>Sadece şifrenizi güncellemek istiyorsanız doldurun. Kaydederken e-postanıza doğrulama kodu gönderilir.</p>
                             </div>
+                        </div>
 
-                            <div className="p-6 bg-surface-container-low border-t border-outline-variant/20 flex justify-end">
-                                <button
-                                    disabled={!hasChanges}
-                                    type="submit"
-                                    className={`font-label-md py-3 px-8 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 ${hasChanges ? 'bg-primary hover:bg-primary-container text-white cursor-pointer' : 'bg-surface-container-high text-secondary cursor-not-allowed'}`}
-                                >
-                                    <span className="material-symbols-outlined text-[18px]">save</span>
-                                    <span>{hasChanges ? 'Değişiklikleri Kaydet' : 'Değişiklik Yok'}</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        <div className="ad-tfoot" style={{ justifyContent: 'flex-end', padding: 14 }}>
+                            {hasChanges && (
+                                <span style={{ marginRight: 'auto', fontWeight: 600 }} className="ad-row">
+                                    <span className="ad-badge warn"><span className="dot" />Kaydedilmemiş değişiklikler</span>
+                                </span>
+                            )}
+                            <button disabled={!hasChanges} type="submit" className="ad-btn ad-btn-primary">
+                                <Icon name="save" className="ad-ico-sm" />
+                                {hasChanges ? 'Değişiklikleri kaydet' : 'Değişiklik yok'}
+                            </button>
+                        </div>
+                    </form>
                 )}
+
+                <section className="ad-card ad-card-pad" aria-labelledby="appearance">
+                    <div className="ad-row ad-wrap" style={{ justifyContent: 'space-between', gap: 14 }}>
+                        <div>
+                            <h2 id="appearance" style={{ margin: 0, fontFamily: 'var(--font-montserrat)', fontSize: 17, letterSpacing: '-0.01em' }}>Görünüm</h2>
+                            <p className="ad-muted" style={{ margin: '4px 0 0', fontSize: 13.5 }}>Panel temasını bu cihaz için seçin.</p>
+                        </div>
+                        <Segmented
+                            label="Tema"
+                            value={theme}
+                            onChange={setTheme}
+                            options={[
+                                { value: 'light', icon: 'light_mode', label: 'Açık' },
+                                { value: 'dark', icon: 'dark_mode', label: 'Koyu' },
+                            ]}
+                        />
+                    </div>
+                </section>
             </div>
 
             <AdminVerificationModal
@@ -266,7 +285,6 @@ export default function AdminSettingsPage() {
                 onSubmit={handleUpdateSubmit}
                 email={originalData.email}
             />
-
-        </main>
+        </>
     );
 }

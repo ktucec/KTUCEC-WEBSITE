@@ -1,20 +1,21 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminVerificationModal from '@/components/ui/AdminVerificationModal';
 import { loginAdmin, verifyCode } from '@/services/auth';
+import { Icon } from '@/components/admin/ui';
+import { ThemeButton } from '@/components/admin/theme';
 
 export default function AdminLoginPage() {
     const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        email: '',
-        password: ''
-    });
+    const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showPw, setShowPw] = useState(false);
+    const [caps, setCaps] = useState(false);
     const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
     const handleInputChange = (e) => {
@@ -57,108 +58,107 @@ export default function AdminLoginPage() {
     };
 
     return (
-        <div className="bg-surface min-h-screen flex items-center justify-center p-4 w-full relative overflow-hidden">
-            <main className="w-full max-w-md relative z-10">
+        <div className="ad-auth">
+            <div className="ad-auth-top">
+                <ThemeButton />
+            </div>
 
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary/10 text-primary mb-4 shadow-lg shadow-primary/5">
-                        <span className="material-symbols-outlined text-3xl">admin_panel_settings</span>
-                    </div>
-                    <h1 className="font-headline-md text-3xl text-on-surface">KTUCEC Admin</h1>
-                    <p className="font-body-md text-on-surface-variant mt-2">Yönetim paneline giriş yapın</p>
+            <main style={{ width: '100%', display: 'grid', justifyItems: 'center', gap: 22, position: 'relative', zIndex: 1 }}>
+                <div style={{ textAlign: 'center' }}>
+                    <div className="ad-logo" style={{ width: 54, height: 54, borderRadius: 16, margin: '0 auto 14px', fontSize: 19 }}>KC</div>
+                    <h1 className="ad-h1" style={{ fontSize: 'clamp(24px, 6vw, 30px)' }}>Yönetim Paneli</h1>
+                    <p className="ad-sub" style={{ margin: '6px auto 0' }}>KTÜCEC hesabınızla giriş yapın</p>
                 </div>
 
-                <div className="bg-surface-container-lowest rounded-[24px] shadow-xl border border-outline-variant/30 overflow-hidden relative z-10">
-                    <div className="h-1.5 w-full bg-gradient-to-r from-primary via-primary-container to-primary"></div>
-
-                    <div className="p-8 sm:p-10">
-                        <form onSubmit={handleInitialSubmit} className="space-y-6">
-
+                <div className="ad-auth-card">
+                    <div className="ad-auth-in">
+                        <form onSubmit={handleInitialSubmit} noValidate style={{ display: 'grid', gap: 18 }}>
                             {error && (
-                                <div className="p-4 text-sm text-error bg-error-container/30 border border-error/20 rounded-xl flex items-center gap-3">
-                                    <span className="material-symbols-outlined text-xl">error</span>
-                                    <span className="font-medium">{error}</span>
+                                <div className="ad-err" role="alert">
+                                    <Icon name="error" className="ad-ico-sm" fill />
+                                    <span>{error}</span>
                                 </div>
                             )}
 
                             <div>
-                                <label className="block font-label-md text-secondary mb-2 ml-1" htmlFor="email">
-                                    E-posta Adresi
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-on-surface-variant">
-                                        <span className="material-symbols-outlined text-[20px]">mail</span>
-                                    </div>
+                                <label className="ad-label" htmlFor="email">E-posta adresi</label>
+                                <div className="ad-search">
+                                    <Icon name="mail" />
                                     <input
+                                        className="ad-input"
+                                        style={{ minHeight: 48 }}
                                         type="email"
                                         id="email"
                                         name="email"
+                                        autoComplete="username"
+                                        inputMode="email"
+                                        autoCapitalize="none"
                                         value={formData.email}
                                         onChange={handleInputChange}
                                         placeholder="admin@ktucec.com"
-                                        className="block w-full pl-11 pr-4 py-3.5 border border-outline-variant/50 rounded-xl text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-surface transition-all duration-200"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block font-label-md text-secondary mb-2 ml-1" htmlFor="password">
-                                    Şifre
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-on-surface-variant">
-                                        <span className="material-symbols-outlined text-[20px]">lock</span>
-                                    </div>
+                                <label className="ad-label" htmlFor="password">Şifre</label>
+                                <div className="ad-search">
+                                    <Icon name="lock" />
                                     <input
-                                        type="password"
+                                        className="ad-input"
+                                        style={{ minHeight: 48, paddingRight: 48 }}
+                                        type={showPw ? 'text' : 'password'}
                                         id="password"
                                         name="password"
+                                        autoComplete="current-password"
                                         value={formData.password}
                                         onChange={handleInputChange}
+                                        onKeyUp={(e) => setCaps(e.getModifierState && e.getModifierState('CapsLock'))}
                                         placeholder="••••••••"
-                                        className="block w-full pl-11 pr-4 py-3.5 border border-outline-variant/50 rounded-xl text-on-surface focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary bg-surface transition-all duration-200 font-mono tracking-widest"
                                     />
+                                    <button
+                                        type="button"
+                                        className="ad-ib clear"
+                                        style={{ right: 4 }}
+                                        onClick={() => setShowPw((v) => !v)}
+                                        aria-label={showPw ? 'Şifreyi gizle' : 'Şifreyi göster'}
+                                    >
+                                        <Icon name={showPw ? 'visibility_off' : 'visibility'} className="ad-ico-sm" />
+                                    </button>
                                 </div>
+                                {caps && (
+                                    <p style={{ margin: '8px 2px 0', fontSize: 12.5, fontWeight: 600, color: 'var(--ad-warn)', display: 'flex', gap: 6, alignItems: 'center' }}>
+                                        <Icon name="keyboard_capslock" className="ad-ico-xs" /> Caps Lock açık
+                                    </p>
+                                )}
                             </div>
 
-                            <div className="pt-2">
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="group relative w-full flex justify-center py-3.5 px-4 border border-transparent font-label-md rounded-xl text-white bg-primary hover:bg-primary-container focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg shadow-primary/20 transition-all duration-200 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading ? (
-                                        <span className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
-                                            Giriş Yapılıyor...
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center gap-2">
-                                            Giriş Yap
-                                            <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                                        </span>
-                                    )}
-                                </button>
-                            </div>
+                            <button type="submit" disabled={isLoading} className="ad-btn ad-btn-primary ad-btn-block" style={{ minHeight: 48, fontSize: 15 }}>
+                                {isLoading ? (
+                                    <>
+                                        <Icon name="progress_activity" className="ad-ico-sm ad-spin" />
+                                        Giriş yapılıyor…
+                                    </>
+                                ) : (
+                                    <>
+                                        Giriş yap
+                                        <Icon name="arrow_forward" className="ad-ico-sm" />
+                                    </>
+                                )}
+                            </button>
+
+                            <p className="ad-muted" style={{ margin: 0, fontSize: 12.5, textAlign: 'center', display: 'flex', gap: 6, alignItems: 'center', justifyContent: 'center' }}>
+                                <Icon name="shield_lock" className="ad-ico-xs" />
+                                Girişten sonra e-postanıza 6 haneli doğrulama kodu gönderilir.
+                            </p>
                         </form>
                     </div>
                 </div>
 
-                <div className="mt-8 text-center">
-                    <Link
-                        href="/"
-                        className="inline-flex items-center text-sm font-label-md text-secondary hover:text-primary transition-colors"
-                    >
-                        <span className="material-symbols-outlined text-base mr-2">west</span>
-                        Ana Sayfaya Dön
-                    </Link>
-                </div>
-
-                <div className="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-                    <div className="absolute -top-[10%] -right-[5%] w-[500px] h-[500px] bg-primary/10 rounded-full blur-[100px]"></div>
-                    <div className="absolute -bottom-[10%] -left-[5%] w-[600px] h-[600px] bg-primary-container/10 rounded-full blur-[100px]"></div>
-                </div>
-
+                <Link href="/" className="ad-btn ad-btn-ghost">
+                    <Icon name="west" className="ad-ico-sm" />
+                    Ana sayfaya dön
+                </Link>
             </main>
 
             <AdminVerificationModal
@@ -168,7 +168,6 @@ export default function AdminLoginPage() {
                 onSubmit={handleVerifySubmit}
                 email={formData.email}
             />
-
         </div>
     );
 }

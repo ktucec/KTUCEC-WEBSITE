@@ -1,41 +1,45 @@
-import React from 'react';
-import AdminSidebar from '@/components/layout/AdminSidebar';
-import { AdminProvider } from '@/components/layout/AdminProvider'; 
+import '@fontsource-variable/bricolage-grotesque/wdth.css';
+import '@fontsource-variable/instrument-sans/wdth.css';
 import '@/styles/globals.css';
+import '@/styles/admin.css';
+import AdminShell from '@/components/admin/AdminShell';
+import { AdminProvider } from '@/components/layout/AdminProvider';
+import { AdminUIProvider } from '@/components/admin/ui';
 
 export const metadata = {
-    title: 'KTUCEC Admin',
-    description: 'Admin Panel Management System',
+    title: 'KTÜCEC Yönetim Paneli',
+    description: 'KTÜCEC yönetim paneli',
     robots: { index: false, follow: false },
 };
 
+export const viewport = {
+    width: 'device-width',
+    initialScale: 1,
+    viewportFit: 'cover',
+};
+
+// Boyanmadan önce tema ve menü durumunu uygular (yanıp sönmeyi önler)
+const initScript = `(function(){try{var d=document.documentElement;var t=localStorage.getItem('adm-theme');if(!t){t=window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'}d.setAttribute('data-theme',t);d.setAttribute('data-sb',localStorage.getItem('adm-sb')==='mini'?'mini':'full')}catch(e){}})();`;
+
 export default function AdminRootLayout({ children }) {
     return (
-        <html lang="tr">
+        <html lang="tr" className="adm" data-theme="light" data-sb="full" suppressHydrationWarning>
             <head>
+                <script dangerouslySetInnerHTML={{ __html: initScript }} />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 <link
-                    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Montserrat:wght@700;800&display=swap"
-                    rel="stylesheet"
-                />
-                <link
-                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+                    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block"
                     rel="stylesheet"
                 />
             </head>
-
-            <body className="font-body-md bg-surface text-on-surface min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-white">
-
+            <body>
                 <AdminProvider>
-                    <AdminSidebar />
-
-                    <div className="flex flex-1 overflow-hidden w-auto md:ml-64 md:mt-0 mt-20">
-                        <div className="mx-auto w-full lg:w-[70%] p-6 md:p-8">
-                            {children}
-                        </div>
-                    </div>
+                    <AdminUIProvider>
+                        <AdminShell>{children}</AdminShell>
+                    </AdminUIProvider>
                 </AdminProvider>
-
             </body>
         </html>
     );
-}
+}

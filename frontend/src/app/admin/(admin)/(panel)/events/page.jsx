@@ -1,215 +1,246 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import AdminAddEventModal from '@/components/ui/AdminAddEventModal';
 import AdminUpdateEventModal from '@/components/ui/AdminUpdateEventModal';
 import { getAllEvents, deleteEvent } from '@/services/events';
+import { formatShortDate, norm, parseDate } from '@/lib/adminFormat';
+import DataView from '@/components/admin/DataView';
+import { Badge, Highlight, Icon, PageHeader, SearchBox, Segmented, useConfirm, useToast } from '@/components/admin/ui';
+
+function isUpcoming(ev) {
+    const d = parseDate(ev.date);
+    if (!d) return false;
+    const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
+    return end > Date.now();
+}
 
 export default function EventsManagementPage() {
+    const toast = useToast();
+    const confirm = useConfirm();
+
     const [events, setEvents] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [query, setQuery] = useState('');
+    const [when, setWhen] = useState('all');
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedEventId, setSelectedEventId] = useState(null);
 
-    useEffect(() => {
-        let isCancelled = false;
-
-        const fetchItems = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const response = await getAllEvents();
-
-                if (!isCancelled) {
-                    const data = response?.data || response || [];
-                    setEvents(data);
-                }
-            } catch (err) {
-                if (!isCancelled) {
-                    setError('Sunucuya bağlanırken hata oluştu');
-                }
-            } finally {
-                if (!isCancelled) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        fetchItems();
-
-        return () => {
-            isCancelled = true;
-        };
+    const load = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await getAllEvents();
+            const data = response?.data || response || [];
+            setEvents(Array.isArray(data) ? data : []);
+        } catch {
+            setError('Sunucuya bağlanırken hata oluştu.');
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    const handleDelete = async (id) => {
-        const confirmed = window.confirm('Bu etkinliği silmek istediğinize emin misiniz?');
-        if (!confirmed) return;
+    useEffect(() => {
+        load();
+    }, [load]);
 
+    const counts = useMemo(() => {
+        const up = events.filter(isUpcoming).length;
+        return { all: events.length, up, past: events.length - up };
+    }, [events]);
+
+    const rows = useMemo(() => {
+        const q = norm(query.trim());
+        const list = events.filter((e) => {
+            if (when === 'up' && !isUpcoming(e)) return false;
+            if (when === 'past' && isUpcoming(e)) return false;
+            if (!q) return true;
+            return norm(`${e.title} ${e.location}`).includes(q);
+        });
+        const t = (e) => parseDate(e.date)?.getTime() || 0;
+        // Yaklaşanlar önce (en yakın tarih), sonra geçmişler (en yeni)
+        return [...list].sort((a, b) => {
+            const ua = isUpcoming(a);
+            const ub = isUpcoming(b);
+            if (ua !== ub) return ua ? -1 : 1;
+            return ua ? t(a) - t(b) : t(b) - t(a);
+        });
+    }, [events, query, when]);
+
+    const handleDelete = async (item) => {
+        const ok = await confirm({
+            title: 'Etkinlik silinsin mi?',
+            message: `"${item.title}" etkinliği ve sayfası sitenizden kaldırılacak. Bu işlem geri alınamaz.`,
+        });
+        if (!ok) return;
         try {
-            await deleteEvent(id);
-            setEvents((prev) => prev.filter((item) => item.id !== id));
-        } catch (error) {
-            alert(error.message || 'Silme işlemi sırasında bir şeyler yanlış gitti.');
+            await deleteEvent(item.id);
+            setEvents((prev) => prev.filter((e) => e.id !== item.id));
+            toast.success('Etkinlik silindi.');
+        } catch (err) {
+            toast.error(err?.message || 'Silme işlemi sırasında bir şeyler yanlış gitti.');
         }
     };
 
-    const handleAddSuccess = (newEvent) => {
-        setEvents(prev => [...prev, newEvent]);
-    };
-
-    const handleUpdateSuccess = (updatedEvent) => {
-        setEvents(prev => prev.map(item => item.id === updatedEvent.id ? { ...item, ...updatedEvent } : item));
-    };
-
-    const openUpdateModal = (id) => {
+    const openUpdate = (id) => {
         setSelectedEventId(id);
         setIsUpdateModalOpen(true);
     };
 
-    return (
-        <main className="flex-1 overflow-y-auto bg-surface md:p-4">
-            <div className="max-w-5xl mx-auto">
+    const dateBadge = (e) => (
+        <Badge tone={isUpcoming(e) ? 'ok' : ''} dot>
+            {isUpcoming(e) ? 'Yaklaşan' : 'Geçmiş'}
+        </Badge>
+    );
 
-                <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="font-headline-md text-3xl text-on-surface">Etkinlikler Yönetimi</h1>
-                        <p className="font-body-md text-on-surface-variant mt-2">
-                            Sitenin etkinlik akışı sayfasında listelenen kulüp etkinliklerini buradan yönetebilirsiniz.
-                        </p>
-                    </div>
-                    <div>
-                        <button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="bg-primary hover:bg-primary-container text-white font-label-md py-2.5 px-6 rounded-lg transition-colors duration-200 shadow-sm inline-flex items-center gap-2 cursor-pointer"
-                        >
-                            <span className="material-symbols-outlined text-lg">add</span>
-                            Yeni Etkinlik Ekle
-                        </button>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 md:hidden">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <span className="material-symbols-outlined text-primary text-5xl animate-spin">
-                                progress_activity
-                            </span>
+    const columns = [
+        {
+            key: 'title',
+            label: 'Etkinlik',
+            render: (e) => (
+                <button
+                    type="button"
+                    onClick={() => openUpdate(e.id)}
+                    style={{ border: 0, background: 'none', padding: 0, font: 'inherit', color: 'inherit', cursor: 'pointer', textAlign: 'left', display: 'block' }}
+                >
+                    <div className="strong" style={{ fontSize: 15 }}><Highlight text={e.title} query={query} /></div>
+                    {e.location && (
+                        <div className="ad-muted ad-row" style={{ fontSize: 13, gap: 4, marginTop: 2 }}>
+                            <Icon name="location_on" className="ad-ico-xs" />
+                            <Highlight text={e.location} query={query} />
                         </div>
-                    ) : error ? (
-                        <div className="bg-error-container/20 border border-error/30 p-6 rounded-xl text-center text-sm text-error font-medium">
-                            {error}
-                        </div>
-                    ) : events.length === 0 ? (
-                        <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 rounded-xl text-center text-sm text-secondary font-medium">
-                            Henüz hiç etkinlik eklenmemiş.
-                        </div>
-                    ) : (
-                        events.map((item) => (
-                            <div key={item.id} className="bg-surface-container-lowest border border-outline-variant/30 p-5 rounded-xl shadow-sm space-y-4">
-                                <div>
-                                    <span className="font-label-md text-[11px] text-secondary uppercase tracking-wider">Etkinlik Başlığı</span>
-                                    <p className="font-body-lg text-on-surface font-semibold mt-1">{item.title}</p>
-                                </div>
-                                <div className="pt-3 border-t border-outline-variant/20 flex justify-end gap-4 items-center">
-                                    <button
-                                        onClick={() => openUpdateModal(item.id)}
-                                        className="text-primary hover:text-primary-container font-label-md transition-colors inline-flex items-center gap-1 bg-primary/5 hover:bg-primary/10 px-3 py-2 rounded-md flex-1 justify-center cursor-pointer"
-                                    >
-                                        <span className="material-symbols-outlined text-base">edit</span>
-                                        Düzenle
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(item.id)}
-                                        className="text-error hover:text-on-error-container transition-colors bg-error-container/30 hover:bg-error-container/60 px-3 py-2 rounded-md cursor-pointer inline-flex items-center gap-1 font-label-md flex-1 justify-center"
-                                    >
-                                        <span className="material-symbols-outlined text-base">delete</span>
-                                        Sil
-                                    </button>
-                                </div>
-                            </div>
-                        ))
                     )}
-                </div>
+                </button>
+            ),
+        },
+        {
+            key: 'date',
+            label: 'Tarih',
+            render: (e) => <span style={{ whiteSpace: 'nowrap' }}>{formatShortDate(e.date) || '—'}</span>,
+        },
+        { key: 'state', label: 'Durum', render: dateBadge },
+    ];
 
-                <div className="hidden md:block bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden mb-6">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-surface-container-low border-b border-outline-variant/30">
-                                <th className="px-6 py-4 font-label-md text-secondary uppercase tracking-wider">Etkinlik Başlığı</th>
-                                <th className="px-6 py-4 font-label-md text-secondary uppercase tracking-wider text-right">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan="2" className="px-6 py-12 text-center">
-                                        <span className="material-symbols-outlined text-primary text-5xl animate-spin">
-                                            progress_activity
-                                        </span>
-                                    </td>
-                                </tr>
-                            ) : error ? (
-                                <tr>
-                                    <td colSpan="2" className="px-6 py-10 text-sm text-center text-error font-medium">
-                                        {error}
-                                    </td>
-                                </tr>
-                            ) : events.length === 0 ? (
-                                <tr>
-                                    <td colSpan="2" className="px-6 py-10 text-sm text-center text-secondary font-medium">
-                                        Henüz hiç etkinlik eklenmemiş.
-                                    </td>
-                                </tr>
-                            ) : (
-                                events.map((item) => (
-                                    <tr
-                                        key={item.id}
-                                        className="border-b border-outline-variant/20 last:border-0 hover:bg-surface-container-low/50 transition-colors"
-                                    >
-                                        <td className="px-6 py-4 font-body-lg text-on-surface font-semibold">
-                                            {item.title}
-                                        </td>
-                                        <td className="px-6 py-4 text-right flex justify-end gap-4 items-center">
-                                            <button
-                                                onClick={() => openUpdateModal(item.id)}
-                                                className="text-primary hover:text-primary-container font-medium transition-colors inline-flex items-center p-2 rounded-lg hover:bg-primary/5 cursor-pointer border-none bg-transparent"
-                                                title="Düzenle"
-                                            >
-                                                <span className="material-symbols-outlined text-xl">edit</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleDelete(item.id)}
-                                                className="text-error hover:text-on-error-container transition-colors bg-transparent border-0 p-2 rounded-lg hover:bg-error-container/30 cursor-pointer inline-flex items-center"
-                                                title="Sil"
-                                            >
-                                                <span className="material-symbols-outlined text-xl">delete</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+    const renderActions = (e) => (
+        <>
+            {e.slug && (
+                <a className="ad-ib" data-tip="Sayfayı aç" aria-label="Etkinlik sayfasını aç" href={`/etkinlikler/${e.slug}`} target="_blank" rel="noopener noreferrer">
+                    <Icon name="open_in_new" className="ad-ico-sm" />
+                </a>
+            )}
+            <button type="button" className="ad-ib" data-tip="Düzenle" aria-label="Etkinliği düzenle" onClick={() => openUpdate(e.id)}>
+                <Icon name="edit" className="ad-ico-sm" />
+            </button>
+            <button type="button" className="ad-ib danger" data-tip="Sil" aria-label="Etkinliği sil" onClick={() => handleDelete(e)}>
+                <Icon name="delete" className="ad-ico-sm" />
+            </button>
+        </>
+    );
 
+    const renderCard = (e) => (
+        <div key={e.id} className="ad-item">
+            <div className="ad-item-head">
+                <div className="ad-logo" style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--ad-brand-soft)', color: 'var(--ad-brand)', boxShadow: 'none' }}>
+                    <Icon name="event" />
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                    <div className="ad-item-title"><Highlight text={e.title} query={query} /></div>
+                    <div className="ad-item-sub">{formatShortDate(e.date)}</div>
+                </div>
+                {dateBadge(e)}
             </div>
+            {e.location && (
+                <div className="ad-item-meta">
+                    <span className="ad-m"><Icon name="location_on" className="ad-ico-xs" />{e.location}</span>
+                </div>
+            )}
+            <div className="ad-item-actions">
+                <button type="button" className="ad-btn" onClick={() => openUpdate(e.id)}>
+                    <Icon name="edit" className="ad-ico-sm" />
+                    Düzenle
+                </button>
+                <button type="button" className="ad-btn ad-btn-danger" onClick={() => handleDelete(e)}>
+                    <Icon name="delete" className="ad-ico-sm" />
+                    Sil
+                </button>
+            </div>
+        </div>
+    );
+
+    return (
+        <>
+            <PageHeader
+                title="Etkinlikler"
+                description="Sitenin etkinlik akışında yer alan kulüp etkinliklerini yönetin. Yaklaşan etkinlikler listenin başında görünür."
+                actions={
+                    <button type="button" className="ad-btn ad-btn-primary" onClick={() => setIsAddModalOpen(true)}>
+                        <Icon name="add" className="ad-ico-sm" />
+                        Yeni etkinlik
+                    </button>
+                }
+            />
+
+            {(events.length > 0 || query) && (
+                <div className="ad-toolbar">
+                    <SearchBox value={query} onChange={setQuery} placeholder="Etkinlik veya konumda ara…" label="Etkinliklerde ara" />
+                    <Segmented
+                        label="Zaman"
+                        scroll
+                        value={when}
+                        onChange={setWhen}
+                        options={[
+                            { value: 'all', label: `Tümü (${counts.all})` },
+                            { value: 'up', label: `Yaklaşan (${counts.up})` },
+                            { value: 'past', label: `Geçmiş (${counts.past})` },
+                        ]}
+                    />
+                </div>
+            )}
+
+            <DataView
+                columns={columns}
+                rows={rows}
+                renderCard={renderCard}
+                renderActions={renderActions}
+                loading={isLoading}
+                error={error}
+                onRetry={load}
+                empty={
+                    events.length === 0
+                        ? {
+                              icon: 'event',
+                              title: 'Henüz etkinlik yok',
+                              text: 'İlk etkinliğinizi ekleyin; sitenin etkinlik sayfasında görünür.',
+                              action: (
+                                  <button type="button" className="ad-btn ad-btn-primary" onClick={() => setIsAddModalOpen(true)}>
+                                      <Icon name="add" className="ad-ico-sm" />
+                                      Yeni etkinlik
+                                  </button>
+                              ),
+                          }
+                        : { icon: 'search_off', title: 'Sonuç bulunamadı', text: 'Arama veya filtreye uyan etkinlik yok.' }
+                }
+            />
 
             <AdminAddEventModal
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
-                onSuccess={handleAddSuccess}
+                onSuccess={(n) => {
+                    setEvents((prev) => [...prev, n]);
+                    toast.success('Etkinlik eklendi.');
+                }}
             />
-
             <AdminUpdateEventModal
                 isOpen={isUpdateModalOpen}
                 onClose={() => setIsUpdateModalOpen(false)}
-                onSuccess={handleUpdateSuccess}
+                onSuccess={(u) => {
+                    setEvents((prev) => prev.map((e) => (e.id === u.id ? { ...e, ...u } : e)));
+                    toast.success('Etkinlik güncellendi.');
+                }}
                 eventId={selectedEventId}
             />
-
-        </main>
+        </>
     );
 }

@@ -19,14 +19,14 @@ export default function AdminLogoutPage() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-surface flex flex-col items-center justify-center">
-            <span className="material-symbols-outlined text-primary text-5xl animate-spin mb-4">
-                progress_activity
-            </span>
-            <h2 className="font-headline-sm text-xl text-on-surface">Çıkış Yapılıyor...</h2>
-            <p className="font-body-md text-on-surface-variant mt-2">
-                Güvenli bir şekilde oturumunuz kapatılıyor.
-            </p>
+        <div className="ad-auth">
+            <div className="ad-empty" style={{ position: 'relative', zIndex: 1 }} role="status">
+                <div className="ico">
+                    <span className="material-symbols-outlined ad-spin" aria-hidden="true">progress_activity</span>
+                </div>
+                <h3>Çıkış yapılıyor…</h3>
+                <p>Oturumunuz güvenli bir şekilde kapatılıyor.</p>
+            </div>
         </div>
     );
 }

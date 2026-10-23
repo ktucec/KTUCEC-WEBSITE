@@ -1,39 +1,44 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { Icon } from '@/components/admin/ui';
 
 export default function AdminVerificationModal({ isOpen, onClose, onSuccess, onSubmit, email }) {
     const [code, setCode] = useState('');
     const [isVerifying, setIsVerifying] = useState(false);
     const [error, setError] = useState('');
+    const inputRef = useRef(null);
 
     useEffect(() => {
         if (isOpen) {
             document.body.style.overflow = 'hidden';
             setCode('');
             setError('');
-        } else {
-            document.body.style.overflow = 'unset';
+            const t = setTimeout(() => inputRef.current?.focus(), 80);
+            const onKey = (e) => e.key === 'Escape' && onClose();
+            window.addEventListener('keydown', onKey);
+            return () => {
+                clearTimeout(t);
+                window.removeEventListener('keydown', onKey);
+                document.body.style.overflow = 'unset';
+            };
         }
-        return () => { document.body.style.overflow = 'unset'; };
+        document.body.style.overflow = 'unset';
+        return undefined;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen]);
 
     if (!isOpen) return null;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const submit = async (value) => {
         setError('');
-
-        if (code.length !== 6) {
+        if (value.length !== 6) {
             setError('Lütfen 6 haneli kodu eksiksiz giriniz.');
             return;
         }
-
         setIsVerifying(true);
-
         try {
-            await onSubmit(code);
-
+            await onSubmit(value);
             onSuccess();
             onClose();
         } catch (err) {
@@ -43,62 +48,55 @@ export default function AdminVerificationModal({ isOpen, onClose, onSuccess, onS
         }
     };
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        submit(code);
+    };
+
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            <div
-                className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-[fadeIn_0.3s_ease-out]"
-                onClick={onClose}
-            ></div>
-
-            <div className="relative bg-surface-container-lowest w-full max-w-sm rounded-2xl shadow-2xl z-10 animate-[slideUp_0.3s_ease-out] border border-outline-variant/30 flex flex-col p-8 text-center">
-
-                <button
-                    onClick={onClose}
-                    className="absolute top-4 right-4 text-on-surface hover:text-error transition-colors rounded-lg w-8 h-8 flex items-center justify-center z-20"
-                >
-                    <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
-
-                <div className="w-16 h-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 border border-primary/20">
-                    <span className="material-symbols-outlined text-3xl">mark_email_read</span>
+        <div className="ad-dlg-wrap" style={{ zIndex: 150 }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+            <div className="ad-dlg" role="dialog" aria-modal="true" aria-labelledby="otp-title" style={{ width: 'min(400px, 100%)', textAlign: 'center' }}>
+                <div className="ic brand" style={{ margin: '0 auto 14px', width: 56, height: 56, borderRadius: 18 }}>
+                    <Icon name="mark_email_read" />
                 </div>
-
-                <h3 className="font-headline-sm text-xl text-on-surface mb-2">Güvenlik Doğrulaması</h3>
-                <p className="font-body-md text-on-surface-variant text-sm mb-6">
-                    İşlemi tamamlamak için <strong>{email}</strong> adresine gönderilen 6 haneli güvenlik kodunu giriniz.
+                <h3 id="otp-title">Güvenlik doğrulaması</h3>
+                <p>
+                    <strong style={{ color: 'var(--ad-ink)', overflowWrap: 'anywhere' }}>{email}</strong> adresine gönderilen 6 haneli kodu girin.
                 </p>
 
-                {error && (
-                    <div className="mb-4 p-3 bg-error-container/50 border border-error-container text-error rounded-xl text-xs font-semibold flex items-center gap-2 text-left">
-                        <span className="material-symbols-outlined text-base">error</span>
-                        {error}
-                    </div>
-                )}
+                <form onSubmit={handleSubmit} style={{ display: 'grid', gap: 14, marginTop: 18 }}>
+                    {error && (
+                        <div className="ad-err" role="alert" style={{ textAlign: 'left', fontSize: 13 }}>
+                            <Icon name="error" className="ad-ico-sm" fill />
+                            <span>{error}</span>
+                        </div>
+                    )}
 
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                     <input
+                        ref={inputRef}
+                        className="ad-input"
                         type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
                         maxLength={6}
                         value={code}
-                        onChange={(e) => setCode(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="bg-surface border border-outline-variant/50 rounded-xl px-4 py-3 font-body-lg font-bold text-center tracking-[0.5em] text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all"
+                        onChange={(e) => {
+                            const v = e.target.value.replace(/[^0-9]/g, '');
+                            setCode(v);
+                            if (v.length === 6 && !isVerifying) submit(v);
+                        }}
+                        aria-label="Doğrulama kodu"
                         placeholder="••••••"
+                        style={{ minHeight: 56, textAlign: 'center', fontSize: 26, fontWeight: 800, letterSpacing: '0.5em', paddingLeft: '0.5em', fontFamily: 'var(--font-mono)' }}
                         required
                     />
 
-                    <button
-                        disabled={isVerifying}
-                        type="submit"
-                        className="w-full bg-primary hover:bg-primary-container text-white font-label-md py-3.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
-                    >
-                        {isVerifying ? (
-                            <span className="material-symbols-outlined animate-spin text-lg">progress_activity</span>
-                        ) : (
-                            <span>Kodu Doğrula ve Giriş Yap</span>
-                        )}
+                    <button disabled={isVerifying || code.length !== 6} type="submit" className="ad-btn ad-btn-primary ad-btn-block" style={{ minHeight: 48 }}>
+                        {isVerifying ? <Icon name="progress_activity" className="ad-ico-sm ad-spin" /> : <Icon name="verified_user" className="ad-ico-sm" />}
+                        {isVerifying ? 'Doğrulanıyor…' : 'Doğrula ve devam et'}
                     </button>
+                    <button type="button" className="ad-btn ad-btn-ghost ad-btn-block" onClick={onClose}>Vazgeç</button>
                 </form>
-
             </div>
         </div>
     );

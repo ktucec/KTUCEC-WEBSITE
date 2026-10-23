@@ -1,262 +1,216 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { getForms } from '@/services/forms';
-import { formatDate } from '@/lib/formatDate';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { getForms } from '@/services/forms';
+import { formatShortDate, norm, stripHtml, timeAgo } from '@/lib/adminFormat';
 import AdminAddFormModal from '@/components/ui/AdminAddFormModal';
 import AdminUpdateFormModal from '@/components/ui/AdminUpdateFormModal';
+import DataView from '@/components/admin/DataView';
+import { Badge, Highlight, Icon, PageHeader, SearchBox, Segmented, useToast } from '@/components/admin/ui';
+
+const PUBLIC_FORM_URL = (id) => `https://www.ktucec.com/basvurular?id=${id}`;
 
 export default function FormsManagementPage() {
+    const toast = useToast();
     const [forms, setForms] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const [query, setQuery] = useState('');
+    const [status, setStatus] = useState('all');
 
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const [selectedFormId, setSelectedFormId] = useState(null);
 
-    const fetchForms = async (isCancelled = false) => {
+    const fetchForms = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
             const response = await getForms();
-
-            if (!isCancelled) {
-                let list = [];
-                if (Array.isArray(response)) {
-                    list = response;
-                } else if (Array.isArray(response?.data)) {
-                    list = response.data;
-                } else if (Array.isArray(response?.data?.forms)) {
-                    list = response.data.forms;
-                } else if (Array.isArray(response?.forms)) {
-                    list = response.forms;
-                }
-
-                setForms(list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
-            }
+            let list = [];
+            if (Array.isArray(response)) list = response;
+            else if (Array.isArray(response?.data)) list = response.data;
+            else if (Array.isArray(response?.data?.forms)) list = response.data.forms;
+            else if (Array.isArray(response?.forms)) list = response.forms;
+            setForms([...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
         } catch (err) {
-            if (!isCancelled) {
-                setError('Formlar yüklenirken bir hata oluştu.');
-            }
+            setError(err?.message || 'Formlar yüklenirken bir hata oluştu.');
         } finally {
-            if (!isCancelled) {
-                setIsLoading(false);
-            }
+            setIsLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchForms();
+    }, [fetchForms]);
+
+    const counts = useMemo(() => {
+        const active = forms.filter((f) => f.isActive).length;
+        return { all: forms.length, active, passive: forms.length - active };
+    }, [forms]);
+
+    const rows = useMemo(() => {
+        const q = norm(query.trim());
+        return forms.filter((f) => {
+            if (status === 'active' && !f.isActive) return false;
+            if (status === 'passive' && f.isActive) return false;
+            if (!q) return true;
+            return norm(`${f.title} ${stripHtml(f.description)}`).includes(q);
+        });
+    }, [forms, query, status]);
+
+    const copyLink = async (id) => {
+        try {
+            await navigator.clipboard.writeText(PUBLIC_FORM_URL(id));
+            toast.success('Başvuru linki kopyalandı.');
+        } catch {
+            toast.error('Link kopyalanamadı.');
         }
     };
 
-    useEffect(() => {
-        let isCancelled = false;
-        fetchForms(isCancelled);
-        return () => {
-            isCancelled = true;
-        };
-    }, []);
-
-    const handleSuccess = () => {
-        fetchForms();
-    };
-
-    const handleUpdateClick = (id) => {
+    const openEdit = (id) => {
         setSelectedFormId(id);
         setIsUpdateModalOpen(true);
     };
 
-    const handleCopyLink = (id) => {
-        const url = `https://www.ktucec.com/basvurular?id=${id}`;
-        navigator.clipboard.writeText(url);
-    };
+    const statusBadge = (f) => (
+        <Badge tone={f.isActive ? 'ok' : ''} dot>
+            {f.isActive ? 'Aktif' : 'Pasif'}
+        </Badge>
+    );
+
+    const columns = [
+        {
+            key: 'title',
+            label: 'Form',
+            render: (f) => (
+                <Link href={`/admin/forms/${f.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', minWidth: 0 }}>
+                    <div className="strong" style={{ fontSize: 15 }}>
+                        <Highlight text={f.title} query={query} />
+                    </div>
+                    {stripHtml(f.description) && (
+                        <div className="ad-clamp2 ad-muted" style={{ fontSize: 13, marginTop: 2, maxWidth: 520 }}>
+                            {stripHtml(f.description)}
+                        </div>
+                    )}
+                </Link>
+            ),
+        },
+        { key: 'status', label: 'Durum', render: statusBadge },
+        {
+            key: 'date',
+            label: 'Oluşturulma',
+            render: (f) => (
+                <div style={{ whiteSpace: 'nowrap' }}>
+                    <div>{formatShortDate(f.createdAt)}</div>
+                    <div className="ad-muted" style={{ fontSize: 12 }}>{timeAgo(f.createdAt)}</div>
+                </div>
+            ),
+        },
+    ];
+
+    const renderActions = (f) => (
+        <>
+            <Link href={`/admin/forms/${f.id}`} className="ad-btn ad-btn-sm" style={{ marginRight: 4 }}>
+                <Icon name="table_chart" className="ad-ico-sm" />
+                Yanıtlar
+            </Link>
+            <button type="button" className="ad-ib" data-tip="Linki kopyala" aria-label="Başvuru linkini kopyala" onClick={() => copyLink(f.id)}>
+                <Icon name="link" className="ad-ico-sm" />
+            </button>
+            <button type="button" className="ad-ib" data-tip="Düzenle" aria-label="Formu düzenle" onClick={() => openEdit(f.id)}>
+                <Icon name="edit" className="ad-ico-sm" />
+            </button>
+        </>
+    );
+
+    const renderCard = (f) => (
+        <div key={f.id} className="ad-item">
+            <div className="ad-item-head">
+                <div className="ad-logo" style={{ width: 40, height: 40, borderRadius: 12, background: 'var(--ad-brand-soft)', color: 'var(--ad-brand)', boxShadow: 'none' }}>
+                    <Icon name="dynamic_form" />
+                </div>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                    <div className="ad-item-title"><Highlight text={f.title} query={query} /></div>
+                    <div className="ad-item-sub">{formatShortDate(f.createdAt)} · {timeAgo(f.createdAt)}</div>
+                </div>
+                {statusBadge(f)}
+            </div>
+            {stripHtml(f.description) && <div className="ad-clamp2 ad-muted" style={{ fontSize: 13.5 }}>{stripHtml(f.description)}</div>}
+            <div className="ad-item-actions">
+                <Link href={`/admin/forms/${f.id}`} className="ad-btn ad-btn-primary">
+                    <Icon name="table_chart" className="ad-ico-sm" />
+                    Yanıtlar
+                </Link>
+                <button type="button" className="ad-btn" style={{ flex: '0 0 auto', width: 46, padding: 0 }} aria-label="Linki kopyala" onClick={() => copyLink(f.id)}>
+                    <Icon name="link" className="ad-ico-sm" />
+                </button>
+                <button type="button" className="ad-btn" style={{ flex: '0 0 auto', width: 46, padding: 0 }} aria-label="Düzenle" onClick={() => openEdit(f.id)}>
+                    <Icon name="edit" className="ad-ico-sm" />
+                </button>
+            </div>
+        </div>
+    );
 
     return (
-        <main className="flex-1 overflow-y-auto bg-surface md:p-4">
-            <div className="max-w-6xl mx-auto">
-
-                <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="font-headline-md text-3xl text-on-surface">Başvuru Formları</h1>
-                        <p className="font-body-md text-on-surface-variant mt-2 max-w-2xl">
-                            Kulüp etkinlikleri ve organizasyonlar için oluşturulan başvuru formlarını buradan yönetebilir, gelen yanıtları listeleyebilirsiniz.
-                        </p>
-                    </div>
-
-                    <button
-                        onClick={() => setIsAddModalOpen(true)}
-                        className="btn-glow bg-primary text-white font-label-md px-5 py-3 rounded-xl flex items-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary-container transition-colors shrink-0 self-start sm:self-auto cursor-pointer border-none"
-                    >
-                        <span className="material-symbols-outlined text-xl">add_circle</span>
-                        <span>Yeni Form Ekle</span>
+        <>
+            <PageHeader
+                title="Başvuru Formları"
+                description="Etkinlik ve organizasyonlar için oluşturduğunuz formları yönetin, başvuru linkini kopyalayın ve gelen yanıtları inceleyin."
+                actions={
+                    <button type="button" className="ad-btn ad-btn-primary" onClick={() => setIsAddModalOpen(true)}>
+                        <Icon name="add" className="ad-ico-sm" />
+                        Yeni form
                     </button>
+                }
+            />
+
+            {(forms.length > 0 || query) && (
+                <div className="ad-toolbar">
+                    <SearchBox value={query} onChange={setQuery} placeholder="Formlarda ara…" label="Formlarda ara" />
+                    <Segmented
+                        label="Durum"
+                        scroll
+                        value={status}
+                        onChange={setStatus}
+                        options={[
+                            { value: 'all', label: `Tümü (${counts.all})` },
+                            { value: 'active', label: `Aktif (${counts.active})` },
+                            { value: 'passive', label: `Pasif (${counts.passive})` },
+                        ]}
+                    />
                 </div>
+            )}
 
-                <div className="grid grid-cols-1 gap-4 md:hidden">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center py-12">
-                            <span className="material-symbols-outlined text-primary text-5xl animate-spin">
-                                progress_activity
-                            </span>
-                        </div>
-                    ) : error ? (
-                        <div className="bg-error-container/20 border border-error/30 p-6 rounded-xl text-center text-sm text-error font-medium">
-                            {error}
-                        </div>
-                    ) : forms.length === 0 ? (
-                        <div className="bg-surface-container-lowest border border-outline-variant/30 p-6 rounded-xl text-center text-sm text-secondary font-medium">
-                            Henüz kayıtlı başvuru formu bulunmuyor.
-                        </div>
-                    ) : (
-                        forms.map((item) => (
-                            <div key={item.id} className="bg-surface-container-lowest border border-outline-variant/30 p-5 rounded-xl shadow-sm space-y-4">
-                                <div className="flex justify-between items-start gap-2">
-                                    <div>
-                                        <span className="font-label-md text-[11px] text-secondary uppercase tracking-wider">Form Başlığı</span>
-                                        <p className="font-body-lg text-on-surface font-semibold mt-0.5">{item.title}</p>
-                                    </div>
-                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                        {item.isActive ? 'Aktif' : 'Pasif'}
-                                    </span>
-                                </div>
+            <DataView
+                columns={columns}
+                rows={rows}
+                renderCard={renderCard}
+                renderActions={renderActions}
+                loading={isLoading}
+                error={error}
+                onRetry={fetchForms}
+                empty={
+                    forms.length === 0
+                        ? {
+                              icon: 'dynamic_form',
+                              title: 'Henüz form yok',
+                              text: 'İlk başvuru formunu oluşturarak yanıt toplamaya başlayın.',
+                              action: (
+                                  <button type="button" className="ad-btn ad-btn-primary" onClick={() => setIsAddModalOpen(true)}>
+                                      <Icon name="add" className="ad-ico-sm" />
+                                      Yeni form
+                                  </button>
+                              ),
+                          }
+                        : { icon: 'search_off', title: 'Sonuç bulunamadı', text: 'Arama veya durum filtresine uyan form yok.' }
+                }
+            />
 
-                                <div>
-                                    <span className="font-label-md text-[11px] text-secondary uppercase tracking-wider">Açıklama</span>
-                                    <p className="font-body-md text-on-surface-variant mt-0.5 line-clamp-2">
-                                        {item.description ? item.description.replace(/<[^>]*>?/gm, '') : '-'}
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <span className="font-label-md text-[11px] text-secondary uppercase tracking-wider">Oluşturulma Tarihi</span>
-                                    <p className="font-body-md text-on-surface-variant mt-0.5">{formatDate(item.createdAt)}</p>
-                                </div>
-
-                                <div className="pt-3 border-t border-outline-variant/20 flex justify-end gap-2 items-center">
-                                    <button
-                                        onClick={() => handleCopyLink(item.id)}
-                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high p-2.5 rounded-lg cursor-pointer inline-flex items-center justify-center border-none"
-                                        title="Linki Kopyala"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">content_copy</span>
-                                    </button>
-                                    <Link
-                                        href={`/admin/forms/${item.id}`}
-                                        className="text-primary hover:text-primary-container transition-colors inline-flex items-center justify-center bg-primary/5 hover:bg-primary/10 p-2.5 rounded-lg"
-                                        title="Yanıtları Görüntüle"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">table_chart</span>
-                                    </Link>
-                                    <button
-                                        onClick={() => handleUpdateClick(item.id)}
-                                        className="text-secondary hover:text-on-surface transition-colors bg-surface-container hover:bg-surface-container-high p-2.5 rounded-lg cursor-pointer inline-flex items-center justify-center border-none"
-                                        title="Formu Güncelle"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">edit</span>
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-
-                <div className="hidden md:block bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden mb-6">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-surface-container-low border-b border-outline-variant/30">
-                                <th className="px-6 py-4 font-label-md text-secondary uppercase tracking-wider w-1/3">Form Başlığı</th>
-                                <th className="px-6 py-4 font-label-md text-secondary uppercase tracking-wider">Durum</th>
-                                <th className="px-6 py-4 font-label-md text-secondary uppercase tracking-wider">Tarih</th>
-                                <th className="px-6 py-4 font-label-md text-secondary uppercase tracking-wider text-right">İşlemler</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {isLoading ? (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-12 text-center">
-                                        <span className="material-symbols-outlined text-primary text-5xl animate-spin">
-                                            progress_activity
-                                        </span>
-                                    </td>
-                                </tr>
-                            ) : error ? (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-10 text-sm text-center text-error font-medium">
-                                        {error}
-                                    </td>
-                                </tr>
-                            ) : forms.length === 0 ? (
-                                <tr>
-                                    <td colSpan="4" className="px-6 py-10 text-sm text-center text-secondary font-medium">
-                                        Henüz kayıtlı başvuru formu bulunmuyor.
-                                    </td>
-                                </tr>
-                            ) : (
-                                forms.map((item) => (
-                                    <tr
-                                        key={item.id}
-                                        className="border-b border-outline-variant/20 last:border-0 hover:bg-surface-container-low/50 transition-colors"
-                                    >
-                                        <td className="px-6 py-4 font-body-lg text-on-surface font-semibold">
-                                            <div>
-                                                <span>{item.title}</span>
-                                                <p className="font-body-md text-xs text-on-surface-variant font-normal line-clamp-1 mt-0.5">
-                                                    {item.description ? item.description.replace(/<[^>]*>?/gm, '') : ''}
-                                                </p>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${item.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                {item.isActive ? 'Aktif' : 'Pasif'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-on-surface-variant text-sm">
-                                            {formatDate(item.createdAt)}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2 items-center">
-                                                <button
-                                                    onClick={() => handleCopyLink(item.id)}
-                                                    className="text-secondary hover:text-on-surface transition-colors bg-transparent border-0 p-2 rounded-lg hover:bg-surface-container cursor-pointer inline-flex items-center"
-                                                    title="Linki Kopyala"
-                                                >
-                                                    <span className="material-symbols-outlined text-xl">content_copy</span>
-                                                </button>
-                                                <Link
-                                                    href={`/admin/forms/${item.id}`}
-                                                    className="text-primary hover:text-primary-container font-medium transition-colors inline-flex items-center p-2 rounded-lg hover:bg-primary/5 cursor-pointer"
-                                                    title="Yanıtları Görüntüle"
-                                                >
-                                                    <span className="material-symbols-outlined text-xl">table_chart</span>
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleUpdateClick(item.id)}
-                                                    className="text-secondary hover:text-on-surface transition-colors bg-transparent border-0 p-2 rounded-lg hover:bg-surface-container cursor-pointer inline-flex items-center"
-                                                    title="Formu Güncelle"
-                                                >
-                                                    <span className="material-symbols-outlined text-xl">edit</span>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                <AdminAddFormModal
-                    isOpen={isAddModalOpen}
-                    onClose={() => setIsAddModalOpen(false)}
-                    onSuccess={handleSuccess}
-                />
-
-                <AdminUpdateFormModal
-                    isOpen={isUpdateModalOpen}
-                    onClose={() => setIsUpdateModalOpen(false)}
-                    onSuccess={handleSuccess}
-                    formId={selectedFormId}
-                />
-
-            </div>
-        </main>
+            <AdminAddFormModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onSuccess={fetchForms} />
+            <AdminUpdateFormModal isOpen={isUpdateModalOpen} onClose={() => setIsUpdateModalOpen(false)} onSuccess={fetchForms} formId={selectedFormId} />
+        </>
     );
 }
