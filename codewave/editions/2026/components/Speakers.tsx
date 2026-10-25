@@ -102,9 +102,11 @@ export default function Speakers() {
                     const railIn = 0.5 + intro;
                     const rail = stage.querySelector<HTMLElement>('.st-rail');
                     const slots = q('.st-slot') as HTMLElement[];
-                    // Telefonda konuşmacı başına biraz daha kısa yol: başparmakla birkaç savuruşta bir varış.
-                    const perSpeaker = desktop ? 1.25 : 1.05;
-                    const tail = desktop ? 3.2 : 2.8;
+                    // Kaydırma yolu (ekran yüksekliği cinsinden): konuşmacı başına + açılış/doruk payı. Değerler küçüldükçe
+                    // sahne daha az kaydırmayla biter; animasyonun kendisi değişmez, yalnızca daha hızlı oynar.
+                    // Telefonda biraz daha kısa: başparmakla birkaç savuruşta bir varış.
+                    const perSpeaker = desktop ? 0.75 : 0.65;
+                    const tail = desktop ? 1.9 : 1.7;
 
                     const tl = gsap.timeline({
                         defaults: { ease: 'none' },
