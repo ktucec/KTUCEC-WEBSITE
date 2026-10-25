@@ -12,9 +12,9 @@ public static partial class CodewaveRules
     public const int OtpMaxSendsPerWindow = 5;
     public const int OtpMaxFailedAttempts = 5;
 
-    // --- Sipariş ---
-    // Ödeme sayfasına giderken indirim kodu bu süre boyunca o siparişe ayrılır.
-    public static readonly TimeSpan DiscountReservation = TimeSpan.FromMinutes(30);
+    // --- Shopier indirimli ürün ---
+    // Aynı indirim için eşzamanlı iki ödeme denemesi ikinci bir ürün açamaz; kilit bu süre sonra kendiliğinden düşer.
+    public static readonly TimeSpan ShopierProductLock = TimeSpan.FromMinutes(2);
 
     public const int EmailMaxLength = 254;
 
@@ -23,10 +23,6 @@ public static partial class CodewaveRules
 
     [GeneratedRegex(@"^\d{6}$")]
     private static partial Regex OtpRegex();
-
-    // codewave sitesindeki createOrderId() ile uyumlu: büyük harf + rakam
-    [GeneratedRegex(@"^[A-Z0-9]{8,32}$")]
-    private static partial Regex OrderIdRegex();
 
     [GeneratedRegex(@"^CW26-[0-9A-Z]{4}-[0-9A-Z]{4}$")]
     private static partial Regex DiscountCodeRegex();
@@ -49,8 +45,6 @@ public static partial class CodewaveRules
     public static bool IsValidStudentNumber(string? value) => value is not null && StudentNumberRegex().IsMatch(value);
 
     public static bool IsValidOtp(string? value) => value is not null && OtpRegex().IsMatch(value);
-
-    public static bool IsValidOrderId(string? value) => value is not null && OrderIdRegex().IsMatch(value);
 
     public static bool IsValidDiscountCode(string? value) => value is not null && DiscountCodeRegex().IsMatch(value);
 }

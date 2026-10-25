@@ -1,9 +1,9 @@
 // ktucec.com backend'i ile sunucudan sunucuya iletişim. YALNIZCA sunucu rotalarından import edilir:
 // iç anahtar (CODEWAVE_INTERNAL_KEY) tarayıcıya asla gitmez.
 //
-// Uçlar (backend/Features/Codewave):
-//  - POST /api/codewave/internal/orders                     → başvuruyu "Pending" kaydeder, indirim kodunu siparişe ayırır
-//  - POST /api/codewave/internal/orders/{orderId}/complete  → Shopier sonucu: Paid / Failed
+// Uç (backend/Features/Codewave/CreateCodewaveApplication.cs):
+//  - POST /api/codewave/internal/applications → başvuruyu "Waiting" olarak kaydeder; indirim kodu varsa öğrenciye
+//    özel tek stoklu Shopier ürününü (gerekirse açarak) döner
 import type { AttendeeType } from './registration';
 
 export const INTERNAL_KEY_HEADER = 'X-Codewave-Key';
@@ -41,8 +41,7 @@ async function post<T>(config: BackendConfig, path: string, body: unknown): Prom
     }
 }
 
-export type CreateOrderInput = {
-    orderId: string;
+export type CreateApplicationInput = {
     firstName: string;
     lastName: string;
     email: string;
@@ -57,8 +56,6 @@ export type CreateOrderInput = {
     discountCode?: string;
 };
 
-export const createOrder = (config: BackendConfig, input: CreateOrderInput) =>
-    post<{ orderId: string; totalPrice: number }>(config, '/api/codewave/internal/orders', input);
-
-export const completeOrder = (config: BackendConfig, orderId: string, result: { paymentId: string; success: boolean }) =>
-    post<{ orderId: string; status: string }>(config, `/api/codewave/internal/orders/${encodeURIComponent(orderId)}/complete`, result);
+// redirectUrl: indirimli bilette öğrenciye özel Shopier ürünü; indirimsizde null.
+export const createApplication = (config: BackendConfig, input: CreateApplicationInput) =>
+    post<{ applicationId: number; redirectUrl: string | null }>(config, '/api/codewave/internal/applications', input);

@@ -2,8 +2,9 @@
 
 namespace ktucec.Domain.Entities;
 
-// edu.tr e-posta onayı ile kazanılan tek seferlik CODEWAVE öğrenci indirimi.
-// Bir e-posta adresi yalnızca bir kez indirim kazanabilir; indirim kodu yalnızca bir ödemede kullanılabilir.
+// edu.tr e-posta onayı ile kazanılan CODEWAVE öğrenci indirimi.
+// Bir e-posta adresi yalnızca bir kez indirim kazanabilir. İndirimli bilet, Shopier'de bu kayda özel açılan
+// tek stoklu bir üründür: ürün bir kez satın alınınca stok biter ve indirim kendiliğinden kullanılmış olur.
 public class CodewaveStudentDiscount : BaseEntity
 {
     // Küçük harfe çevrilmiş, *.edu.tr uzantılı adres (benzersiz)
@@ -27,17 +28,20 @@ public class CodewaveStudentDiscount : BaseEntity
     public bool IsVerified { get; set; }
     public DateTime? VerifiedAt { get; set; }
 
-    // Onaydan sonra üretilir (benzersiz). Shopier'e giden siparişte bu kod kullanılır.
+    // Onaydan sonra üretilir (benzersiz). Tarayıcı ödeme adımında bu kodla indirimli bileti ister.
     public string? DiscountCode { get; set; }
 
-    // --- Tek seferlik kullanım ---
-    // Ödeme sayfasına gidilirken kod bu siparişe kısa süreliğine ayrılır; ödeme başarısız olursa ya da süre dolarsa serbest kalır.
-    public string? ReservedOrderId { get; set; }
-    public DateTime? ReservedUntil { get; set; }
+    // --- Shopier'deki tek stoklu indirimli ürün ---
+    // İlk ödeme denemesinde bir kez oluşturulur; sonraki denemelerde aynı ürüne yönlendirilir.
+    public string? ShopierProductId { get; set; }
+    public string? ShopierProductUrl { get; set; }
 
-    // Başarılı ödemeyle kod kalıcı olarak kullanılmış sayılır.
-    public DateTime? RedeemedAt { get; set; }
-    public string? RedeemedOrderId { get; set; }
+    // Ürün adındaki rastgele kod (Shopier panelinde hangi öğrenciye ait olduğu buradan bulunur)
+    public string? ShopierProductCode { get; set; }
+    public DateTime? ShopierProductCreatedAt { get; set; }
+
+    // Aynı anda iki ödeme denemesinin iki ürün açmasını engelleyen kısa süreli kilit
+    public DateTime? ShopierProductRequestedAt { get; set; }
 
     // Kötüye kullanım incelemesi için son isteğin IP adresi
     public string? LastRequestIp { get; set; }

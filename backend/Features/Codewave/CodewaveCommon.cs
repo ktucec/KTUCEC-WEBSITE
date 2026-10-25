@@ -1,5 +1,4 @@
-﻿using ktucec.Domain.Entities;
-using ktucec.Infrastructure.Services.Codewave;
+﻿using ktucec.Infrastructure.Services.Codewave;
 using ktucec.Shared.Models;
 
 namespace ktucec.Features.Codewave;
@@ -31,13 +30,8 @@ public static class CodewaveResults
             "Doğrulama e-postası gönderilemedi. Lütfen biraz sonra tekrar deneyin."),
     };
 
-    // available: kullanılabilir · reserved: şu an bir ödemede · redeemed: kullanıldı
-    public static string StatusOf(CodewaveStudentDiscount entry, DateTime now)
-    {
-        if (entry.RedeemedAt is not null) return "redeemed";
-        if (entry.ReservedUntil is { } until && until > now) return "reserved";
-        return "available";
-    }
+    // available: kullanılabilir · redeemed: Shopier'deki tek stoklu indirimli ürün satıldı
+    public static string StatusFromStock(int? stockQuantity) => stockQuantity is <= 0 ? "redeemed" : "available";
 
     public static string? ClientIp(HttpContext httpContext)
     {

@@ -1,10 +1,10 @@
 ﻿namespace ktucec.Domain.Enums;
 
-// CODEWAVE bilet başvurusunun ödeme durumu.
-// Pending: Shopier'e yönlendirildi, sonuç bekleniyor. Paid / Failed: Shopier'in imzalı geri dönüşüyle kesinleşir.
+// CODEWAVE bilet başvurusunun durumu. Form gönderilip Shopier'e yönlendirilince "Waiting" olarak açılır;
+// ileride yönetim panelinden onaylanır ya da reddedilir.
 public enum CodewaveApplicationStatus
 {
-    Pending = 0,
-    Paid = 1,
-    Failed = 2
+    Waiting = 0,
+    Approved = 1,
+    Rejected = 2
 }

@@ -416,11 +416,6 @@ export default function DiscountDialog({ onClose, onContinue }: { onClose: () =>
                                         <strong className={`mono discount-code${step.status === 'redeemed' ? ' is-used' : ''}`}>{step.code}</strong>
                                         <span className="text-[0.875rem] text-mute">{step.email}</span>
                                     </div>
-                                    {step.status === 'reserved' && (
-                                        <p className="discount-note" role="status">
-                                            {d.statusReserved}
-                                        </p>
-                                    )}
                                     {step.status === 'redeemed' ? (
                                         <button type="button" className="btn btn-ghost btn-lg btn-block" onClick={onClose}>
                                             <span>{d.dialogClose}</span>

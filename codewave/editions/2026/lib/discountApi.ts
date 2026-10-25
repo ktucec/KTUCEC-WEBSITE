@@ -5,7 +5,7 @@ const API_URL = (process.env.NEXT_PUBLIC_KTUCEC_API_URL || '').replace(/\/+$/, '
 
 export const isDiscountApiConfigured = () => API_URL.length > 0;
 
-export type DiscountStatus = 'available' | 'reserved' | 'redeemed';
+export type DiscountStatus = 'available' | 'redeemed';
 export type OtpSent = { email: string; expiresInSeconds: number; resendInSeconds: number };
 export type Verified = { email: string; discountCode: string; status: DiscountStatus };
 

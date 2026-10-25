@@ -15,7 +15,7 @@ import { useLang } from './i18n/LanguageProvider';
 import Price from './Price';
 import Magnetic from './fx/Magnetic';
 import SplitHeading from './fx/SplitHeading';
-import TicketForm, { postToShopier } from './TicketForm';
+import TicketForm from './TicketForm';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -210,11 +210,12 @@ function TicketDialog({ canBuy, started, holder, onClose }: { canBuy: boolean; s
     }, [onClose]);
 
     // Ödeme alanları hazır: holografik parlama, ardından Shopier'in güvenli sayfası.
-    const handleReady = (action: string, fields: Record<string, string>) => {
+    const handleReady = (url: string) => {
+        const go = () => window.location.assign(url);
         const card = panel.current;
-        if (reduce || !card) return postToShopier(action, fields);
+        if (reduce || !card) return go();
         card.querySelector('.pass-holo')?.classList.add('is-hot');
-        gsap.timeline({ onComplete: () => postToShopier(action, fields) })
+        gsap.timeline({ onComplete: go })
             .to(card, { scale: 1.02, duration: 0.35, ease: 'power2.out' })
             .to(card.querySelector('.flash'), { opacity: 1, duration: 0.45, ease: 'power2.in' }, 0.15)
             .to(card, { scale: 0.96, opacity: 0.4, filter: 'blur(6px)', duration: 0.4, ease: 'power3.in' }, 0.45);

@@ -65,8 +65,9 @@ namespace ktucec.Infrastructure.Database
                 e.Property(x => x.StudentNumber).HasMaxLength(15).IsRequired();
                 e.Property(x => x.OtpCodeHash).HasMaxLength(64);
                 e.Property(x => x.DiscountCode).HasMaxLength(20);
-                e.Property(x => x.ReservedOrderId).HasMaxLength(32);
-                e.Property(x => x.RedeemedOrderId).HasMaxLength(32);
+                e.Property(x => x.ShopierProductId).HasMaxLength(64);
+                e.Property(x => x.ShopierProductUrl).HasMaxLength(512);
+                e.Property(x => x.ShopierProductCode).HasMaxLength(24);
                 e.Property(x => x.LastRequestIp).HasMaxLength(45);
 
                 // Bir e-posta yalnızca bir kez indirim kazanabilir
@@ -80,7 +81,6 @@ namespace ktucec.Infrastructure.Database
             {
                 e.ToTable("CodewaveApplications", "dbo");
 
-                e.Property(x => x.OrderId).HasMaxLength(32).IsRequired();
                 e.Property(x => x.FirstName).HasMaxLength(50).IsRequired();
                 e.Property(x => x.LastName).HasMaxLength(50).IsRequired();
                 e.Property(x => x.Email).HasMaxLength(254).IsRequired();
@@ -89,13 +89,12 @@ namespace ktucec.Infrastructure.Database
                 e.Property(x => x.Language).HasMaxLength(2).IsRequired();
                 e.Property(x => x.Currency).HasMaxLength(3).IsRequired();
                 e.Property(x => x.DiscountCode).HasMaxLength(20);
-                e.Property(x => x.PaymentId).HasMaxLength(64);
+                e.Property(x => x.ShopierProductUrl).HasMaxLength(512);
 
                 e.Property(x => x.ListPrice).HasPrecision(10, 2);
                 e.Property(x => x.DiscountAmount).HasPrecision(10, 2);
                 e.Property(x => x.TotalPrice).HasPrecision(10, 2);
 
-                e.HasIndex(x => x.OrderId).IsUnique();
                 e.HasIndex(x => x.Email);
                 e.HasIndex(x => x.Status);
 

@@ -1,5 +1,6 @@
 ﻿using ktucec.Infrastructure.Database;
 using ktucec.Infrastructure.Services.Codewave;
+using ktucec.Infrastructure.Services.Shopier;
 using ktucec.Shared.Common;
 using ktucec.Shared.Models;
 using Microsoft.EntityFrameworkCore;
@@ -14,16 +15,19 @@ public record VerifyStudentDiscountResponse(string Email, string DiscountCode, s
 
 // 2. HANDLER
 // İki sekmenin ortak doğrulama adımı. İlk doğrulamada adres onaylanır ve indirim kodu üretilir;
-// sonraki doğrulamalarda (sorgulama) mevcut kod ve durumu döner.
+// sonraki doğrulamalarda (sorgulama) mevcut kod ve durumu döner. İndirimli ürün Shopier'de açılmışsa
+// stoğuna bakılır: stok bittiyse indirim kullanılmıştır.
 public class VerifyStudentDiscountHandler
 {
     private readonly KtucecDbContext _context;
     private readonly CodewaveSecurityService _security;
+    private readonly ShopierApiClient _shopier;
 
-    public VerifyStudentDiscountHandler(KtucecDbContext context, CodewaveSecurityService security)
+    public VerifyStudentDiscountHandler(KtucecDbContext context, CodewaveSecurityService security, ShopierApiClient shopier)
     {
         _context = context;
         _security = security;
+        _shopier = shopier;
     }
 
     public async Task<IResult> HandleAsync(VerifyStudentDiscountRequest request)
@@ -82,7 +86,11 @@ public class VerifyStudentDiscountHandler
 
         await _context.SaveChangesAsync();
 
-        var data = new VerifyStudentDiscountResponse(email, entry.DiscountCode!, CodewaveResults.StatusOf(entry, now));
+        int? stock = null;
+        if (!string.IsNullOrEmpty(entry.ShopierProductId))
+            stock = (await _shopier.GetProductAsync(entry.ShopierProductId))?.StockQuantity;
+
+        var data = new VerifyStudentDiscountResponse(email, entry.DiscountCode!, CodewaveResults.StatusFromStock(stock));
         return Results.Ok(new ApiResult<VerifyStudentDiscountResponse>(true, data, "E-posta adresiniz doğrulandı."));
     }
 

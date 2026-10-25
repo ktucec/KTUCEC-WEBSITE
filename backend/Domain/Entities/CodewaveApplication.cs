@@ -3,13 +3,10 @@ using ktucec.Domain.Enums;
 
 namespace ktucec.Domain.Entities;
 
-// CODEWAVE bilet başvurusu. Shopier'e yönlendirmeden hemen önce "Pending" olarak oluşturulur,
-// Shopier'in imzalı geri dönüşüyle "Paid" ya da "Failed" olur.
+// CODEWAVE bilet başvurusu. Bilet formu gönderilip ziyaretçi Shopier'e yönlendirilirken "Waiting" olarak
+// oluşturulur. Ödemenin kendisi Shopier panelinde görünür; onay/ret ileride yönetim panelinden yapılabilir.
 public class CodewaveApplication : BaseEntity
 {
-    // codewave sitesinin ürettiği, Shopier'e platform_order_id olarak giden sipariş numarası (benzersiz)
-    public string OrderId { get; set; } = string.Empty;
-
     // --- Bilet formu ---
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
@@ -30,8 +27,8 @@ public class CodewaveApplication : BaseEntity
     public CodewaveStudentDiscount? CodewaveStudentDiscount { get; set; }
     public string? DiscountCode { get; set; }
 
-    // --- Ödeme ---
-    public CodewaveApplicationStatus Status { get; set; } = CodewaveApplicationStatus.Pending;
-    public string? PaymentId { get; set; }
-    public DateTime? PaidAt { get; set; }
+    // Ziyaretçinin yönlendirildiği Shopier ürün sayfası (indirimsizde herkese açık ürün, indirimlide tek stoklu ürün)
+    public string? ShopierProductUrl { get; set; }
+
+    public CodewaveApplicationStatus Status { get; set; } = CodewaveApplicationStatus.Waiting;
 }

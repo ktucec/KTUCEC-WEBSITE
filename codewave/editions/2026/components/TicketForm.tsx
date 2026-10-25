@@ -12,6 +12,7 @@ import {
     type FieldErrors,
     type Registration,
 } from '@/editions/2026/lib/registration';
+import { isShopierUrl } from '@/editions/2026/lib/shopierLink';
 import { useDiscount } from './discount/DiscountProvider';
 import { useLang } from './i18n/LanguageProvider';
 import Price from './Price';
@@ -20,23 +21,6 @@ const DRAFT_KEY = 'cw26-ticket-draft';
 type ServerError = keyof Dict['serverErrors'];
 
 const fieldId = (f: Field) => `ticket-${f}`;
-
-// Shopier'in döndürdüğü imzalı alanlarla gizli bir form kurulur ve ödeme sayfasına POST edilir.
-export function postToShopier(action: string, fields: Record<string, string>) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = action;
-    form.acceptCharset = 'UTF-8';
-    for (const [name, value] of Object.entries(fields)) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
-    }
-    document.body.appendChild(form);
-    form.submit();
-}
 
 // Taslak bu sekmede saklanır: pencere kapanıp açılsa ya da Shopier'den geri dönülse de yazılanlar kalır.
 // Biletteki ad girildiyse ad/soyad alanları ondan gelir.
@@ -54,13 +38,14 @@ function initialValues(name?: { firstName: string; lastName: string }, lockedEma
 }
 
 // Bilet formu. Doğrulama tarayıcıda ve sunucuda aynı kurallarla yapılır; tutar sunucuda hesaplanır.
-// Başarılı yanıtta imzalı alanlar onReady ile üst bileşene verilir (holografik geçiş, ardından Shopier).
+// Başarılı yanıtta başvuru kaydedilmiştir; Shopier ürün bağlantısı onReady ile üst bileşene verilir
+// (holografik geçiş, ardından Shopier). İndirim varsa bağlantı öğrenciye özel tek stoklu üründür.
 // Form yalnızca pencere açıldığında, istemcide oluşturulur; bu yüzden başlangıç değeri doğrudan okunabilir.
 export default function TicketForm({
     onReady,
     name,
 }: {
-    onReady: (action: string, fields: Record<string, string>) => void;
+    onReady: (url: string) => void;
     name?: { firstName: string; lastName: string };
 }) {
     const { d, lang } = useLang();
@@ -132,8 +117,8 @@ export default function TicketForm({
                 body: JSON.stringify({ ...values, lang, discountCode: discount?.code }),
             });
             const data = await res.json().catch(() => ({}));
-            if (res.ok && data.action && data.fields) {
-                onReady(data.action, data.fields);
+            if (res.ok && isShopierUrl(data.redirectUrl)) {
+                onReady(data.redirectUrl);
                 return;
             }
             if (data.fields) {

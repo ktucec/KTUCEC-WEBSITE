@@ -55,6 +55,15 @@ public class CodewaveSecurityService
         return $"CW26-{new string(chars[..4])}-{new string(chars[4..])}";
     }
 
+    // Shopier'deki tek stoklu indirimli ürünün adına eklenen rastgele kod (ör. K7Q2M9XAP4RT8WZ3)
+    public string GenerateProductCode(int length = 16)
+    {
+        Span<char> chars = stackalloc char[length];
+        for (var i = 0; i < chars.Length; i++)
+            chars[i] = CodeAlphabet[RandomNumberGenerator.GetInt32(CodeAlphabet.Length)];
+        return new string(chars);
+    }
+
     // İki değer de SHA-256'dan geçirilir; böylece uzunluk farkı bile zamanlamadan sızmaz.
     public bool IsValidInternalKey(string? provided)
     {

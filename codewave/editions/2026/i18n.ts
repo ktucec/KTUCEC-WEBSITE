@@ -93,7 +93,7 @@ const TR = {
     ticketTitleA: 'Bir günlük bilet',
     ticketsHeading: 'Salonda yerini al',
     ticketsLead: 'Bir gün, tek salon: sektörün içinden mühendisler ve sen. Bileti şimdi al, 8 Aralık sabahı yerin hazır olsun.',
-    perSpeaker: (amount: string) => `Oturum başına ${amount}`,
+    perSpeaker: (amount: string) => `Konuşmacı başına ${amount}`,
     oneDay: 'Tek bilet, tüm gün',
     perks: [
         'Havelsan, Pegasus, Trendyol ve Hepapi’den mühendisler ve bir Microsoft MVP',
@@ -164,8 +164,7 @@ const TR = {
     successLead: (price: string) => `Biletin artık ${price}. İndirim bu e-posta adresine bağlı; bileti bu adresle almalısın.`,
     yourCode: 'İndirim kodun',
     continueToTicket: 'Bilete devam et',
-    statusReserved: 'Bu kod şu anda yarım kalmış bir ödeme adımında. Ödeme tamamlanmazsa 30 dakika içinde serbest kalır.',
-    statusRedeemed: 'Bu kod bir bilet ödemesinde kullanıldı. İndirim yalnızca bir kez geçerli.',
+    statusRedeemed: 'Bu indirimle bilet satın alındı. İndirim yalnızca bir kez geçerli.',
     emailLocked: 'İndirim bu adrese bağlı. Başka bir adresle almak için indirimi kaldır.',
     discountErrors: {
         email_invalid: 'edu.tr ile biten geçerli bir okul e-postası yaz.',
@@ -204,8 +203,9 @@ const TR = {
         unknown: 'Beklenmeyen bir sorun oldu. Bilgilerin duruyor, birazdan tekrar deneyebilirsin.',
         unavailable: 'Bilet sistemine şu an ulaşılamıyor. Bilgilerin duruyor, birkaç dakika sonra tekrar dene.',
         discount_invalid: 'İndirim kodu geçersiz. İndirimi kaldırıp tekrar dene ya da “İndirim sorgula” ile kodunu kontrol et.',
-        discount_used: 'Bu indirim kodu daha önce bir ödemede kullanılmış. İndirimi kaldırıp normal fiyattan devam edebilirsin.',
-        discount_reserved: 'Bu indirim kodu şu anda başka bir ödeme adımında. Yarım kalan ödeme 30 dakika içinde serbest kalır.',
+        discount_used: 'Bu indirimle bilet zaten satın alınmış; indirim yalnızca bir kez geçerli. İndirimi kaldırıp normal fiyattan devam edebilirsin.',
+        busy: 'İndirimli biletin hazırlanıyor. Birkaç saniye sonra tekrar dene.',
+        shopier_failed: 'Ödeme sayfası şu an hazırlanamadı. Bilgilerin duruyor, birkaç dakika sonra tekrar dene.',
         discount_email_mismatch: 'İndirimli bilet, indirimi kazandığın edu.tr adresiyle alınabilir. E-posta alanını o adresle doldur.',
     },
 
@@ -312,7 +312,7 @@ const EN: Dict = {
     ticketTitleA: 'One-day ticket',
     ticketsHeading: 'Take your seat in the hall',
     ticketsLead: 'One day, one hall: engineers from the industry, and you. Get your ticket now and your seat is waiting on the morning of 8 December.',
-    perSpeaker: (amount: string) => `${amount} per session`,
+    perSpeaker: (amount: string) => `${amount} per speaker`,
     oneDay: 'One ticket, the whole day',
     perks: [
         'Engineers from Havelsan, Pegasus, Trendyol and Hepapi, plus a Microsoft MVP',
@@ -383,8 +383,7 @@ const EN: Dict = {
     successLead: (price: string) => `Your ticket is now ${price}. The discount is tied to this email address; buy the ticket with it.`,
     yourCode: 'Your discount code',
     continueToTicket: 'Continue to ticket',
-    statusReserved: 'This code is in an unfinished payment right now. If the payment isn’t completed it is released within 30 minutes.',
-    statusRedeemed: 'This code has been used for a ticket payment. The discount is valid only once.',
+    statusRedeemed: 'A ticket has been bought with this discount. The discount is valid only once.',
     emailLocked: 'The discount is tied to this address. Remove the discount to use another one.',
     discountErrors: {
         email_invalid: 'Enter a valid school email ending in edu.tr.',
@@ -423,8 +422,9 @@ const EN: Dict = {
         unknown: 'Something unexpected went wrong. Your details are kept; try again in a moment.',
         unavailable: 'The ticket system can’t be reached right now. Your details are kept; try again in a few minutes.',
         discount_invalid: 'This discount code is invalid. Remove the discount and try again, or check your code under “Check discount”.',
-        discount_used: 'This discount code has already been used for a payment. You can remove the discount and continue at full price.',
-        discount_reserved: 'This discount code is in another checkout right now. An unfinished payment releases it within 30 minutes.',
+        discount_used: 'A ticket has already been bought with this discount; it’s valid only once. You can remove the discount and continue at full price.',
+        busy: 'Your discounted ticket is being prepared. Try again in a few seconds.',
+        shopier_failed: 'The payment page couldn’t be prepared right now. Your details are kept; try again in a few minutes.',
         discount_email_mismatch: 'The discounted ticket must be bought with the edu.tr address that earned the discount. Use that address in the email field.',
     },
 

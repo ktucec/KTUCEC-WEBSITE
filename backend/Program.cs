@@ -18,6 +18,7 @@ using ktucec.Infrastructure.Services.Media;
 using ktucec.Features.Forms;
 using ktucec.Features.Codewave;
 using ktucec.Infrastructure.Services.Codewave;
+using ktucec.Infrastructure.Services.Shopier;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -225,13 +226,13 @@ builder.Services.AddScoped<DeleteApplicationHandler>();
 builder.Services.AddScoped<UpdateFormHandler>();
 
 // -- Codewave --
+builder.Services.AddHttpClient<ShopierApiClient>();
 builder.Services.AddScoped<CodewaveSecurityService>();
 builder.Services.AddScoped<CodewaveOtpSender>();
 builder.Services.AddScoped<ClaimStudentDiscountHandler>();
 builder.Services.AddScoped<LookupStudentDiscountHandler>();
 builder.Services.AddScoped<VerifyStudentDiscountHandler>();
-builder.Services.AddScoped<CreateCodewaveOrderHandler>();
-builder.Services.AddScoped<CompleteCodewaveOrderHandler>();
+builder.Services.AddScoped<CreateCodewaveApplicationHandler>();
 
 
 // -- Media --
@@ -315,7 +316,6 @@ app.MapUpdateForm();
 app.MapClaimStudentDiscount();
 app.MapLookupStudentDiscount();
 app.MapVerifyStudentDiscount();
-app.MapCreateCodewaveOrder();
-app.MapCompleteCodewaveOrder();
+app.MapCreateCodewaveApplication();
 
 app.Run();
