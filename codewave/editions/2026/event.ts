@@ -53,14 +53,15 @@ export type Speaker = {
     sample?: boolean;
 };
 
-// ÖRNEK GÖRSELLER: public/editions/2026/speakers/ornek-*.jpg yalnızca test içindir. Gerçek fotoğrafları aynı
-// klasöre koyup photo yolunu değiştirin ve sample satırını kaldırın.
+// Fotoğraflar: public/editions/2026/speakers/<ad-soyad>.jpg. Bir fotoğrafı değiştirirken dosyaya yeni bir ad
+// verin (ör. emre-savci-2.jpg) ve photo yolunu güncelleyin: next/image küçültülmüş kopyaları dosya adına göre
+// önbelleğe alır, aynı adla üzerine yazılan dosya bu yüzden sitede hemen görünmez.
 export const SPEAKERS: Speaker[] = [
-    { name: 'Taner Saydam', title: 'Microsoft MVP', photo: '/editions/2026/speakers/ornek-taner-saydam.jpg', sample: true },
-    { name: 'Barış Atak', title: 'Senior Software Engineer', company: 'Havelsan', photo: '/editions/2026/speakers/ornek-baris-atak.jpg', sample: true },
-    { name: 'Güvenç Eraslan', title: 'Expert Data Engineer', company: 'Pegasus Airlines', photo: '/editions/2026/speakers/ornek-guvenc-eraslan.jpg', sample: true },
-    { name: 'Emre Savcı', title: 'Tech Lead', company: 'Trendyol Group', photo: '/editions/2026/speakers/ornek-emre-savci.jpg', sample: true },
-    { name: 'Akın Özer', title: 'DevOps Manager', company: 'Hepapi', photo: '/editions/2026/speakers/ornek-akin-ozer.jpg', sample: true },
+    { name: 'Taner Saydam', title: 'Microsoft MVP', photo: '/editions/2026/speakers/taner-saydam.jpg' },
+    { name: 'Barış Atak', title: 'Senior Software Engineer', company: 'Havelsan', photo: '/editions/2026/speakers/baris-atak.jpg' },
+    { name: 'Güvenç Eraslan', title: 'Expert Data Engineer', company: 'Pegasus Airlines', photo: '/editions/2026/speakers/guvenc-eraslan.jpg' },
+    { name: 'Emre Savcı', title: 'Tech Lead', company: 'Trendyol Group', photo: '/editions/2026/speakers/emre-savci.jpg' },
+    { name: 'Akın Özer', title: 'DevOps Manager', company: 'Hepapi', photo: '/editions/2026/speakers/akin-ozer.jpg' },
 ];
 
 // Programda planlanan konuşmacı sayısı. Kesinleşmeyen koltuklar "yakında" olarak gösterilir.

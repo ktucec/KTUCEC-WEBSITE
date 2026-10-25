@@ -1,0 +1,16 @@
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
+const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+await ctx.addInitScript(() => { try { sessionStorage.setItem('cw26-intro', '1'); } catch {} });
+const page = await ctx.newPage();
+const bad = [];
+page.on('response', (r) => r.url().includes('speakers') && r.status() >= 400 && bad.push(`${r.status()} ${r.url()}`));
+await page.goto('http://localhost:3000/', { waitUntil: 'networkidle' });
+await page.waitForTimeout(1500);
+await page.evaluate(() => document.getElementById('bilet').scrollIntoView());
+await page.waitForTimeout(2500);
+const imgs = await page.evaluate(() => [...document.querySelectorAll('img')].filter((i) => i.currentSrc.includes('speakers')).map((i) => ({ src: decodeURIComponent(i.currentSrc).replace(/^.*url=/, '').slice(0, 70), ok: i.complete && i.naturalWidth > 0, alt: i.alt })));
+console.log(JSON.stringify(imgs, null, 1));
+console.log('bad', bad);
+await page.locator('.avatar-stack').screenshot({ path: 'lab-tix/avatars.png' });
+await browser.close();
