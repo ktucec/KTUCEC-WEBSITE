@@ -24,13 +24,15 @@ export default async function sitemap() {
     const announcementList = Array.isArray(announcements) ? announcements : [];
 
     const lastAnnouncement = latest(announcementList.map((a) => toDate(a.createdAt)));
+    // Sadece geçmişe ait etkinlik tarihleri lastmod olarak kullanılabilir.
+    const lastEvent = latest(eventList.map((e) => toDate(e.date)).filter((d) => d && d.getTime() <= Date.now()));
 
     // lastModified'ı sadece gerçekten bildiğimiz yerlerde veriyoruz. Her istekte "şimdi" yazmak
     // Google'ın bu alanı güvenilmez sayıp görmezden gelmesine yol açar.
     const staticPages = [
-        { url: SITE_URL, lastModified: lastAnnouncement, changeFrequency: 'weekly', priority: 1 },
+        { url: `${SITE_URL}/`, lastModified: lastAnnouncement, changeFrequency: 'weekly', priority: 1 },
         { url: `${SITE_URL}/duyurular`, lastModified: lastAnnouncement, changeFrequency: 'daily', priority: 0.9 },
-        { url: `${SITE_URL}/etkinlikler`, changeFrequency: 'weekly', priority: 0.9 },
+        { url: `${SITE_URL}/etkinlikler`, lastModified: lastEvent, changeFrequency: 'weekly', priority: 0.9 },
         { url: `${SITE_URL}/hakkimizda`, changeFrequency: 'monthly', priority: 0.7 },
         { url: `${SITE_URL}/basvurular`, changeFrequency: 'weekly', priority: 0.6 },
         { url: `${SITE_URL}/iletisim`, changeFrequency: 'yearly', priority: 0.5 },

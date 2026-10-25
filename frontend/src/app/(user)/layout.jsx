@@ -20,12 +20,30 @@ export const metadata = {
     },
 
     description:
-        'KTÜCEC, Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü resmi web sitesidir. Yazılım, gömülü sistemler, yapay zeka, siber güvenlik ve teknoloji odaklı etkinlikler, projeler ve topluluk için KTÜCEC\'e katılın.',
+        'KTÜ Bilgisayar Mühendisliği Kulübü KTÜCEC\'in resmi sitesi. Trabzon\'da yazılım, gömülü sistemler, yapay zeka ve siber güvenlik etkinlikleri, projeler ve topluluk.',
+
+    applicationName: 'KTÜCEC',
+    category: 'education',
+
+    // Google favicon'u: 48'in katı, kare, taranabilir PNG + klasik .ico. Açıkça tanımlıyoruz ki
+    // <head> içinde her zaman görünsün (dosya tabanlı ikon çıkarımına güvenmiyoruz).
+    icons: {
+        icon: [
+            { url: '/favicon.ico', sizes: '48x48' },
+            { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+            { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+        ],
+        shortcut: '/favicon.ico',
+        apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+    },
 
     keywords: [
         'KTÜCEC',
-        'KTU CEC',
+        'KTÜ Bilgisayar',
+        'KTÜ Bilgisayar Kulübü',
         'KTÜ Bilgisayar Mühendisliği Kulübü',
+        'ktü bilgisayar mühendisliği',
+        'KTU CEC',
         'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü',
         'Karadeniz Teknik Üniversitesi',
         'KTÜ',
@@ -77,7 +95,7 @@ export const metadata = {
         siteName: 'KTÜCEC',
         title: 'KTÜCEC | KTÜ Bilgisayar Mühendisliği Kulübü',
         description:
-            'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü resmi web sitesi. Etkinlikler, projeler ve topluluğumuz hakkında bilgi alın.',
+            'KTÜ Bilgisayar Mühendisliği Kulübü KTÜCEC\'in resmi sitesi. Etkinlikler, projeler ve topluluğumuz hakkında bilgi alın.',
         images: [
             {
                 url: '/logo.png',
@@ -89,10 +107,11 @@ export const metadata = {
     },
 
     twitter: {
-        card: 'summary_large_image',
+        // Görsel kare logo olduğu için büyük kart yerine "summary" kullanılır.
+        card: 'summary',
         title: 'KTÜCEC | KTÜ Bilgisayar Mühendisliği Kulübü',
         description:
-            'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü resmi web sitesi.',
+            'KTÜ Bilgisayar Mühendisliği Kulübü KTÜCEC\'in resmi web sitesi.',
         images: ['/logo.png'],
     },
 
@@ -112,21 +131,44 @@ export const metadata = {
 const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'KTÜCEC - KTÜ Bilgisayar Mühendisliği Kulübü',
+    '@id': `${SITE_URL}/#organization`,
+    name: 'KTÜCEC',
+    legalName: 'KTÜCEC - KTÜ Bilgisayar Mühendisliği Kulübü',
     alternateName: [
         'KTUCEC',
+        'KTÜ Bilgisayar',
+        'KTÜ Bilgisayar Kulübü',
         'KTÜ Bilgisayar Mühendisliği Kulübü',
         'KTÜ Yazılım Kulübü',
         'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü',
     ],
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    // Google'ın logo için aradığı alan: kare, en az 112x112, taranabilir görsel.
+    logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/icon-512.png`,
+        width: 512,
+        height: 512,
+    },
+    image: `${SITE_URL}/icon-512.png`,
     description:
         'Karadeniz Teknik Üniversitesi Bilgisayar Mühendisliği Kulübü resmi öğrenci topluluğu.',
+    parentOrganization: {
+        '@type': 'CollegeOrUniversity',
+        name: 'Karadeniz Teknik Üniversitesi',
+        alternateName: 'KTÜ',
+        url: 'https://www.ktu.edu.tr',
+    },
+    areaServed: 'Trabzon',
+    address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Trabzon',
+        addressCountry: 'TR',
+    },
     sameAs: [
-         'https://www.instagram.com/ktucec',
-         'https://www.linkedin.com/company/ktucec',
-         'https://twitter.com/ktucec',
+        'https://www.instagram.com/ktucec',
+        'https://www.linkedin.com/company/ktucec',
+        'https://twitter.com/ktucec',
     ],
 };
 
@@ -134,8 +176,10 @@ const organizationJsonLd = {
 const websiteJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
+    '@id': `${SITE_URL}/#website`,
+    publisher: { '@id': `${SITE_URL}/#organization` },
     name: 'KTÜCEC',
-    alternateName: ['KTUCEC', 'KTÜ Bilgisayar Mühendisliği Kulübü'],
+    alternateName: ['KTUCEC', 'KTÜ Bilgisayar', 'KTÜ Bilgisayar Mühendisliği Kulübü'],
     url: SITE_URL,
     inLanguage: 'tr-TR',
 };
