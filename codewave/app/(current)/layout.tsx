@@ -14,6 +14,15 @@ export const metadata: Metadata = {
     title: 'CODEWAVE 2026 — 8 Aralık, Trabzon',
     description,
     alternates: { canonical: '/' },
+    // Google arama sonucu ve tarayıcı sekmesi ikonu: kare, 48'in katı (192x192) + klasik .ico.
+    icons: {
+        icon: [
+            { url: '/favicon.ico', sizes: '48x48' },
+            { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+        ],
+        shortcut: '/favicon.ico',
+        apple: [{ url: '/apple-icon.png', sizes: '180x180', type: 'image/png' }],
+    },
     openGraph: {
         type: 'website',
         locale: 'tr_TR',
