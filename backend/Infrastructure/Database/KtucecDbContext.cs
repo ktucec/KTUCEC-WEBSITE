@@ -23,6 +23,10 @@ namespace ktucec.Infrastructure.Database
         public DbSet<FormQuestion> FormQuestions => Set<FormQuestion>();
         public DbSet<FormQuestionAnswer> FormQuestionAnswers => Set<FormQuestionAnswer>();
 
+        // CODEWAVE Tables
+        public DbSet<CodewaveStudentDiscount> CodewaveStudentDiscounts => Set<CodewaveStudentDiscount>();
+        public DbSet<CodewaveApplication> CodewaveApplications => Set<CodewaveApplication>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -46,6 +50,61 @@ namespace ktucec.Infrastructure.Database
                 .WithMany(u => u.FormApplications)
                 .HasForeignKey(fa => fa.UserId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            ConfigureCodewave(modelBuilder);
+        }
+
+        // -------- CODEWAVE --------
+        private static void ConfigureCodewave(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<CodewaveStudentDiscount>(e =>
+            {
+                e.ToTable("CodewaveStudentDiscounts", "dbo");
+
+                e.Property(x => x.Email).HasMaxLength(254).IsRequired();
+                e.Property(x => x.StudentNumber).HasMaxLength(15).IsRequired();
+                e.Property(x => x.OtpCodeHash).HasMaxLength(64);
+                e.Property(x => x.DiscountCode).HasMaxLength(20);
+                e.Property(x => x.ReservedOrderId).HasMaxLength(32);
+                e.Property(x => x.RedeemedOrderId).HasMaxLength(32);
+                e.Property(x => x.LastRequestIp).HasMaxLength(45);
+
+                // Bir e-posta yalnızca bir kez indirim kazanabilir
+                e.HasIndex(x => x.Email).IsUnique();
+
+                // Kod yalnızca onaydan sonra oluşur; boş satırlar benzersizlik kuralına takılmaz
+                e.HasIndex(x => x.DiscountCode).IsUnique().HasFilter("[DiscountCode] IS NOT NULL");
+            });
+
+            modelBuilder.Entity<CodewaveApplication>(e =>
+            {
+                e.ToTable("CodewaveApplications", "dbo");
+
+                e.Property(x => x.OrderId).HasMaxLength(32).IsRequired();
+                e.Property(x => x.FirstName).HasMaxLength(50).IsRequired();
+                e.Property(x => x.LastName).HasMaxLength(50).IsRequired();
+                e.Property(x => x.Email).HasMaxLength(254).IsRequired();
+                e.Property(x => x.Phone).HasMaxLength(16).IsRequired();
+                e.Property(x => x.City).HasMaxLength(60).IsRequired();
+                e.Property(x => x.Language).HasMaxLength(2).IsRequired();
+                e.Property(x => x.Currency).HasMaxLength(3).IsRequired();
+                e.Property(x => x.DiscountCode).HasMaxLength(20);
+                e.Property(x => x.PaymentId).HasMaxLength(64);
+
+                e.Property(x => x.ListPrice).HasPrecision(10, 2);
+                e.Property(x => x.DiscountAmount).HasPrecision(10, 2);
+                e.Property(x => x.TotalPrice).HasPrecision(10, 2);
+
+                e.HasIndex(x => x.OrderId).IsUnique();
+                e.HasIndex(x => x.Email);
+                e.HasIndex(x => x.Status);
+
+                // İndirim kaydı silinirse başvuru kalır, yalnızca bağlantı kopar (kod metni DiscountCode'da durur)
+                e.HasOne(x => x.CodewaveStudentDiscount)
+                    .WithMany(d => d.Applications)
+                    .HasForeignKey(x => x.CodewaveStudentDiscountId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
         }
 
         // -------- UpdatedAt override --------
@@ -72,4 +131,4 @@ namespace ktucec.Infrastructure.Database
             }
         }
     }
-}
+}

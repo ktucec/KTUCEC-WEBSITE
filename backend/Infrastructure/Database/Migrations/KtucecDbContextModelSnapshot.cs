@@ -52,6 +52,189 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.ToTable("Announcements");
                 });
 
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveApplication", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttendeeType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<int?>("CodewaveStudentDiscountId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasMaxLength(3)
+                        .HasColumnType("nvarchar(3)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("DiscountCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(2)
+                        .HasColumnType("nvarchar(2)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("ListPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("OrderId")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalPrice")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodewaveStudentDiscountId");
+
+                    b.HasIndex("Email");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("CodewaveApplications", "dbo");
+                });
+
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveStudentDiscount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DiscountCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LastRequestIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime?>("OtpCodeExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OtpCodeHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("OtpFailedAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("OtpLastSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OtpSendCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("OtpSendWindowStartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RedeemedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RedeemedOrderId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<string>("ReservedOrderId")
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<DateTime?>("ReservedUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("VerifiedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DiscountCode")
+                        .IsUnique()
+                        .HasFilter("[DiscountCode] IS NOT NULL");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("CodewaveStudentDiscounts", "dbo");
+                });
+
             modelBuilder.Entity("ktucec.Domain.Entities.ContactForm", b =>
                 {
                     b.Property<int>("Id")
@@ -371,6 +554,16 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveApplication", b =>
+                {
+                    b.HasOne("ktucec.Domain.Entities.CodewaveStudentDiscount", "CodewaveStudentDiscount")
+                        .WithMany("Applications")
+                        .HasForeignKey("CodewaveStudentDiscountId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("CodewaveStudentDiscount");
+                });
+
             modelBuilder.Entity("ktucec.Domain.Entities.EventGalleryImage", b =>
                 {
                     b.HasOne("ktucec.Domain.Entities.Event", "Event")
@@ -428,6 +621,11 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.Navigation("FormApplication");
 
                     b.Navigation("FormQuestion");
+                });
+
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveStudentDiscount", b =>
+                {
+                    b.Navigation("Applications");
                 });
 
             modelBuilder.Entity("ktucec.Domain.Entities.Event", b =>
