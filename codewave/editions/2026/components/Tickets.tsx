@@ -5,9 +5,12 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import { ArrowRight, ArrowUpRight, Check, X } from 'lucide-react';
+import { ArrowRight, ArrowUpRight, BadgePercent, Check, GraduationCap, X } from 'lucide-react';
 import { EVENT, SOCIALS, SPEAKERS, SPEAKER_SEATS, TICKET, startsAtMs } from '@/editions/2026/event';
-import { formatAmount } from '@/editions/2026/i18n';
+import { formatAmount, formatDiscount } from '@/editions/2026/i18n';
+import { isDiscountApiConfigured } from '@/editions/2026/lib/discountApi';
+import DiscountDialog from './discount/DiscountDialog';
+import { useDiscount } from './discount/DiscountProvider';
 import { useLang } from './i18n/LanguageProvider';
 import Price from './Price';
 import Magnetic from './fx/Magnetic';
@@ -270,9 +273,11 @@ function TicketDialog({ canBuy, started, holder, onClose }: { canBuy: boolean; s
 }
 
 // Büyük fiyat: bölüm ekrana girerken sıfırdan sayarak gerçek değere (TICKET.price) oturur. Sunucuda ve
-// hareket azaltmada doğrudan son değer yazılır.
+// hareket azaltmada doğrudan son değer yazılır. Öğrenci indirimi varsa indirimli tutar yazılır, normal fiyat
+// üstü çizili olarak yanında durur.
 function CountPrice() {
-    const { lang } = useLang();
+    const { d, lang } = useLang();
+    const { amount } = useDiscount();
     const ref = useRef<HTMLParagraphElement>(null);
     const [value, setValue] = useState<number>(TICKET.price);
 
@@ -300,10 +305,22 @@ function CountPrice() {
         { scope: ref },
     );
 
+    // Sayaç liste fiyatına kadar sayar; indirim varsa aynı oranda indirimli tutara ölçeklenir.
+    const discounted = amount.discount > 0;
+    const shown = value === TICKET.price ? amount.total : Math.round(value * (amount.total / TICKET.price));
+    const label = discounted ? `${formatAmount(lang, amount.total)} (${d.discountWas}: ${formatAmount(lang, amount.list)})` : formatAmount(lang, amount.total);
+
     return (
-        <p ref={ref} className="price-count grad-text" aria-label={formatAmount(lang, TICKET.price)}>
-            <span aria-hidden="true">{formatAmount(lang, value)}</span>
-        </p>
+        <div className="flex flex-wrap items-end gap-x-4 gap-y-2">
+            <p ref={ref} className="price-count grad-text" aria-label={label}>
+                <span aria-hidden="true">{formatAmount(lang, shown)}</span>
+            </p>
+            {discounted && (
+                <s className="price-was mono" aria-hidden="true">
+                    {formatAmount(lang, amount.list)}
+                </s>
+            )}
+        </div>
     );
 }
 
@@ -323,7 +340,11 @@ function DaysChip() {
 
 export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
     const { d, lang } = useLang();
+    const { discount, amount, clear: clearDiscount } = useDiscount();
     const [open, setOpen] = useState(false);
+    const [discountOpen, setDiscountOpen] = useState(false);
+    const [discountReady, setDiscountReady] = useState(false);
+    const discountCta = useRef<HTMLButtonElement>(null);
     const [started, setStarted] = useState(false);
     const [holder, setHolder] = useState('');
     const [ghost, setGhost] = useState(0);
@@ -333,6 +354,7 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
     // Satış durumu ve daha önce yazılmış ad (form taslağından) istemcide okunur.
     useEffect(() => {
         setStarted(Date.now() >= startsAtMs());
+        setDiscountReady(isDiscountApiConfigured());
         try {
             const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? '{}');
             const name = [draft.firstName, draft.lastName].filter(Boolean).join(' ').trim();
@@ -353,9 +375,20 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
         window.setTimeout(() => cta.current?.focus({ preventScroll: true }), 450);
     };
 
+    const closeDiscount = () => {
+        setDiscountOpen(false);
+        window.setTimeout(() => (discountCta.current ?? cta.current)?.focus({ preventScroll: true }), 350);
+    };
+
+    // İndirim kazanıldı: pencere kapanır, bilet penceresi indirimli fiyatla açılır.
+    const continueToTicket = () => {
+        setDiscountOpen(false);
+        window.setTimeout(openDialog, 320);
+    };
+
     const canBuy = salesOpen && !started;
     const label = canBuy ? d.buyNow : d.notifyMe;
-    const perSpeaker = formatAmount(lang, Math.round((TICKET.price / SPEAKERS.length) * 100) / 100);
+    const perSpeaker = formatAmount(lang, Math.round((amount.total / SPEAKERS.length) * 100) / 100);
     const pending = Math.max(SPEAKER_SEATS - SPEAKERS.length, 0);
 
     return (
@@ -446,11 +479,38 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
                                 <ArrowRight className="arrow ml-auto" size={20} aria-hidden="true" />
                             </button>
                         </Magnetic>
+                        {canBuy && discountReady && (
+                            <div className="mt-3">
+                                {discount ? (
+                                    <div className="discount-applied" role="status">
+                                        <BadgePercent size={18} aria-hidden="true" />
+                                        <span className="grid min-w-0">
+                                            <span className="text-[0.9375rem] font-medium text-ink">{d.discountApplied}</span>
+                                            <span className="mono truncate text-[0.75rem] tracking-[0.08em] text-green-hi">{discount.code}</span>
+                                            <span className="truncate text-[0.8125rem] text-mute">{discount.email}</span>
+                                        </span>
+                                        <button type="button" className="discount-link ml-auto shrink-0" onClick={clearDiscount}>
+                                            {d.discountRemove}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button ref={discountCta} type="button" className="discount-cta" onClick={() => setDiscountOpen(true)} aria-haspopup="dialog" data-cursor={d.tabClaim}>
+                                        <GraduationCap size={20} aria-hidden="true" className="shrink-0" />
+                                        <span className="grid text-left">
+                                            <span className="font-medium">{d.discountCta}</span>
+                                            <span className="mono text-[0.6875rem] tracking-[0.12em] text-green uppercase">{d.discountCtaNote(formatDiscount(lang))}</span>
+                                        </span>
+                                        <ArrowRight className="arrow ml-auto shrink-0" size={18} aria-hidden="true" />
+                                    </button>
+                                )}
+                            </div>
+                        )}
                         <p className="mono mt-3 text-center text-[0.6875rem] leading-relaxed tracking-[0.12em] text-faint uppercase">{canBuy ? d.buyMicro : d.ticketClosedNote}</p>
                     </div>
                 </div>
             </div>
             <AnimatePresence>{open && <TicketDialog canBuy={canBuy} started={started} holder={holder} onClose={close} />}</AnimatePresence>
+            <AnimatePresence>{discountOpen && <DiscountDialog onClose={closeDiscount} onContinue={continueToTicket} />}</AnimatePresence>
         </section>
     );
 }

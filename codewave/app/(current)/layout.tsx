@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
 import '@/editions/2026/styles/globals.css';
+import { DiscountProvider } from '@/editions/2026/components/discount/DiscountProvider';
 import { LanguageProvider } from '@/editions/2026/components/i18n/LanguageProvider';
 import { EVENT } from '@/editions/2026/event';
 
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <script dangerouslySetInnerHTML={{ __html: preflight }} />
             </head>
             <body>
-                <LanguageProvider>{children}</LanguageProvider>
+                <LanguageProvider>
+                    <DiscountProvider>{children}</DiscountProvider>
+                </LanguageProvider>
             </body>
         </html>
     );

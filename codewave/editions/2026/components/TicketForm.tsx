@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type InputHTMLAttributes } from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type InputHTMLAttributes, type ReactNode } from 'react';
 import { ArrowRight, LoaderCircle } from 'lucide-react';
 import type { Dict } from '@/editions/2026/i18n';
 import {
@@ -12,6 +12,7 @@ import {
     type FieldErrors,
     type Registration,
 } from '@/editions/2026/lib/registration';
+import { useDiscount } from './discount/DiscountProvider';
 import { useLang } from './i18n/LanguageProvider';
 import Price from './Price';
 
@@ -39,7 +40,8 @@ export function postToShopier(action: string, fields: Record<string, string>) {
 
 // Taslak bu sekmede saklanır: pencere kapanıp açılsa ya da Shopier'den geri dönülse de yazılanlar kalır.
 // Biletteki ad girildiyse ad/soyad alanları ondan gelir.
-function initialValues(name?: { firstName: string; lastName: string }): Registration {
+// Öğrenci indirimi uygulanmışsa e-posta, indirimin bağlı olduğu edu.tr adresidir (backend başka adresi kabul etmez).
+function initialValues(name?: { firstName: string; lastName: string }, lockedEmail?: string): Registration {
     let values = EMPTY_REGISTRATION;
     try {
         const raw = sessionStorage.getItem(DRAFT_KEY);
@@ -47,6 +49,7 @@ function initialValues(name?: { firstName: string; lastName: string }): Registra
     } catch {
         // Bozuk ya da erişilemeyen taslak yok sayılır.
     }
+    if (lockedEmail) values = { ...values, email: lockedEmail };
     return name?.firstName ? { ...values, ...name } : values;
 }
 
@@ -61,8 +64,9 @@ export default function TicketForm({
     name?: { firstName: string; lastName: string };
 }) {
     const { d, lang } = useLang();
+    const { discount, clear: clearDiscount } = useDiscount();
     const summary = useRef<HTMLDivElement>(null);
-    const [values, setValues] = useState<Registration>(() => initialValues(name));
+    const [values, setValues] = useState<Registration>(() => initialValues(name, discount?.email));
     const [errors, setErrors] = useState<FieldErrors>({});
     const [showSummary, setShowSummary] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -75,6 +79,17 @@ export default function TicketForm({
         window.addEventListener('pageshow', onShow);
         return () => window.removeEventListener('pageshow', onShow);
     }, []);
+
+    // İndirim sonradan eklenirse e-posta alanı o adrese geçer.
+    useEffect(() => {
+        if (discount) setValues((v) => (v.email === discount.email ? v : { ...v, email: discount.email }));
+    }, [discount]);
+
+    const removeDiscount = () => {
+        clearDiscount();
+        if (serverError?.startsWith('discount_')) setServerError(null);
+        requestAnimationFrame(() => document.getElementById(fieldId('email'))?.focus());
+    };
 
     useEffect(() => {
         try {
@@ -114,7 +129,7 @@ export default function TicketForm({
             const res = await fetch('/api/shopier/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...values, lang }),
+                body: JSON.stringify({ ...values, lang, discountCode: discount?.code }),
             });
             const data = await res.json().catch(() => ({}));
             if (res.ok && data.action && data.fields) {
@@ -138,7 +153,7 @@ export default function TicketForm({
     const describe = (f: Field, hint?: boolean) =>
         [hint ? `${fieldId(f)}-hint` : '', errors[f] ? `${fieldId(f)}-error` : ''].filter(Boolean).join(' ') || undefined;
 
-    const text = (f: Field, label: string, props: InputHTMLAttributes<HTMLInputElement>, hint?: string, wide?: boolean) => (
+    const text = (f: Field, label: string, props: InputHTMLAttributes<HTMLInputElement>, hint?: string, wide?: boolean, extra?: ReactNode) => (
         <div className={`field${errors[f] ? ' has-error' : ''}${wide ? ' sm:col-span-2' : ''}`}>
             <label htmlFor={fieldId(f)}>{label}</label>
             <input
@@ -162,6 +177,7 @@ export default function TicketForm({
                     {d.errors[errors[f]!]}
                 </p>
             )}
+            {extra}
         </div>
     );
 
@@ -189,7 +205,18 @@ export default function TicketForm({
             <div className="grid gap-4 sm:grid-cols-2">
                 {text('firstName', d.firstName, { autoComplete: 'given-name', autoCapitalize: 'words', enterKeyHint: 'next' })}
                 {text('lastName', d.lastName, { autoComplete: 'family-name', autoCapitalize: 'words', enterKeyHint: 'next' })}
-                {text('email', d.email, { type: 'email', inputMode: 'email', autoComplete: 'email', autoCapitalize: 'off', spellCheck: false, enterKeyHint: 'next' }, d.emailHint, true)}
+                {text(
+                    'email',
+                    d.email,
+                    { type: 'email', inputMode: 'email', autoComplete: 'email', autoCapitalize: 'off', spellCheck: false, enterKeyHint: 'next', readOnly: Boolean(discount) },
+                    discount ? d.emailLocked : d.emailHint,
+                    true,
+                    discount && (
+                        <button type="button" className="discount-link justify-self-start" onClick={removeDiscount}>
+                            {d.discountRemove}
+                        </button>
+                    ),
+                )}
                 {text('phone', d.phone, { type: 'tel', inputMode: 'tel', autoComplete: 'tel', enterKeyHint: 'next' }, d.phoneHint)}
                 {text('city', d.city, { autoComplete: 'address-level2', autoCapitalize: 'words', enterKeyHint: 'done' }, d.cityHint)}
             </div>
@@ -234,9 +261,14 @@ export default function TicketForm({
             </div>
 
             {serverError && (
-                <p className="rounded-[14px] border border-[var(--line-hi)] bg-white/[0.03] px-4 py-3 text-[0.9375rem]" role="alert">
-                    {d.serverErrors[serverError]}
-                </p>
+                <div className="grid gap-2 rounded-[14px] border border-[var(--line-hi)] bg-white/[0.03] px-4 py-3 text-[0.9375rem]" role="alert">
+                    <p>{d.serverErrors[serverError]}</p>
+                    {discount && serverError.startsWith('discount_') && (
+                        <button type="button" className="discount-link justify-self-start" onClick={removeDiscount}>
+                            {d.discountRemove}
+                        </button>
+                    )}
+                </div>
             )}
 
             <div className="grid gap-2">

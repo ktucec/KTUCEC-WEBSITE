@@ -1,6 +1,6 @@
 // CODEWAVE 2026 — arayüz metinleri (TR varsayılan, EN ikinci dil).
 // Etkinlik verileri (tarih, mekân, fiyat, konuşmacılar) event.ts'de; burada yalnızca cümleler var.
-import { TICKET } from './event';
+import { STUDENT_DISCOUNT, TICKET } from './event';
 
 export type Lang = 'TR' | 'EN';
 export const LANGS: Lang[] = ['TR', 'EN'];
@@ -15,6 +15,13 @@ export function formatAmount(lang: Lang, value: number) {
 }
 
 export const formatPrice = (lang: Lang) => formatAmount(lang, TICKET.price);
+
+// Öğrenci indiriminin kısa gösterimi: "%20" / "20%" ya da "30 TL" / "TRY 30"
+export function formatDiscount(lang: Lang) {
+    if (STUDENT_DISCOUNT.type === 'fixed') return formatAmount(lang, STUDENT_DISCOUNT.value);
+    const n = new Intl.NumberFormat(lang === 'TR' ? 'tr-TR' : 'en-GB', { maximumFractionDigits: 2 }).format(STUDENT_DISCOUNT.value);
+    return lang === 'TR' ? `%${n}` : `${n}%`;
+}
 
 const TR = {
     skip: 'İçeriğe geç',
@@ -86,7 +93,7 @@ const TR = {
     ticketTitleA: 'Bir günlük bilet',
     ticketsHeading: 'Salonda yerini al',
     ticketsLead: 'Bir gün, tek salon: sektörün içinden mühendisler ve sen. Bileti şimdi al, 8 Aralık sabahı yerin hazır olsun.',
-    perSpeaker: (amount: string) => `Konuşmacı başına ${amount}`,
+    perSpeaker: (amount: string) => `Oturum başına ${amount}`,
     oneDay: 'Tek bilet, tüm gün',
     perks: [
         'Havelsan, Pegasus, Trendyol ve Hepapi’den mühendisler ve bir Microsoft MVP',
@@ -126,6 +133,56 @@ const TR = {
     salesClosed: 'Satış kapandı',
     salesClosedNote: 'Etkinlik başladı; online bilet satışı kapandı.',
     secureNote: 'Ödeme adımı Shopier’in kendi sayfasında açılır.',
+    // Öğrenci indirimi (edu.tr onayı)
+    discountCta: 'edu.tr mailini onayla, indirimi kap!',
+    discountCtaNote: (label: string) => `Öğrencilere ${label} indirim · tek seferlik`,
+    discountApplied: 'Öğrenci indirimi uygulandı',
+    discountRemove: 'İndirimi kaldır',
+    discountWas: 'Normal fiyat',
+    discountTitle: 'Öğrenci indirimi',
+    discountLead: (label: string) => `edu.tr uzantılı okul e-postanı doğrula, biletini ${label} indirimle al. Her adres yalnızca bir kez indirim kazanır.`,
+    discountTabs: 'İndirim işlemleri',
+    tabClaim: 'İndirim kazan',
+    tabLookup: 'İndirim sorgula',
+    eduEmail: 'Okul e-postası (edu.tr)',
+    eduEmailHint: 'Örnek: 123456@ogr.ktu.edu.tr',
+    studentNo: 'Öğrenci numarası',
+    studentNoHint: '2-15 hane, yalnızca rakam',
+    lookupLead: 'Daha önce indirim kazandıysan aynı adresi yaz. Koduna ulaşman için e-postana bir doğrulama kodu gönderelim.',
+    alreadyClaimed: 'Bu adresle indirim zaten alınmış. Koduna ulaşmak için adresini doğrula.',
+    sendCode: 'Doğrulama kodu gönder',
+    sendingCode: 'Kod gönderiliyor…',
+    otpLead: (email: string) => `${email} adresine 6 haneli bir kod gönderdik. Gelen kutunu ve gereksiz klasörünü kontrol et.`,
+    otpLabel: 'Doğrulama kodu',
+    verify: 'Doğrula',
+    verifying: 'Doğrulanıyor…',
+    resend: 'Kodu tekrar gönder',
+    resendIn: (s: number) => `Tekrar gönder (${s} sn)`,
+    changeEmail: 'Adresi değiştir',
+    attemptsLeft: (n: number) => `${n} deneme hakkın kaldı.`,
+    successTitle: 'İndirimin hazır',
+    successLead: (price: string) => `Biletin artık ${price}. İndirim bu e-posta adresine bağlı; bileti bu adresle almalısın.`,
+    yourCode: 'İndirim kodun',
+    continueToTicket: 'Bilete devam et',
+    statusReserved: 'Bu kod şu anda yarım kalmış bir ödeme adımında. Ödeme tamamlanmazsa 30 dakika içinde serbest kalır.',
+    statusRedeemed: 'Bu kod bir bilet ödemesinde kullanıldı. İndirim yalnızca bir kez geçerli.',
+    emailLocked: 'İndirim bu adrese bağlı. Başka bir adresle almak için indirimi kaldır.',
+    discountErrors: {
+        email_invalid: 'edu.tr ile biten geçerli bir okul e-postası yaz.',
+        student_number_invalid: 'Öğrenci numarası 2-15 haneli olmalı ve yalnızca rakamlardan oluşmalı.',
+        not_found: 'Bu adresle alınmış bir indirim yok. “İndirim kazan” sekmesinden alabilirsin.',
+        otp_cooldown: 'Yeni kod istemeden önce biraz bekle.',
+        otp_limit: 'Bu adres için çok fazla kod istendi. Bir süre sonra tekrar dene.',
+        mail_failed: 'Doğrulama e-postası gönderilemedi. Birazdan tekrar dene.',
+        code_invalid: 'Kod hatalı.',
+        code_format: '6 haneli kodu yaz.',
+        code_expired: 'Kodun süresi doldu. Yeni kod iste.',
+        too_many_attempts: 'Çok fazla hatalı deneme. Yeni kod iste.',
+        try_again: 'İşlem sürüyor, birkaç saniye sonra tekrar dene.',
+        rate_limited: 'Çok fazla deneme yapıldı. Biraz bekleyip tekrar dene.',
+        network: 'Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene.',
+        unknown: 'Beklenmeyen bir sorun oldu. Birazdan tekrar dene.',
+    },
     errorSummary: (n: number) => (n === 1 ? 'Bir alanı düzeltmen gerekiyor:' : `${n} alanı düzeltmen gerekiyor:`),
     errors: {
         firstNameRequired: 'Adını yaz.',
@@ -255,7 +312,7 @@ const EN: Dict = {
     ticketTitleA: 'One-day ticket',
     ticketsHeading: 'Take your seat in the hall',
     ticketsLead: 'One day, one hall: engineers from the industry, and you. Get your ticket now and your seat is waiting on the morning of 8 December.',
-    perSpeaker: (amount: string) => `${amount} per speaker`,
+    perSpeaker: (amount: string) => `${amount} per session`,
     oneDay: 'One ticket, the whole day',
     perks: [
         'Engineers from Havelsan, Pegasus, Trendyol and Hepapi, plus a Microsoft MVP',
@@ -295,6 +352,56 @@ const EN: Dict = {
     salesClosed: 'Sales closed',
     salesClosedNote: 'The event has started; online ticket sales are closed.',
     secureNote: 'The payment step opens on Shopier’s own page.',
+    // Student discount (edu.tr verification)
+    discountCta: 'Verify your edu.tr email, grab the discount!',
+    discountCtaNote: (label: string) => `${label} off for students · one-time`,
+    discountApplied: 'Student discount applied',
+    discountRemove: 'Remove discount',
+    discountWas: 'Regular price',
+    discountTitle: 'Student discount',
+    discountLead: (label: string) => `Verify your edu.tr school email and get your ticket ${label} off. Each address can earn the discount once.`,
+    discountTabs: 'Discount actions',
+    tabClaim: 'Get discount',
+    tabLookup: 'Check discount',
+    eduEmail: 'School email (edu.tr)',
+    eduEmailHint: 'Example: 123456@ogr.ktu.edu.tr',
+    studentNo: 'Student number',
+    studentNoHint: '2–15 digits, numbers only',
+    lookupLead: 'If you already earned the discount, enter the same address. We’ll email you a verification code so you can see your code.',
+    alreadyClaimed: 'This address has already earned the discount. Verify it to see your code.',
+    sendCode: 'Send verification code',
+    sendingCode: 'Sending code…',
+    otpLead: (email: string) => `We sent a 6-digit code to ${email}. Check your inbox and spam folder.`,
+    otpLabel: 'Verification code',
+    verify: 'Verify',
+    verifying: 'Verifying…',
+    resend: 'Resend code',
+    resendIn: (s: number) => `Resend (${s}s)`,
+    changeEmail: 'Change address',
+    attemptsLeft: (n: number) => `${n} attempts left.`,
+    successTitle: 'Your discount is ready',
+    successLead: (price: string) => `Your ticket is now ${price}. The discount is tied to this email address; buy the ticket with it.`,
+    yourCode: 'Your discount code',
+    continueToTicket: 'Continue to ticket',
+    statusReserved: 'This code is in an unfinished payment right now. If the payment isn’t completed it is released within 30 minutes.',
+    statusRedeemed: 'This code has been used for a ticket payment. The discount is valid only once.',
+    emailLocked: 'The discount is tied to this address. Remove the discount to use another one.',
+    discountErrors: {
+        email_invalid: 'Enter a valid school email ending in edu.tr.',
+        student_number_invalid: 'Student number must be 2–15 digits, numbers only.',
+        not_found: 'No discount was earned with this address. You can get one under “Get discount”.',
+        otp_cooldown: 'Wait a moment before requesting a new code.',
+        otp_limit: 'Too many codes were requested for this address. Try again later.',
+        mail_failed: 'The verification email couldn’t be sent. Try again in a moment.',
+        code_invalid: 'Wrong code.',
+        code_format: 'Enter the 6-digit code.',
+        code_expired: 'The code has expired. Request a new one.',
+        too_many_attempts: 'Too many wrong attempts. Request a new code.',
+        try_again: 'Still processing; try again in a few seconds.',
+        rate_limited: 'Too many attempts. Wait a bit and try again.',
+        network: 'Couldn’t connect. Check your internet and try again.',
+        unknown: 'Something unexpected went wrong. Try again in a moment.',
+    },
     errorSummary: (n: number) => (n === 1 ? 'One field needs fixing:' : `${n} fields need fixing:`),
     errors: {
         firstNameRequired: 'Enter your first name.',

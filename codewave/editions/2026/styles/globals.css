@@ -591,6 +591,75 @@ body::after {
 .error-summary { padding: 14px 16px; border-radius: 14px; border: 1px solid rgb(255 143 143 / 0.4); background: rgb(255 143 143 / 0.06); color: var(--color-danger); }
 .error-summary:focus { outline: 2px solid var(--color-danger); outline-offset: 3px; }
 
+/* ---------- Öğrenci indirimi (edu.tr onayı) ---------- */
+.discount-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 62px;
+  padding: 10px 20px;
+  border-radius: 20px;
+  border: 1px dashed rgb(136 223 138 / 0.45);
+  background: rgb(136 223 138 / 0.05);
+  color: var(--color-ink);
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  text-align: left;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: border-color 0.35s, background-color 0.35s, box-shadow 0.45s var(--ease-expo), scale 0.2s var(--ease-out-quint);
+}
+.discount-cta > svg:first-child { color: var(--color-green); }
+.discount-cta:hover, .discount-cta:focus-visible { border-style: solid; border-color: var(--color-green); background: rgb(136 223 138 / 0.09); box-shadow: 0 0 40px -12px rgb(136 223 138 / 0.7); }
+.discount-cta:active { scale: 0.98; }
+.discount-cta .arrow { transition: transform 0.5s var(--ease-expo); }
+.discount-cta:hover .arrow { transform: translateX(3px) rotate(-45deg); }
+
+.discount-applied { display: flex; align-items: center; gap: 12px; min-height: 62px; padding: 8px 10px 8px 18px; border-radius: 20px; border: 1px solid rgb(136 223 138 / 0.35); background: rgb(136 223 138 / 0.07); }
+.discount-applied > svg { flex: none; color: var(--color-green); }
+
+.discount-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border-radius: 10px; font-size: 0.875rem; font-weight: 500; color: var(--color-green-hi); text-decoration: underline; text-underline-offset: 0.25em; touch-action: manipulation; }
+.discount-link:hover { color: var(--color-ink); }
+.discount-link:disabled { opacity: 0.5; cursor: not-allowed; text-decoration: none; }
+
+.discount-panel { border-radius: 30px; overflow: hidden; }
+.discount-tabs { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px; border: 1px solid var(--line-hi); background: rgb(255 255 255 / 0.02); }
+.discount-tabs [role='tab'] { position: relative; z-index: 1; min-height: 44px; padding: 0 10px; border-radius: 999px; font-size: 0.9375rem; font-weight: 520; color: var(--color-mute); transition: color 0.35s var(--ease-expo); touch-action: manipulation; }
+.discount-tabs [role='tab'][aria-selected='true'] { color: var(--color-void); }
+.discount-tabs [role='tab']:disabled { cursor: progress; }
+.discount-tabs-thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--color-green); box-shadow: var(--glow-green); transition: transform 0.5s var(--ease-expo); }
+.discount-tabs-thumb[data-tab='lookup'] { transform: translateX(100%); }
+
+.discount-note { padding: 12px 16px; border-radius: 14px; border: 1px solid rgb(90 169 230 / 0.4); background: rgb(46 126 190 / 0.1); font-size: 0.9375rem; line-height: 1.5; color: var(--color-ink); }
+.discount-error { font-size: 0.875rem; font-weight: 500; color: var(--color-danger); }
+#discount-title:focus { outline: none; }
+.field input[readonly]:not([type='checkbox']):not([type='radio']) { border-style: dashed; border-color: rgb(136 223 138 / 0.45); background: rgb(136 223 138 / 0.05); color: var(--color-green-hi); cursor: default; }
+.field input[readonly]:focus { box-shadow: none; }
+
+.field input.otp-input:not([type='checkbox']):not([type='radio']) { min-height: 64px; padding: 10px 12px; text-align: center; font: 500 clamp(1.5rem, 7vw, 1.875rem) var(--font-mono); letter-spacing: 0.5em; text-indent: 0.5em; font-variant-numeric: tabular-nums; }
+.field input.otp-input::placeholder { color: var(--color-faint); }
+
+.discount-code-card { display: grid; gap: 6px; justify-items: center; padding: 20px; border-radius: 20px; border: 1px dashed var(--line-hi); background: rgb(255 255 255 / 0.03); text-align: center; }
+.discount-code { font-size: clamp(1.5rem, 7vw, 2rem); font-weight: 500; letter-spacing: 0.08em; color: var(--color-green-hi); text-shadow: 0 0 24px rgb(136 223 138 / 0.4); user-select: all; }
+.discount-code.is-used { color: var(--color-faint); text-decoration: line-through; text-shadow: none; }
+
+.price-was { margin-bottom: 0.4em; font-size: clamp(1.125rem, 4vw, 1.5rem); color: var(--color-faint); text-decoration-thickness: 1px; }
+
+/* Adres zaten indirim almış: pencere kısa bir "hayır" titremesi yapar, kenarı kırmızı yanar. */
+.discount-panel.is-shaking { animation: discount-shake 0.56s cubic-bezier(0.36, 0.07, 0.19, 0.97) both, discount-alert 0.56s ease-out both; }
+@keyframes discount-shake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(4px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-9px, 0, 0); }
+  40%, 60% { transform: translate3d(9px, 0, 0); }
+}
+@keyframes discount-alert { 0%, 60% { box-shadow: 0 0 0 1px var(--color-danger), 0 0 60px -10px rgb(255 143 143 / 0.6); } 100% { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 40px 120px -40px rgb(0 0 0 / 0.8); } }
+@media (prefers-reduced-motion: reduce) {
+  .discount-panel.is-shaking { animation: discount-alert 0.56s ease-out both; }
+  .discount-tabs-thumb, .discount-cta .arrow { transition: none; }
+}
+
 /* ---------- Kayan bilet şeridi ---------- */
 .ticket-bar {
   position: fixed;
