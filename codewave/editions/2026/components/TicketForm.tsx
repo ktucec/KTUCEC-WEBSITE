@@ -37,25 +37,38 @@ export function postToShopier(action: string, fields: Record<string, string>) {
     form.submit();
 }
 
+// Taslak bu sekmede saklanır: pencere kapanıp açılsa ya da Shopier'den geri dönülse de yazılanlar kalır.
+// Biletteki ad girildiyse ad/soyad alanları ondan gelir.
+function initialValues(name?: { firstName: string; lastName: string }): Registration {
+    let values = EMPTY_REGISTRATION;
+    try {
+        const raw = sessionStorage.getItem(DRAFT_KEY);
+        if (raw) values = { ...EMPTY_REGISTRATION, ...JSON.parse(raw), consent: false };
+    } catch {
+        // Bozuk ya da erişilemeyen taslak yok sayılır.
+    }
+    return name?.firstName ? { ...values, ...name } : values;
+}
+
 // Bilet formu. Doğrulama tarayıcıda ve sunucuda aynı kurallarla yapılır; tutar sunucuda hesaplanır.
 // Başarılı yanıtta imzalı alanlar onReady ile üst bileşene verilir (holografik geçiş, ardından Shopier).
-export default function TicketForm({ onReady }: { onReady: (action: string, fields: Record<string, string>) => void }) {
+// Form yalnızca pencere açıldığında, istemcide oluşturulur; bu yüzden başlangıç değeri doğrudan okunabilir.
+export default function TicketForm({
+    onReady,
+    name,
+}: {
+    onReady: (action: string, fields: Record<string, string>) => void;
+    name?: { firstName: string; lastName: string };
+}) {
     const { d, lang } = useLang();
     const summary = useRef<HTMLDivElement>(null);
-    const [values, setValues] = useState<Registration>(EMPTY_REGISTRATION);
+    const [values, setValues] = useState<Registration>(() => initialValues(name));
     const [errors, setErrors] = useState<FieldErrors>({});
     const [showSummary, setShowSummary] = useState(false);
     const [busy, setBusy] = useState(false);
     const [serverError, setServerError] = useState<ServerError | null>(null);
 
-    // Taslak bu sekmede saklanır: pencere kapanıp açılsa ya da Shopier'den geri dönülse de yazılanlar kalır.
     useEffect(() => {
-        try {
-            const raw = sessionStorage.getItem(DRAFT_KEY);
-            if (raw) setValues({ ...EMPTY_REGISTRATION, ...JSON.parse(raw), consent: false });
-        } catch {
-            // Bozuk ya da erişilemeyen taslak yok sayılır.
-        }
         const onShow = (e: PageTransitionEvent) => {
             if (e.persisted) setBusy(false);
         };

@@ -77,6 +77,8 @@ const TR = {
     destinationCaption: 'Kent, havalimanı ve Karadeniz kıyısı; Uluslararası Uzay İstasyonu’ndan, 2016.',
 
     speakersTitle: 'Sahnede kimler var',
+    speakersIntro: 'CODEWAVE 2026 konuşmacılarını keşfetmek için kaydır',
+    speakerJump: (name: string) => `${name}: konuşmacıya git`,
     speakersLead: 'Kesinleşen beş konuşmacı. Altıncı isim yakında açıklanacak.',
     seatPending: 'Altıncı konuşmacı',
     seatPendingNote: 'Yakında açıklanacak',
@@ -239,6 +241,8 @@ const EN: Dict = {
     destinationCaption: 'The city, its airport and the Black Sea coast, seen from the International Space Station in 2016.',
 
     speakersTitle: 'Who’s on stage',
+    speakersIntro: 'Scroll to discover the CODEWAVE 2026 speakers',
+    speakerJump: (name: string) => `${name}: go to speaker`,
     speakersLead: 'Five speakers confirmed. The sixth will be announced soon.',
     seatPending: 'Sixth speaker',
     seatPendingNote: 'To be announced',

@@ -3,12 +3,13 @@ import { useRef } from 'react';
 import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 import { useGSAP } from '@gsap/react';
 import { SPEAKERS, SPEAKER_SEATS, type Speaker } from '@/editions/2026/event';
 import { useLang } from './i18n/LanguageProvider';
 import SplitHeading from './fx/SplitHeading';
 
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, useGSAP);
 
 const initials = (name: string) =>
     name
@@ -65,6 +66,8 @@ const OPEN = 'inset(0% 0% 0% 0%)';
 export default function Speakers() {
     const { d } = useLang();
     const root = useRef<HTMLElement>(null);
+    // Raydaki bir koltuğa tıklanınca çağrılır; sahne kurulduğunda (hareket serbestken) doldurulur.
+    const jump = useRef<((seat: number) => void) | null>(null);
     const pendingSeats = Math.max(SPEAKER_SEATS - SPEAKERS.length, 0);
     const seats = [...SPEAKERS.map((s) => ({ speaker: s })), ...Array.from({ length: pendingSeats }, () => ({ speaker: null as Speaker | null }))];
 
@@ -94,6 +97,11 @@ export default function Speakers() {
                     const cells = q('.st-cell-photo') as HTMLElement[];
                     const n = portraits.length;
                     const beat = 2; // her konuşmacı: giriş 0.8, bekleme 0.5, oturma 0.7
+                    const intro = 0.9; // açılış yazısının çekilmesi için ayrılan süre; sonraki her şey bu kadar kayar
+                    const p = 1 + intro + n * beat + 0.2; // doruğun başladığı an
+                    const railIn = 0.5 + intro;
+                    const rail = stage.querySelector<HTMLElement>('.st-rail');
+                    const slots = q('.st-slot') as HTMLElement[];
                     // Telefonda konuşmacı başına biraz daha kısa yol: başparmakla birkaç savuruşta bir varış.
                     const perSpeaker = desktop ? 1.25 : 1.05;
                     const tail = desktop ? 3.2 : 2.8;
@@ -103,22 +111,47 @@ export default function Speakers() {
                         scrollTrigger: {
                             trigger: stage,
                             start: 'top top',
-                            end: () => `+=${window.innerHeight * (n * perSpeaker + tail)}`,
+                            end: () => `+=${window.innerHeight * (n * perSpeaker + tail + 0.6)}`,
                             pin: true,
                             anticipatePin: 1,
                             scrub: desktop ? 0.8 : 0.45,
                             invalidateOnRefresh: true,
+                            // Ray yalnızca görünürken tıklanır; o an sahnedeki konuşmacının koltuğu işaretlenir.
+                            onUpdate: (self) => {
+                                const time = self.progress * tl.duration();
+                                rail?.classList.toggle('is-live', time > railIn + 0.3 && time < p + 0.3);
+                                const current = Math.floor((time - 1 - intro) / beat);
+                                slots.forEach((slot, i) => slot.classList.toggle('is-current', i === current && time < p));
+                            },
                         },
                     });
 
+                    // Perde 0 · Davet: yazı sahne ekrana girerken aşağıdan süzülerek gelir (zamana bağlı), ilk
+                    // kaydırmalarla yukarı çekilip silinir (kaydırmaya bağlı). İkisi ayrı öğelere yazar.
+                    gsap.fromTo(
+                        '.st-intro-inner',
+                        { opacity: 0, y: 48, filter: 'blur(10px)' },
+                        {
+                            opacity: 1,
+                            y: 0,
+                            filter: 'blur(0px)',
+                            duration: 1.1,
+                            ease: 'expo.out',
+                            scrollTrigger: { trigger: stage, start: 'top 45%', toggleActions: 'play none none reverse' },
+                        },
+                    );
+                    tl.to('.st-intro', { opacity: 0, yPercent: -60, filter: 'blur(8px)', duration: 0.7, ease: 'power2.in' }, 0.15);
+
                     // Perde 1 · Soru: başlık sahneye yerleşir, sonra küçülüp yukarı çekilir.
                     tl.fromTo('.st-beam', { opacity: 0.25 }, { opacity: 0.7, duration: 0.5 }, 0)
-                        .to('.st-head', { yPercent: desktop ? -10 : -18, scale: desktop ? 0.62 : 0.66, transformOrigin: '0% 0%', duration: 0.8, ease: 'power2.inOut' }, 0.35)
-                        .fromTo('.st-rail', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 0.5);
+                        .to('.st-head', { yPercent: desktop ? -10 : -18, scale: desktop ? 0.62 : 0.66, transformOrigin: '0% 0%', duration: 0.8, ease: 'power2.inOut' }, 0.35 + intro)
+                        .fromTo('.st-rail', { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, railIn);
 
                     // Perde 2-3 · Varışlar ve oturma (imza hareketi).
                     portraits.forEach((portrait, i) => {
-                        const t = 1 + i * beat;
+                        const t = 1 + intro + i * beat;
+                        // Konuşmacının tam göründüğü an: portre açılmış, künye yerinde, henüz koltuğa uçmamış.
+                        tl.addLabel(`speaker-${i}`, t + 1.05);
                         const dir = i % 2 === 0 ? 1 : -1;
                         const name = q(`.st-name-${i}`);
                         const plate = q(`.st-plate-${i}`);
@@ -148,7 +181,6 @@ export default function Speakers() {
                     });
 
                     // Perde 4 · Doruk: rayda oturan beş portre büyük kadroya uçar, altıncı koltuk boş parlar.
-                    const p = 1 + n * beat + 0.2;
                     tl.to('.st-beam', { x: 0, opacity: 0.45, scaleX: 2.6, duration: 1 }, p);
                     thumbs.forEach((thumb, i) => {
                         tl.to(
@@ -170,7 +202,20 @@ export default function Speakers() {
                         .fromTo('.st-cell-meta', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.06, ease: 'power3.out' }, p + 1.3)
                         .fromTo('.st-closing', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, p + 1.6)
                         // bırakış: son kare bir süre tutulur
+                        .addLabel('lineup', p + 2.2)
                         .to({}, { duration: 0.8 });
+
+                    // Koltuğa tıklama: aradaki uçuşları hızla oynatmak yerine doğrudan o konuşmacının karesine geçilir.
+                    // Kaydırma anında yapılır, sonra scrub'ın yetişme gecikmesi bitirilir; böylece ara kareler görünmez.
+                    jump.current = (seat) => {
+                        const st = tl.scrollTrigger;
+                        if (!st) return;
+                        const label = seat < n ? `speaker-${seat}` : 'lineup';
+                        const y = st.start + (tl.labels[label] / tl.duration()) * (st.end - st.start);
+                        gsap.set(window, { scrollTo: { y, autoKill: false } });
+                        ScrollTrigger.update();
+                        st.getTween()?.progress(1);
+                    };
 
                     // Fareyle dev adlar hafifçe karşı yöne süzülür (yalnızca hassas işaretçi).
                     let onMove: ((e: PointerEvent) => void) | null = null;
@@ -181,6 +226,8 @@ export default function Speakers() {
                     }
                     document.fonts.ready.then(() => ScrollTrigger.refresh());
                     return () => {
+                        jump.current = null;
+                        rail?.classList.remove('is-live');
                         if (onMove) window.removeEventListener('pointermove', onMove);
                     };
                 },
@@ -228,6 +275,12 @@ export default function Speakers() {
             {/* Sahne: tamamen görsel katmanlar (aria-hidden); içerik yukarıdaki listededir. */}
             <div className="st" aria-hidden="true">
                 <div className="st-beam" />
+                <div className="st-intro">
+                    <div className="st-intro-inner grid justify-items-center gap-[22px]">
+                        <p className="st-intro-text">{d.speakersIntro}</p>
+                        <span className="st-intro-cue" />
+                    </div>
+                </div>
                 <div className="st-head">
                     <p className="kicker">{d.navSpeakers}</p>
                     <p className="h2 mt-4">{d.speakersTitle}</p>
@@ -259,7 +312,13 @@ export default function Speakers() {
 
                 <div className="st-rail">
                     {seats.map((seat, i) => (
-                        <span key={i} className={`st-slot${seat.speaker ? '' : ' st-slot-pending'}`}>
+                        <span
+                            key={i}
+                            className={`st-slot${seat.speaker ? '' : ' st-slot-pending'}`}
+                            onClick={() => jump.current?.(i)}
+                            data-cursor={seat.speaker ? seat.speaker.name.split(' ')[0] : d.seatPending}
+                            title={seat.speaker ? d.speakerJump(seat.speaker.name) : undefined}
+                        >
                             {seat.speaker ? (
                                 <span className="st-thumb">
                                     <Photo speaker={seat.speaker} sizes="(min-width: 1024px) 16vw, 30vw" />

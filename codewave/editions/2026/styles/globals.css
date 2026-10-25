@@ -379,6 +379,11 @@ body::after {
     linear-gradient(90deg, transparent, rgb(90 169 230 / 0.08) 46%, rgb(136 223 138 / 0.06) 54%, transparent);
 }
 .st-head { position: absolute; z-index: 7; left: var(--m); top: 9svh; }
+.st-intro { position: absolute; z-index: 8; left: var(--m); right: var(--m); top: 50%; translate: 0 -50%; display: grid; justify-items: center; gap: 22px; text-align: center; pointer-events: none; }
+.st-intro-text { max-width: 15em; font-size: clamp(1.5rem, 6.4vw, 3.25rem); font-weight: 250; line-height: 1.1; letter-spacing: -0.04em; text-wrap: balance; }
+.st-intro-text em { font-style: normal; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.st-intro-cue { position: relative; width: 1px; height: 56px; overflow: hidden; background: var(--line-hi); }
+.st-intro-cue::after { content: ''; position: absolute; left: 0; width: 1px; height: 40%; background: var(--color-green); animation: cue 2.2s var(--ease-in-out-quart) infinite; }
 .st-head .h2 { font-size: clamp(2.5rem, 11vw, 7rem); }
 .st-names { position: absolute; inset: 0; pointer-events: none; }
 .st-name {
@@ -418,6 +423,12 @@ body::after {
 /* Uçuş hedefleri düzen konumundan (offsetLeft/Top) ölçülür: ray ve kadro translate ile değil, düzenle ortalanır. */
 .st-rail { position: absolute; z-index: 5; left: 0; right: 0; top: calc(9svh + 6.5rem); display: flex; justify-content: center; gap: 8px; }
 .st-slot { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; border: 1px dashed var(--line-hi); font: 300 1rem var(--font-mono); color: var(--color-faint); }
+/* Koltuklar yalnızca ray görünürken tıklanır; tıklama o konuşmacının karesine götürür. */
+.st-rail, .st-lineup, .st-plate, .st-closing { pointer-events: none; }
+.st-rail.is-live .st-slot { pointer-events: auto; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: border-color 0.3s, scale 0.3s var(--ease-expo); }
+.st-rail.is-live .st-slot:hover { border-color: var(--color-green); scale: 1.06; }
+.st-rail.is-live .st-slot:active { scale: 0.94; }
+.st-slot.is-current { border-style: solid; border-color: var(--color-green); box-shadow: 0 0 22px -6px rgb(136 223 138 / 0.7); }
 .st-slot-pending { border-color: rgb(136 223 138 / 0.5); color: var(--color-green); animation: pulse 2.4s ease-in-out infinite; }
 .st-thumb { position: absolute; inset: -1px; z-index: 6; border-radius: 13px; overflow: hidden; opacity: 0; transform-origin: 0 0; background: var(--color-deep); }
 .st-lineup { position: absolute; z-index: 5; inset: 8svh var(--m) 0; display: grid; align-content: center; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 10px; }

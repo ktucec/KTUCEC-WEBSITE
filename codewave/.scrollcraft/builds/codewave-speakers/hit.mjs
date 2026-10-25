@@ -1,0 +1,10 @@
+import { chromium } from 'playwright-core';
+const browser = await chromium.launch({ executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
+const page = await (await browser.newContext({ viewport: { width: 1440, height: 900 } })).newPage();
+await page.addInitScript(() => { try { sessionStorage.setItem('cw26-intro', '1'); } catch {} });
+await page.goto('http://localhost:3000/', { waitUntil: 'networkidle' });
+await page.waitForTimeout(1200);
+const top = await page.evaluate(() => document.querySelector('#konusmacilar .pin-spacer').getBoundingClientRect().top + scrollY);
+await page.evaluate((y) => scrollTo(0, y + innerHeight * 2.4), top); await page.waitForTimeout(1500);
+console.log(await page.evaluate(() => { const r = document.querySelectorAll('.st-slot')[3].getBoundingClientRect(); const el = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return el.className + ' | pe=' + getComputedStyle(document.querySelectorAll('.st-slot')[3]).pointerEvents; }));
+await browser.close();

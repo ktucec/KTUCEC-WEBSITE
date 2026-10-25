@@ -8,8 +8,8 @@ for (const [name, opts] of [['phone 390', { viewport: { width: 390, height: 844 
   const page = await ctx.newPage();
   await page.goto('http://localhost:3000/', { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
-  // sahne sabitlenip ray görünür olduktan sonra (perde 1 sonu) ölç
-  await page.evaluate(() => { const sp = document.querySelector('.st').closest('.pin-spacer'); scrollTo(0, sp.getBoundingClientRect().top + scrollY + innerHeight * 0.9); });
+  // sahne sabitlenip açılış yazısı çekildikten ve ray yerine oturduktan sonra ölç
+  await page.evaluate(() => { const sp = document.querySelector('.st').closest('.pin-spacer'); scrollTo(0, sp.getBoundingClientRect().top + scrollY + innerHeight * 1.8); });
   await page.waitForTimeout(1200);
   const r = await page.evaluate(() => {
     const stage = document.querySelector('.st');

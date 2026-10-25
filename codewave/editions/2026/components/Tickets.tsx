@@ -21,6 +21,14 @@ const DRAFT_KEY = 'cw26-ticket-draft';
 const INSTAGRAM = SOCIALS.find((s) => s.label === 'Instagram')?.href ?? 'https://www.instagram.com/ktucec';
 const RADIUS = { borderRadius: 30 };
 
+// Biletteki ad, formun ad/soyad alanlarına bölünür: son kelime soyad, öncekiler ad.
+// "Barış Demir" → Barış / Demir · "Ali Can Yılmaz" → Ali Can / Yılmaz · tek kelime → yalnızca ad.
+function splitName(full: string) {
+    const parts = full.trim().split(/\s+/).filter(Boolean);
+    if (parts.length < 2) return { firstName: parts[0] ?? '', lastName: '' };
+    return { firstName: parts.slice(0, -1).join(' '), lastName: parts[parts.length - 1] };
+}
+
 // Dönen holografik mühür: çember üzerinde akan yazı.
 function Seal() {
     return (
@@ -162,7 +170,7 @@ function GlassPass({ onOpen, holder }: { onOpen: () => void; holder: string }) {
 }
 
 // Açılan bilet penceresi: aynı kart büyüyerek pencereye dönüşür (Framer Motion paylaşılan düzen).
-function TicketDialog({ canBuy, started, onClose }: { canBuy: boolean; started: boolean; onClose: () => void }) {
+function TicketDialog({ canBuy, started, holder, onClose }: { canBuy: boolean; started: boolean; holder: string; onClose: () => void }) {
     const { d } = useLang();
     const reduce = useReducedMotion();
     const panel = useRef<HTMLDivElement>(null);
@@ -240,7 +248,7 @@ function TicketDialog({ canBuy, started, onClose }: { canBuy: boolean; started: 
                             <div className="perf mt-6" aria-hidden="true" />
                             <div className="p-6 sm:p-8">
                                 {canBuy ? (
-                                    <TicketForm onReady={handleReady} />
+                                    <TicketForm onReady={handleReady} name={splitName(holder)} />
                                 ) : (
                                     <div className="grid gap-6" role="status">
                                         <p className="text-lg leading-relaxed text-mute">{closedText}</p>
@@ -334,19 +342,6 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
         }
     }, []);
 
-    // Bilette görünen ad, formdaki ad/soyad alanlarına da aktarılır; form açıldığında hazır gelir.
-    const onHolder = (value: string) => {
-        setHolder(value);
-        try {
-            const draft = JSON.parse(sessionStorage.getItem(DRAFT_KEY) ?? '{}');
-            const parts = value.trim().split(/\s+/).filter(Boolean);
-            const lastName = parts.length > 1 ? parts.pop()! : '';
-            sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...draft, firstName: parts.join(' '), lastName }));
-        } catch {
-            // Depolama yoksa ad yalnızca bilette görünür.
-        }
-    };
-
     const openDialog = () => {
         setGhost(slot.current?.offsetHeight ?? 0);
         setOpen(true);
@@ -428,7 +423,7 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
                             id="ticket-holder"
                             className="holder-input"
                             value={holder}
-                            onChange={(e) => onHolder(e.target.value)}
+                            onChange={(e) => setHolder(e.target.value)}
                             placeholder={d.namePlaceholder}
                             autoComplete="name"
                             autoCapitalize="words"
@@ -455,7 +450,7 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
                     </div>
                 </div>
             </div>
-            <AnimatePresence>{open && <TicketDialog canBuy={canBuy} started={started} onClose={close} />}</AnimatePresence>
+            <AnimatePresence>{open && <TicketDialog canBuy={canBuy} started={started} holder={holder} onClose={close} />}</AnimatePresence>
         </section>
     );
 }
