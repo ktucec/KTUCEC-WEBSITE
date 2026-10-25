@@ -742,12 +742,12 @@ html, body {
   border-radius: 0.75rem;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); /* Dışa vuran mor neon gölge */
+  box-shadow: 0 0 15px rgba(46, 126, 190, 0.45); /* Dışa vuran mavi neon gölge */
 }
 
 .codewave-button:hover {
   transform: scale(1.08);
-  box-shadow: 0 0 30px rgba(217, 70, 239, 0.8), 0 0 60px rgba(126, 34, 206, 0.6);
+  box-shadow: 0 0 30px rgba(136, 223, 138, 0.7), 0 0 60px rgba(46, 126, 190, 0.6);
 }
 
 .codewave-button:active {
@@ -758,7 +758,7 @@ html, body {
 .codewave-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #581c87, #c026d3, #4f46e5, #7e22ce);
+  background: linear-gradient(90deg, #2e7ebe, #88df8a, #2e7ebe, #88df8a);
   background-size: 300% 300%;
   animation: codewave-gradient 4s ease infinite, codewave-pulse 2.5s infinite;
   z-index: 0;
@@ -789,7 +789,7 @@ html, body {
 }
 
 .codewave-button:hover .codewave-glass {
-  background: rgba(0, 0, 0, 0.15); /* Hover olunca cam katmanı incelir, altındaki mor neon patlar */
+  background: rgba(0, 0, 0, 0.15); /* Hover olunca cam katmanı incelir, altındaki mavi-yeşil neon patlar */
 }
 
 /* Yazı ve İkon Katmanı */
