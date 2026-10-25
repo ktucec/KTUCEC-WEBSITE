@@ -12,10 +12,12 @@ import Intro from '@/editions/2026/components/fx/Intro';
 import RevealObserver from '@/editions/2026/components/fx/RevealObserver';
 import SmartAnchors from '@/editions/2026/components/fx/SmartAnchors';
 import { CONTACT, EVENT, SPEAKERS, TICKET, startsAtMs } from '@/editions/2026/event';
+import { isBackendConfigured } from '@/editions/2026/lib/ktucecApi';
 import { isShopierConfigured } from '@/editions/2026/lib/shopier';
 
-// Satış durumu derleme anında ortam değişkenlerinden okunur; Shopier anahtarları eklenince yeniden yayınlayın.
-const salesOpen = isShopierConfigured() && Date.now() < startsAtMs();
+// Satış durumu derleme anında ortam değişkenlerinden okunur; Shopier anahtarları ve backend bağlantısı
+// (KTUCEC_API_URL / CODEWAVE_INTERNAL_KEY) eklenince yeniden yayınlayın. İkisinden biri eksikse satış kapalı görünür.
+const salesOpen = isShopierConfigured() && isBackendConfigured() && Date.now() < startsAtMs();
 
 const jsonLd = {
     '@context': 'https://schema.org',

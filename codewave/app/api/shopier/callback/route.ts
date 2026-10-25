@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { completeOrder, getBackendConfig } from '@/editions/2026/lib/ktucecApi';
 import { getShopierConfig, signResult, verifyCallback } from '@/editions/2026/lib/shopier';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +27,22 @@ export async function POST(request: Request) {
     if (!result) {
         resultUrl.searchParams.set('durum', 'gecersiz');
         return NextResponse.redirect(resultUrl, 303);
+    }
+
+    // Yalnızca imzası doğrulanmış sonuç backend'e işlenir: başvuru Paid/Failed olur, indirim kodu
+    // başarıda kalıcı olarak kullanılır, başarısızlıkta serbest kalır. Backend'e ulaşılamasa bile ödeme
+    // Shopier'de gerçekleşmiştir; ziyaretçiye doğru sonucu göstermeye devam edilir ve hata kaydedilir.
+    const backend = getBackendConfig();
+    const saved = backend
+        ? await completeOrder(backend, result.orderId, { paymentId: result.paymentId, success: result.success })
+        : ({ ok: false, status: 0, code: 'not_configured' } as const);
+    if (!saved.ok) {
+        console.error('[codewave] Shopier sonucu backend’e işlenemedi', {
+            orderId: result.orderId,
+            success: result.success,
+            status: saved.status,
+            code: saved.code,
+        });
     }
 
     resultUrl.searchParams.set('durum', result.success ? 'basarili' : 'basarisiz');

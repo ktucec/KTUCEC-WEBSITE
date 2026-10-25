@@ -1,16 +1,22 @@
 // Shopier "ödeme sayfası" entegrasyonu (api_pay4). YALNIZCA sunucu rotalarından import edilir.
 //
 // Akış:
-//  1. /api/shopier/checkout formu doğrular, tutarı event.ts'den hesaplar ve imzalı alanları döner.
+//  1. /api/shopier/checkout formu doğrular, tutarı event.ts'den hesaplar (indirim kodu varsa backend'de siparişe
+//     ayırır), başvuruyu backend'e "Pending" olarak kaydeder ve imzalı alanları döner.
 //  2. Tarayıcı bu alanları Shopier'in ödeme sayfasına POST eder; kart bilgisi yalnızca Shopier'de girilir.
 //  3. Shopier, panelde tanımlı "geri dönüş URL"sine (/api/shopier/callback) imzalı sonucu POST eder.
-//  4. Geri dönüş rotası imzayı doğrular ve ziyaretçiyi kendi imzamızı taşıyan /bilet/sonuc sayfasına yollar.
+//  4. Geri dönüş rotası imzayı doğrular, sonucu backend'e işler (indirim kodu kullanıldı / serbest) ve ziyaretçiyi
+//     kendi imzamızı taşıyan /bilet/sonuc sayfasına yollar.
+//
+// Not: Shopier'in bu ödeme yönteminde kupon alanı yoktur. İndirim, imzalı tutarın kendisine yansıtılır; tutar
+// imzanın parçası olduğu için tarayıcıda değiştirilemez. Kodun tek kullanımlık olmasını backend sağlar.
 //
 // İmza kuralları (Shopier'in resmi SDK'sı olarak gösterdiği erkineren/shopier ile npm shopier-api aynı):
 //  - istek:  base64(HMAC-SHA256(secret, random_nr + platform_order_id + total_order_value + currency))
 //  - dönüş:  base64(HMAC-SHA256(secret, random_nr + platform_order_id)), başarıda status = "success"
 import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { TICKET } from '@/editions/2026/event';
+import type { Quote } from './discount';
 import { normalizePhone, type AttendeeType, type Registration } from './registration';
 
 export const SHOPIER_PAYMENT_URL = 'https://www.shopier.com/ShowProduct/api_pay4.php';
@@ -53,8 +59,9 @@ const PRODUCT_LABEL: Record<AttendeeType, string> = {
     other: 'Diğer',
 };
 
-export function buildPaymentForm(config: Config, reg: Registration, orderId: string, lang: 'TR' | 'EN') {
-    const total = TICKET.price.toFixed(2);
+// amount: discount.ts'teki quote() sonucu; indirim kodu varsa ürün adına yazılır (Shopier panelinde görünür).
+export function buildPaymentForm(config: Config, reg: Registration, orderId: string, lang: 'TR' | 'EN', amount: Quote & { code?: string }) {
+    const total = amount.total.toFixed(2);
     const currency = CURRENCY_CODE[TICKET.currency] ?? '0';
     const randomNr = String(randomInt(100000, 1000000));
     const phone = normalizePhone(reg.phone) ?? '';
@@ -66,7 +73,7 @@ export function buildPaymentForm(config: Config, reg: Registration, orderId: str
         API_key: config.apiKey,
         website_index: config.websiteIndex,
         platform_order_id: orderId,
-        product_name: `CODEWAVE 2026 Bileti (${attendee})`,
+        product_name: amount.code ? `CODEWAVE 2026 Bileti (${attendee}, öğrenci indirimi ${amount.code})` : `CODEWAVE 2026 Bileti (${attendee})`,
         product_type: PRODUCT_TYPE_DIGITAL,
         buyer_name: reg.firstName,
         buyer_surname: reg.lastName,

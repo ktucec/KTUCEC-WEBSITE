@@ -145,6 +145,11 @@ const TR = {
         invalid: 'Bazı bilgiler doğrulanamadı. İşaretli alanları kontrol edip tekrar dene.',
         network: 'Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene; bilgilerin duruyor.',
         unknown: 'Beklenmeyen bir sorun oldu. Bilgilerin duruyor, birazdan tekrar deneyebilirsin.',
+        unavailable: 'Bilet sistemine şu an ulaşılamıyor. Bilgilerin duruyor, birkaç dakika sonra tekrar dene.',
+        discount_invalid: 'İndirim kodu geçersiz. İndirimi kaldırıp tekrar dene ya da “İndirim sorgula” ile kodunu kontrol et.',
+        discount_used: 'Bu indirim kodu daha önce bir ödemede kullanılmış. İndirimi kaldırıp normal fiyattan devam edebilirsin.',
+        discount_reserved: 'Bu indirim kodu şu anda başka bir ödeme adımında. Yarım kalan ödeme 30 dakika içinde serbest kalır.',
+        discount_email_mismatch: 'İndirimli bilet, indirimi kazandığın edu.tr adresiyle alınabilir. E-posta alanını o adresle doldur.',
     },
 
     venueTitle: 'Yer ve iletişim',
@@ -309,6 +314,11 @@ const EN: Dict = {
         invalid: 'Some details couldn’t be verified. Check the marked fields and try again.',
         network: 'Couldn’t connect. Check your internet and try again; your details are kept.',
         unknown: 'Something unexpected went wrong. Your details are kept; try again in a moment.',
+        unavailable: 'The ticket system can’t be reached right now. Your details are kept; try again in a few minutes.',
+        discount_invalid: 'This discount code is invalid. Remove the discount and try again, or check your code under “Check discount”.',
+        discount_used: 'This discount code has already been used for a payment. You can remove the discount and continue at full price.',
+        discount_reserved: 'This discount code is in another checkout right now. An unfinished payment releases it within 30 minutes.',
+        discount_email_mismatch: 'The discounted ticket must be bought with the edu.tr address that earned the discount. Use that address in the email field.',
     },
 
     venueTitle: 'Venue and contact',

@@ -26,6 +26,15 @@ export const TICKET = {
     currency: 'TRY',
 } as const;
 
+// edu.tr e-posta onayıyla kazanılan tek seferlik öğrenci indirimi. İndirimi değiştirmek için yalnızca burayı güncelleyin:
+//  - { type: 'percent', value: 20 } → bilet fiyatından %20 düşülür
+//  - { type: 'fixed', value: 30 }   → bilet fiyatından 30 TL düşülür
+// Sunucu ödeme tutarını da buradan hesaplar. İndirim fiyatı en fazla 1 TL'ye kadar indirebilir.
+export const STUDENT_DISCOUNT: { type: 'percent' | 'fixed'; value: number } = {
+    type: 'percent',
+    value: 20,
+};
+
 export const CONTACT = {
     email: 'ktucec@ceng.ktu.edu.tr',
     sponsorEmail: 'turkalinehir@gmail.com',

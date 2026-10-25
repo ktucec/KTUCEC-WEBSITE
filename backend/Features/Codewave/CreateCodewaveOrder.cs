@@ -31,6 +31,7 @@ public record CreateCodewaveOrderResponse(string OrderId, decimal TotalPrice);
 // 2. HANDLER
 // YALNIZCA codewave sunucusu çağırır (X-Codewave-Key). Shopier'e yönlendirmeden hemen önce başvuruyu
 // "Pending" olarak kaydeder; indirim kodu varsa onu atomik olarak bu siparişe ayırır.
+// İndirim kodu, kazanıldığı edu.tr adresine bağlıdır: bilet formundaki e-posta o adresle aynı olmalıdır.
 public class CreateCodewaveOrderHandler
 {
     private readonly KtucecDbContext _context;
@@ -94,6 +95,7 @@ public class CreateCodewaveOrderHandler
 
             var reserved = await _context.CodewaveStudentDiscounts
                 .Where(d => d.DiscountCode == discountCode
+                            && d.Email == email
                             && d.IsVerified
                             && d.RedeemedAt == null
                             && (d.ReservedUntil == null || d.ReservedUntil < now))
@@ -105,13 +107,15 @@ public class CreateCodewaveOrderHandler
             var entry = await _context.CodewaveStudentDiscounts
                 .AsNoTracking()
                 .Where(d => d.DiscountCode == discountCode)
-                .Select(d => new { d.Id, d.RedeemedAt, d.IsVerified })
+                .Select(d => new { d.Id, d.Email, d.RedeemedAt, d.IsVerified })
                 .FirstOrDefaultAsync();
 
             if (reserved == 0)
             {
                 if (entry is null || !entry.IsVerified)
                     return CodewaveResults.Error(StatusCodes.Status404NotFound, "discount_invalid", "İndirim kodu geçersiz.");
+                if (entry.Email != email)
+                    return CodewaveResults.Error(StatusCodes.Status403Forbidden, "discount_email_mismatch", "İndirim kodu yalnızca kazanıldığı edu.tr adresiyle kullanılabilir.");
                 if (entry.RedeemedAt is not null)
                     return CodewaveResults.Error(StatusCodes.Status409Conflict, "discount_used", "Bu indirim kodu daha önce kullanılmış.");
                 return CodewaveResults.Error(StatusCodes.Status409Conflict, "discount_reserved", "Bu indirim kodu şu anda başka bir ödemede kullanılıyor. Biraz sonra tekrar deneyin.");
