@@ -742,12 +742,12 @@ html, body {
   border-radius: 0.75rem;
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 15px rgba(46, 126, 190, 0.45); /* Dışa vuran mavi neon gölge */
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4); /* Dışa vuran mor neon gölge */
 }
 
 .codewave-button:hover {
   transform: scale(1.08);
-  box-shadow: 0 0 30px rgba(136, 223, 138, 0.7), 0 0 60px rgba(46, 126, 190, 0.6);
+  box-shadow: 0 0 30px rgba(217, 70, 239, 0.8), 0 0 60px rgba(126, 34, 206, 0.6);
 }
 
 .codewave-button:active {
@@ -758,7 +758,7 @@ html, body {
 .codewave-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, #2e7ebe, #88df8a, #2e7ebe, #88df8a);
+  background: linear-gradient(90deg, #581c87, #c026d3, #4f46e5, #7e22ce);
   background-size: 300% 300%;
   animation: codewave-gradient 4s ease infinite, codewave-pulse 2.5s infinite;
   z-index: 0;
@@ -789,7 +789,7 @@ html, body {
 }
 
 .codewave-button:hover .codewave-glass {
-  background: rgba(0, 0, 0, 0.15); /* Hover olunca cam katmanı incelir, altındaki mavi-yeşil neon patlar */
+  background: rgba(0, 0, 0, 0.15); /* Hover olunca cam katmanı incelir, altındaki mor neon patlar */
 }
 
 /* Yazı ve İkon Katmanı */
@@ -823,6 +823,72 @@ html, body {
 }
 
 
+/* Hero: CODEWAVE bilet duyurusu (ince hap) */
+.cw-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.3rem 0.35rem 0.3rem 0.8rem;
+  font-size: 0.8125rem;
+  line-height: 1.2;
+  color: #fff;
+  white-space: nowrap;
+  border-radius: 999px;
+  background: rgba(7, 13, 24, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  isolation: isolate;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+/* Mavi → yeşil ince çerçeve */
+.cw-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2e7ebe, #88df8a);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+.cw-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 22px rgba(46, 126, 190, 0.45), 0 0 10px rgba(136, 223, 138, 0.35);
+}
+.cw-pill-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: none;
+  border-radius: 999px;
+  background: #88df8a;
+  box-shadow: 0 0 0 0 rgba(136, 223, 138, 0.6);
+  animation: cw-pill-ping 2s ease-out infinite;
+}
+.cw-pill-name {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.cw-pill-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.3rem 0.55rem 0.3rem 0.75rem;
+  font-weight: 700;
+  color: #06121f;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2e7ebe, #88df8a);
+}
+@keyframes cw-pill-ping {
+  0% { box-shadow: 0 0 0 0 rgba(136, 223, 138, 0.6); }
+  70%, 100% { box-shadow: 0 0 0 7px rgba(136, 223, 138, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cw-pill-dot { animation: none; }
+}
 
 @keyframes hero-bg-kenburns {
     0% {

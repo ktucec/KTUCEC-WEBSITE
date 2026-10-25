@@ -230,7 +230,23 @@ export default function HeroSection() {
             >
                 <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10">
                     <div className="min-w-0">
-                        <p className="flex items-center gap-2.5 text-[15px] text-white/80 rise-in" style={{ animationDelay: '0.1s' }}>
+                        <a
+                            href="https://codewave.ktucec.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="cw-pill group rise-in"
+                            style={{ animationDelay: '0s' }}
+                        >
+                            <span className="cw-pill-dot" aria-hidden="true" />
+                            <span className="cw-pill-name">CODEWAVE 2026</span>
+                            <span className="hidden sm:inline text-white/70">biletleri satışa açıldı</span>
+                            <span className="cw-pill-cta">
+                                Hemen satın al
+                                <span className="material-symbols-outlined text-[16px] transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true">arrow_forward</span>
+                            </span>
+                        </a>
+
+                        <p className="mt-5 flex items-center gap-2.5 text-[15px] text-white/80 rise-in" style={{ animationDelay: '0.1s' }}>
                             <span className="ping-dot" aria-hidden="true" />
                             KTÜ Bilgisayar Mühendisliği Kulübü
                         </p>
