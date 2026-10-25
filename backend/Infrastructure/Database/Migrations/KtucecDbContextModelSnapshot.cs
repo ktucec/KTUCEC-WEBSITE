@@ -111,22 +111,14 @@ namespace ktucec.Infrastructure.Database.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
 
-                    b.Property<string>("OrderId")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<DateTime?>("PaidAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PaymentId")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("ShopierProductUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -143,9 +135,6 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.HasIndex("CodewaveStudentDiscountId");
 
                     b.HasIndex("Email");
-
-                    b.HasIndex("OrderId")
-                        .IsUnique();
 
                     b.HasIndex("Status");
 
@@ -198,19 +187,23 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.Property<DateTime?>("OtpSendWindowStartedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime?>("RedeemedAt")
+                    b.Property<string>("ShopierProductCode")
+                        .HasMaxLength(24)
+                        .HasColumnType("nvarchar(24)");
+
+                    b.Property<DateTime?>("ShopierProductCreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("RedeemedOrderId")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
+                    b.Property<string>("ShopierProductId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
-                    b.Property<string>("ReservedOrderId")
-                        .HasMaxLength(32)
-                        .HasColumnType("nvarchar(32)");
-
-                    b.Property<DateTime?>("ReservedUntil")
+                    b.Property<DateTime?>("ShopierProductRequestedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("ShopierProductUrl")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.Property<string>("StudentNumber")
                         .IsRequired()
