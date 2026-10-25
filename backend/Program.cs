@@ -16,6 +16,8 @@ using System.Text;
 using System.Threading.RateLimiting;
 using ktucec.Infrastructure.Services.Media;
 using ktucec.Features.Forms;
+using ktucec.Features.Codewave;
+using ktucec.Infrastructure.Services.Codewave;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,6 +65,32 @@ builder.Services.AddRateLimiter(options =>
                 AutoReplenishment = true,
                 PermitLimit = 5,
                 Window = TimeSpan.FromHours(1),
+                QueueLimit = 0
+            }
+        ));
+
+    // CODEWAVE OTP SEND RATE LIMIT (kampüs ağında çok öğrenci aynı IP'den gelebilir; adres başına sınır ayrıca DB'de)
+    options.AddPolicy("CodewaveOtpPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-codewave-otp-client",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0
+            }
+        ));
+
+    // CODEWAVE OTP VERIFY RATE LIMIT (kod başına 5 hatalı deneme sınırı ayrıca DB'de)
+    options.AddPolicy("CodewaveVerifyPolicy", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown-codewave-verify-client",
+            factory: partition => new FixedWindowRateLimiterOptions
+            {
+                AutoReplenishment = true,
+                PermitLimit = 30,
+                Window = TimeSpan.FromMinutes(1),
                 QueueLimit = 0
             }
         ));
@@ -130,6 +158,22 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod()
                 .AllowCredentials(); 
         });
+
+    // codewave.ktucec.com: yalnızca indirim uçları, çerez yok
+    options.AddPolicy(CodewaveResults.CorsPolicy,
+        policy =>
+        {
+            var origins = new List<string> { "https://codewave.ktucec.com" };
+            if (builder.Environment.IsDevelopment())
+            {
+                origins.Add("http://localhost:3000");
+                origins.Add("http://localhost:3001");
+            }
+
+            policy.WithOrigins(origins.ToArray())
+                .WithHeaders("Content-Type")
+                .WithMethods("POST");
+        });
 });
 
 // ----------- Service Registration --------------
@@ -180,6 +224,15 @@ builder.Services.AddScoped<GetAllFormsHandler>();
 builder.Services.AddScoped<DeleteApplicationHandler>();
 builder.Services.AddScoped<UpdateFormHandler>();
 
+// -- Codewave --
+builder.Services.AddScoped<CodewaveSecurityService>();
+builder.Services.AddScoped<CodewaveOtpSender>();
+builder.Services.AddScoped<ClaimStudentDiscountHandler>();
+builder.Services.AddScoped<LookupStudentDiscountHandler>();
+builder.Services.AddScoped<VerifyStudentDiscountHandler>();
+builder.Services.AddScoped<CreateCodewaveOrderHandler>();
+builder.Services.AddScoped<CompleteCodewaveOrderHandler>();
+
 
 // -- Media --
 builder.Services.AddScoped<ImageService>();
@@ -200,7 +253,10 @@ if (!app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
-app.UseCors("AllowFrontend");
+// İndirim uçları codewave.ktucec.com'a, geri kalan her şey ana siteye açık (tek istek tek politika)
+static bool IsCodewavePublic(HttpContext ctx) => ctx.Request.Path.StartsWithSegments(CodewaveResults.PublicPathPrefix);
+app.UseWhen(IsCodewavePublic, branch => branch.UseCors(CodewaveResults.CorsPolicy));
+app.UseWhen(ctx => !IsCodewavePublic(ctx), branch => branch.UseCors("AllowFrontend"));
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -255,4 +311,11 @@ app.MapGetAllForms();
 app.MapDeleteApplication();
 app.MapUpdateForm();
 
-app.Run();
+// -- Codewave --
+app.MapClaimStudentDiscount();
+app.MapLookupStudentDiscount();
+app.MapVerifyStudentDiscount();
+app.MapCreateCodewaveOrder();
+app.MapCompleteCodewaveOrder();
+
+app.Run();
