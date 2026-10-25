@@ -22,7 +22,7 @@ A student-run summit at KTÜ that puts senior industry engineers (Microsoft MVP,
 
 ## Operating Context
 
-- Event: CODEWAVE 2026, 8 December 2026, 10:00 (Türkiye, UTC+03:00), KTÜ Prof. Dr. Osman Turan Kültür ve Kongre Merkezi, Trabzon.
+- Event: CODEWAVE 2026, 8 December 2026, 09:00 (Türkiye, UTC+03:00), KTÜ Prof. Dr. Osman Turan Kültür ve Kongre Merkezi, Trabzon.
 - Tickets are paid, roughly ₺100; the price is not final and lives in one config value.
 - Payment goes through Shopier (redirect to Shopier's own payment page). The Shopier account does not exist yet; integration ships switched off until credentials are set.
 - Site is bilingual TR/EN; Turkish is the default.

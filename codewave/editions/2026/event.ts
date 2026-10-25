@@ -4,7 +4,7 @@
 export const EVENT = {
     name: 'CODEWAVE 2026',
     // Türkiye saati (UTC+03:00). Geri sayım, satışın kapanması ve yapılandırılmış veri bunu kullanır.
-    startsAt: '2026-12-08T10:00:00+03:00',
+    startsAt: '2026-12-08T09:00:00+03:00',
     // Bitiş saati henüz açıklanmadı; gün bitene kadar "sürüyor", sonrasında "tamamlandı" gösterilir.
     dayEndsAt: '2026-12-09T00:00:00+03:00',
     venue: {
@@ -72,6 +72,9 @@ export const SPEAKERS: Speaker[] = [
     { name: 'Emre Savcı', title: 'Tech Lead', company: 'Trendyol Group', photo: '/editions/2026/speakers/emre-savci.jpg' },
     { name: 'Akın Özer', title: 'DevOps Manager', company: 'Hepapi', photo: '/editions/2026/speakers/akin-ozer.jpg' },
 ];
+
+// Programdaki oturum sayısı. Bilet bölümündeki "oturum başına" tutarı buradan hesaplanır.
+export const SESSION_COUNT = 6;
 
 // Programda planlanan konuşmacı sayısı. Kesinleşmeyen koltuklar "yakında" olarak gösterilir.
 export const SPEAKER_SEATS = 6;

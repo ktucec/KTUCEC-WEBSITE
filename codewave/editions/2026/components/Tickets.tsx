@@ -6,7 +6,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { ArrowRight, ArrowUpRight, BadgePercent, Check, GraduationCap, X } from 'lucide-react';
-import { EVENT, SOCIALS, SPEAKERS, SPEAKER_SEATS, TICKET, startsAtMs } from '@/editions/2026/event';
+import { EVENT, SESSION_COUNT, SOCIALS, SPEAKERS, SPEAKER_SEATS, TICKET, startsAtMs } from '@/editions/2026/event';
 import { formatAmount, formatDiscount } from '@/editions/2026/i18n';
 import { isDiscountApiConfigured } from '@/editions/2026/lib/discountApi';
 import DiscountDialog from './discount/DiscountDialog';
@@ -74,7 +74,7 @@ function PassFace({ holder }: { holder: string }) {
                 </div>
                 <div className="pass-field">
                     <dt>{d.passTime}</dt>
-                    <dd>10:00</dd>
+                    <dd>09:00</dd>
                 </div>
                 <div className="pass-field">
                     <dt>{d.passPrice}</dt>
@@ -389,7 +389,7 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
 
     const canBuy = salesOpen && !started;
     const label = canBuy ? d.buyNow : d.notifyMe;
-    const perSpeaker = formatAmount(lang, Math.round((amount.total / SPEAKERS.length) * 100) / 100);
+    const perSession = formatAmount(lang, Math.round((amount.total / SESSION_COUNT) * 100) / 100);
     const pending = Math.max(SPEAKER_SEATS - SPEAKERS.length, 0);
 
     return (
@@ -414,7 +414,7 @@ export default function Tickets({ salesOpen }: { salesOpen: boolean }) {
                     <div className="price-panel mt-9" data-io="blur">
                         <CountPrice />
                         <div className="grid gap-1.5">
-                            <span className="mono text-[0.75rem] tracking-[0.16em] text-green uppercase">{d.perSpeaker(perSpeaker)}</span>
+                            <span className="mono text-[0.75rem] tracking-[0.16em] text-green uppercase">{d.perSession(perSession)}</span>
                             <span className="text-[0.9375rem] text-mute">{d.oneDay}</span>
                         </div>
                     </div>

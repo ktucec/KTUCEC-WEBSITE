@@ -34,7 +34,7 @@ const TR = {
 
     heroLead: 'KTÜ Bilgisayar Mühendisliği Kulübü’nün yazılım zirvesi. Sektörden mühendisler, bir gün, tek salon.',
     heroTag: 'Yazılım zirvesi · İkinci edisyon',
-    heroWhen: '08.12.2026 · 10:00 TSİ',
+    heroWhen: '08.12.2026 · 09:00 TSİ',
     coords: 'Trabzon · 41°00′K 39°43′D',
     scroll: 'Kaydır',
     speakersHint: 'Kartı çevirmek için üzerine gel ya da dokun',
@@ -49,7 +49,7 @@ const TR = {
     dialogClose: 'Kapat',
     fieldDate: 'Tarih',
     fieldVenue: 'Yer',
-    dateValue: '8 Aralık 2026 Salı, 10.00',
+    dateValue: '8 Aralık 2026 Salı, 09.00',
     countdownLabel: 'Başlamasına',
     countdownLive: 'CODEWAVE 2026 şu an sürüyor.',
     countdownDone: 'CODEWAVE 2026 tamamlandı. Gelen herkese teşekkürler.',
@@ -67,7 +67,7 @@ const TR = {
         },
         {
             lead: 'Program.',
-            text: 'Oturum başlıkları ve saat saat akış, konuşmacılar kesinleştikçe bu sayfada yayınlanacak. Şimdilik bilinen: 8 Aralık sabahı saat 10.00’da başlıyoruz.',
+            text: 'Oturum başlıkları ve saat saat akış, konuşmacılar kesinleştikçe bu sayfada yayınlanacak. Şimdilik bilinen: 8 Aralık sabahı saat 09.00’da başlıyoruz.',
         },
         {
             lead: 'Sponsorlar için.',
@@ -93,7 +93,7 @@ const TR = {
     ticketTitleA: 'Bir günlük bilet',
     ticketsHeading: 'Salonda yerini al',
     ticketsLead: 'Bir gün, tek salon: sektörün içinden mühendisler ve sen. Bileti şimdi al, 8 Aralık sabahı yerin hazır olsun.',
-    perSpeaker: (amount: string) => `Konuşmacı başına ${amount}`,
+    perSession: (amount: string) => `Oturum başına ${amount}`,
     oneDay: 'Tek bilet, tüm gün',
     perks: [
         'Havelsan, Pegasus, Trendyol ve Hepapi’den mühendisler ve bir Microsoft MVP',
@@ -253,7 +253,7 @@ const EN: Dict = {
 
     heroLead: 'The software summit of KTÜ’s Computer Engineering Club. Engineers from industry, one day, one hall.',
     heroTag: 'Software summit · Second edition',
-    heroWhen: '08.12.2026 · 10:00 GMT+3',
+    heroWhen: '08.12.2026 · 09:00 GMT+3',
     coords: 'Trabzon · 41°00′N 39°43′E',
     scroll: 'Scroll',
     speakersHint: 'Hover over or tap a card to flip it',
@@ -268,7 +268,7 @@ const EN: Dict = {
     dialogClose: 'Close',
     fieldDate: 'Date',
     fieldVenue: 'Venue',
-    dateValue: 'Tue 8 December 2026, 10:00 (GMT+3)',
+    dateValue: 'Tue 8 December 2026, 09:00 (GMT+3)',
     countdownLabel: 'Starts in',
     countdownLive: 'CODEWAVE 2026 is happening right now.',
     countdownDone: 'CODEWAVE 2026 is over. Thank you to everyone who came.',
@@ -286,7 +286,7 @@ const EN: Dict = {
         },
         {
             lead: 'Programme.',
-            text: 'Session titles and the hour-by-hour schedule will be published here as speakers are confirmed. What we know so far: we start at 10:00 on the morning of 8 December.',
+            text: 'Session titles and the hour-by-hour schedule will be published here as speakers are confirmed. What we know so far: we start at 09:00 on the morning of 8 December.',
         },
         {
             lead: 'For sponsors.',
@@ -312,7 +312,7 @@ const EN: Dict = {
     ticketTitleA: 'One-day ticket',
     ticketsHeading: 'Take your seat in the hall',
     ticketsLead: 'One day, one hall: engineers from the industry, and you. Get your ticket now and your seat is waiting on the morning of 8 December.',
-    perSpeaker: (amount: string) => `${amount} per speaker`,
+    perSession: (amount: string) => `${amount} per session`,
     oneDay: 'One ticket, the whole day',
     perks: [
         'Engineers from Havelsan, Pegasus, Trendyol and Hepapi, plus a Microsoft MVP',

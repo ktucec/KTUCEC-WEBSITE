@@ -25,7 +25,7 @@ export default function Footer() {
                 <div className="lg:col-span-3" data-io="rise">
                     <p className="kicker">{d.footerEvent}</p>
                     <p className="mt-4 text-ink">CODEWAVE 2026</p>
-                    <p className="mono mt-1 text-sm text-mute">{lang === 'TR' ? '08.12.2026 · 10:00' : '08.12.2026 · 10:00 GMT+3'}</p>
+                    <p className="mono mt-1 text-sm text-mute">{lang === 'TR' ? '08.12.2026 · 09:00' : '08.12.2026 · 09:00 GMT+3'}</p>
                     <p className="mt-1 text-sm text-mute">Osman Turan Kongre Merkezi, Trabzon</p>
                 </div>
                 <nav className="lg:col-span-3" aria-label={d.footerPage} data-io="rise">

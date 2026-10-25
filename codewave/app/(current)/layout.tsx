@@ -7,7 +7,7 @@ import { LanguageProvider } from '@/editions/2026/components/i18n/LanguageProvid
 import { EVENT } from '@/editions/2026/event';
 
 const description =
-    'KTÜ Bilgisayar Mühendisliği Kulübü’nün yazılım zirvesi CODEWAVE 2026: 8 Aralık 2026, 10.00, KTÜ Prof. Dr. Osman Turan Kültür ve Kongre Merkezi, Trabzon. Konuşmacılar ve bilet.';
+    'KTÜ Bilgisayar Mühendisliği Kulübü’nün yazılım zirvesi CODEWAVE 2026: 8 Aralık 2026, 09.00, KTÜ Prof. Dr. Osman Turan Kültür ve Kongre Merkezi, Trabzon. Konuşmacılar ve bilet.';
 
 export const metadata: Metadata = {
     metadataBase: new URL(EVENT.siteUrl),
