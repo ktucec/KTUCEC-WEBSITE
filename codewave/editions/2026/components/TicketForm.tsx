@@ -89,7 +89,7 @@ export default function TicketForm({
         const next = { ...values, [field]: value } as Registration;
         setValues(next);
         if (errors[field]) setErrors((prev) => ({ ...prev, [field]: validateField(field, next) }));
-        if (serverError === 'invalid') setServerError(null);
+        if (serverError === 'invalid' || (field === 'phone' && serverError === 'phone_used')) setServerError(null);
     };
     const onText = (field: Field) => (e: ChangeEvent<HTMLInputElement>) => update(field, e.target.value);
     const onBlur = (field: Field) => () => {

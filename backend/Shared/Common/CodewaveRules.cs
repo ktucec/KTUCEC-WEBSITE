@@ -18,6 +18,23 @@ public static partial class CodewaveRules
 
     public const int EmailMaxLength = 254;
 
+    // --- Shopier sipariş senkronizasyonu ---
+    // Her çalıştırmada son 3 günün siparişleri okunur (30 dk'da bir çalışır; kaçan çalıştırmaları da kapsar).
+    // Tam iadeler ayrıca son 60 günden (Shopier varsayılanı) okunur.
+    public static readonly TimeSpan OrderSyncLookback = TimeSpan.FromDays(3);
+    public const int OrderSyncMaxEmailsPerRun = 25;
+
+    // Telefonu eşleştirme anahtarına çevirir: yalnızca rakamlar; Türkiye numaralarında başındaki 0/90/0090 atılır
+    // (0532 123 45 67, +90 532 123 45 67, 5321234567 → 5321234567). Yabancı numaralar tüm rakamlarıyla kalır.
+    public static string PhoneKey(string? phone)
+    {
+        var digits = new string((phone ?? string.Empty).Where(char.IsAsciiDigit).ToArray());
+        if (digits.StartsWith("00", StringComparison.Ordinal)) digits = digits[2..];
+        if (digits.Length == 12 && digits.StartsWith("90", StringComparison.Ordinal)) return digits[2..];
+        if (digits.Length == 11 && digits.StartsWith('0')) return digits[1..];
+        return digits.Length > 16 ? digits[..16] : digits;
+    }
+
     [GeneratedRegex(@"^\d{2,15}$")]
     private static partial Regex StudentNumberRegex();
 

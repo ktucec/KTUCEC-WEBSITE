@@ -59,9 +59,9 @@ function Call($method, $path, $body) {
 
 switch ($What) {
     'orders' {
-        $q = @("limit=$Limit", "page=$Page",
-               "dateStart=" + [uri]::EscapeDataString((Get-Date).AddDays(-$Days).ToString('o')),
-               "dateEnd="   + [uri]::EscapeDataString((Get-Date).ToString('o')))
+        # Shopier tarih bicimi: yyyy-MM-ddTHH:mm:ss+0300 (saat diliminde iki nokta yok)
+        $start = [DateTimeOffset]::UtcNow.AddDays(-$Days).ToOffset([TimeSpan]::FromHours(3)).ToString('yyyy-MM-ddTHH:mm:ss') + '+0300'
+        $q = @("limit=$Limit", "page=$Page", "sort=dateDesc", "dateStart=" + [uri]::EscapeDataString($start))
         if ($Email)     { $q += "customerEmail=" + [uri]::EscapeDataString($Email) }
         if ($ProductId) { $q += "productId=$ProductId" }
         $res = Call GET ("/orders?" + ($q -join '&'))
@@ -71,6 +71,8 @@ switch ($What) {
             [pscustomobject]@{
                 id = $_.id; status = $_.status; paymentStatus = $_.paymentStatus
                 created = $_.dateCreated; total = $_.totals.total
+                phone = $_.shippingInfo.phone
+                refunds = ($_.refunds | ForEach-Object { "$($_.type)/$($_.status)" }) -join ','
                 products = ($_.lineItems | ForEach-Object { "$($_.productId) $($_.title)$($_.name)" }) -join ' | '
             }
         } | Format-Table -AutoSize

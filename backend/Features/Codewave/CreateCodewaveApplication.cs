@@ -37,6 +37,8 @@ public record CreateCodewaveApplicationResponse(int ApplicationId, string? Redir
 //  - öğrenciye özel ürün yoksa Shopier'de indirimli fiyatla, adında rastgele kod geçen tek stoklu bir ürün açılır,
 //  - ürün zaten varsa ve stoğu bitmişse (satın alınmış) indirim kullanılmış sayılır, yoksa aynı ürüne yönlendirilir.
 // Böylece her indirim en fazla bir kez satın alınabilir; ziyaretçi ödemeden sonra siteye dönmese bile.
+// Bir telefon numarasıyla tek bilet: o numarayla onaylanmış (ödenmiş) başvuru varsa reddedilir ("phone_used");
+// bekleyen başvuru varsa yeni satır açılmaz, aynı satır yeni bilgilerle güncellenir.
 public class CreateCodewaveApplicationHandler
 {
     private readonly KtucecDbContext _context;
@@ -84,6 +86,22 @@ public class CreateCodewaveApplicationHandler
             return CodewaveResults.Error(StatusCodes.Status400BadRequest, "invalid_amount", "Başvuru tutarı geçersiz.");
         }
 
+        // Telefon: tek bilet kuralı ve Shopier siparişiyle eşleştirme bu anahtarla yapılır
+        var phoneKey = CodewaveRules.PhoneKey(phone);
+        if (phoneKey.Length < 8)
+            return CodewaveResults.Error(StatusCodes.Status400BadRequest, "invalid", "Başvuru bilgileri geçersiz.");
+
+        var samePhone = await _context.CodewaveApplications
+            .Where(a => a.PhoneKey == phoneKey
+                        && (a.Status == CodewaveApplicationStatus.Waiting || a.Status == CodewaveApplicationStatus.Approved))
+            .OrderByDescending(a => a.Id)
+            .ToListAsync();
+
+        if (samePhone.Any(a => a.Status == CodewaveApplicationStatus.Approved))
+            return CodewaveResults.Error(StatusCodes.Status409Conflict, "phone_used", "Bu telefon numarasıyla zaten bilet alınmış.");
+
+        var existing = samePhone.FirstOrDefault();
+
         CodewaveStudentDiscount? discount = null;
         string? redirectUrl = null;
 
@@ -105,28 +123,32 @@ public class CreateCodewaveApplicationHandler
             redirectUrl = product.Url;
         }
 
-        // C. BAŞVURUYU KAYDET
-        var application = new CodewaveApplication
+        // C. BAŞVURUYU KAYDET (aynı numarayla bekleyen başvuru varsa o satır güncellenir)
+        var application = existing ?? new CodewaveApplication
         {
-            FirstName = firstName,
-            LastName = lastName,
-            Email = email,
-            Phone = phone,
-            City = city,
-            AttendeeType = attendeeType,
-            Language = language,
-            ListPrice = request.ListPrice,
-            DiscountAmount = request.DiscountAmount,
-            TotalPrice = request.TotalPrice,
-            Currency = currency,
-            CodewaveStudentDiscountId = discount?.Id,
-            DiscountCode = discount?.DiscountCode,
-            ShopierProductUrl = redirectUrl,
             Status = CodewaveApplicationStatus.Waiting,
             CreatedAt = DateTime.UtcNow
         };
 
-        _context.CodewaveApplications.Add(application);
+        application.FirstName = firstName;
+        application.LastName = lastName;
+        application.Email = email;
+        application.Phone = phone;
+        application.PhoneKey = phoneKey;
+        application.City = city;
+        application.AttendeeType = attendeeType;
+        application.Language = language;
+        application.ListPrice = request.ListPrice;
+        application.DiscountAmount = request.DiscountAmount;
+        application.TotalPrice = request.TotalPrice;
+        application.Currency = currency;
+        application.CodewaveStudentDiscountId = discount?.Id;
+        application.DiscountCode = discount?.DiscountCode;
+        application.ShopierProductUrl = redirectUrl;
+
+        if (existing is null)
+            _context.CodewaveApplications.Add(application);
+
         await _context.SaveChangesAsync();
 
         var data = new CreateCodewaveApplicationResponse(application.Id, redirectUrl);

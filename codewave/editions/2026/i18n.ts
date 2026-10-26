@@ -122,7 +122,7 @@ const TR = {
     email: 'E-posta',
     emailHint: 'Öğrenci e-postanı değil, kişisel e-postanı yaz. Bilet ve etkinlik iletişimi bu adrese yapılır.',
     phone: 'Telefon',
-    phoneHint: 'Örnek: 0532 123 45 67',
+    phoneHint: 'Örnek: 0532 123 45 67. Shopier ödeme sayfasında da aynı numarayı yaz; her numarayla bir bilet alınabilir.',
     city: 'Şehir',
     cityHint: 'Ödeme sayfasındaki fatura bilgisine aktarılır.',
     attendee: 'Katılım türü',
@@ -207,6 +207,7 @@ const TR = {
         busy: 'İndirimli biletin hazırlanıyor. Birkaç saniye sonra tekrar dene.',
         shopier_failed: 'Ödeme sayfası şu an hazırlanamadı. Bilgilerin duruyor, birkaç dakika sonra tekrar dene.',
         discount_email_mismatch: 'İndirimli bilet, indirimi kazandığın edu.tr adresiyle alınabilir. E-posta alanını o adresle doldur.',
+        phone_used: 'Bu telefon numarasıyla zaten bilet alınmış; her numarayla bir bilet alınabilir. Başka bir numara yaz ya da bize ulaş.',
     },
 
     venueTitle: 'Yer ve iletişim',
@@ -341,7 +342,7 @@ const EN: Dict = {
     email: 'Email',
     emailHint: 'Use your personal email, not your student email. We’ll contact you about your ticket and the event at this address.',
     phone: 'Phone',
-    phoneHint: 'Example: 0532 123 45 67',
+    phoneHint: 'Example: 0532 123 45 67. Use the same number on the Shopier payment page; one ticket per phone number.',
     city: 'City',
     cityHint: 'Passed on to the billing details on the payment page.',
     attendee: 'You are attending as',
@@ -426,6 +427,7 @@ const EN: Dict = {
         busy: 'Your discounted ticket is being prepared. Try again in a few seconds.',
         shopier_failed: 'The payment page couldn’t be prepared right now. Your details are kept; try again in a few minutes.',
         discount_email_mismatch: 'The discounted ticket must be bought with the edu.tr address that earned the discount. Use that address in the email field.',
+        phone_used: 'A ticket has already been bought with this phone number; one ticket per number. Use another number or contact us.',
     },
 
     venueTitle: 'Venue and contact',

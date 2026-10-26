@@ -233,6 +233,8 @@ builder.Services.AddScoped<ClaimStudentDiscountHandler>();
 builder.Services.AddScoped<LookupStudentDiscountHandler>();
 builder.Services.AddScoped<VerifyStudentDiscountHandler>();
 builder.Services.AddScoped<CreateCodewaveApplicationHandler>();
+builder.Services.AddScoped<CodewaveTicketMailer>();
+builder.Services.AddScoped<SyncShopierOrdersHandler>();
 
 
 // -- Media --
@@ -317,5 +319,6 @@ app.MapClaimStudentDiscount();
 app.MapLookupStudentDiscount();
 app.MapVerifyStudentDiscount();
 app.MapCreateCodewaveApplication();
+app.MapSyncShopierOrders();
 
 app.Run();

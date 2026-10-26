@@ -26,6 +26,7 @@ namespace ktucec.Infrastructure.Database
         // CODEWAVE Tables
         public DbSet<CodewaveStudentDiscount> CodewaveStudentDiscounts => Set<CodewaveStudentDiscount>();
         public DbSet<CodewaveApplication> CodewaveApplications => Set<CodewaveApplication>();
+        public DbSet<CodewaveShopierOrder> CodewaveShopierOrders => Set<CodewaveShopierOrder>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -85,6 +86,7 @@ namespace ktucec.Infrastructure.Database
                 e.Property(x => x.LastName).HasMaxLength(50).IsRequired();
                 e.Property(x => x.Email).HasMaxLength(254).IsRequired();
                 e.Property(x => x.Phone).HasMaxLength(16).IsRequired();
+                e.Property(x => x.PhoneKey).HasMaxLength(16).IsRequired();
                 e.Property(x => x.City).HasMaxLength(60).IsRequired();
                 e.Property(x => x.Language).HasMaxLength(2).IsRequired();
                 e.Property(x => x.Currency).HasMaxLength(3).IsRequired();
@@ -94,14 +96,43 @@ namespace ktucec.Infrastructure.Database
                 e.Property(x => x.ListPrice).HasPrecision(10, 2);
                 e.Property(x => x.DiscountAmount).HasPrecision(10, 2);
                 e.Property(x => x.TotalPrice).HasPrecision(10, 2);
+                e.Property(x => x.PaidAmount).HasPrecision(10, 2);
+                e.Property(x => x.ShopierOrderId).HasMaxLength(64);
 
                 e.HasIndex(x => x.Email);
                 e.HasIndex(x => x.Status);
+                e.HasIndex(x => x.PhoneKey);
 
                 // İndirim kaydı silinirse başvuru kalır, yalnızca bağlantı kopar (kod metni DiscountCode'da durur)
                 e.HasOne(x => x.CodewaveStudentDiscount)
                     .WithMany(d => d.Applications)
                     .HasForeignKey(x => x.CodewaveStudentDiscountId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<CodewaveShopierOrder>(e =>
+            {
+                e.ToTable("CodewaveShopierOrders", "dbo");
+
+                e.Property(x => x.OrderId).HasMaxLength(64).IsRequired();
+                e.Property(x => x.ProductId).HasMaxLength(64).IsRequired();
+                e.Property(x => x.ProductTitle).HasMaxLength(200);
+                e.Property(x => x.Total).HasPrecision(10, 2);
+                e.Property(x => x.Currency).HasMaxLength(3);
+                e.Property(x => x.BuyerFirstName).HasMaxLength(100);
+                e.Property(x => x.BuyerLastName).HasMaxLength(100);
+                e.Property(x => x.BuyerEmail).HasMaxLength(254);
+                e.Property(x => x.BuyerPhone).HasMaxLength(32);
+                e.Property(x => x.MatchMethod).HasMaxLength(16);
+                e.Property(x => x.UnmatchedReason).HasMaxLength(32);
+
+                // Aynı sipariş iki kez kaydedilemez
+                e.HasIndex(x => x.OrderId).IsUnique();
+
+                // Başvuru silinirse sipariş kaydı kalır, yalnızca bağlantı kopar
+                e.HasOne(x => x.CodewaveApplication)
+                    .WithMany()
+                    .HasForeignKey(x => x.CodewaveApplicationId)
                     .OnDelete(DeleteBehavior.SetNull);
             });
         }
