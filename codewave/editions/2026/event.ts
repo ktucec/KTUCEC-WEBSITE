@@ -22,7 +22,7 @@ export const EVENT = {
 // Bilet fiyatını değiştirmek için bu değeri güncelleyin (Shopier'deki herkese açık bilet ürününün fiyatı da aynı olmalı).
 // Sunucu ödeme tutarını da buradan hesaplar; tarayıcıdan gelen fiyata asla güvenilmez.
 export const TICKET = {
-    price: 20,
+    price: 21,
     currency: 'TRY',
 } as const;
 
