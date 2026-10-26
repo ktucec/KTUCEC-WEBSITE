@@ -171,7 +171,6 @@ public class CreateCodewaveApplicationHandler
         var code = _security.GenerateProductCode();
         var created = await _shopier.CreateDigitalProductAsync(
             title: $"CODEWAVE 2026 Öğrenci Bileti {code}",
-            description: "KTÜCEC CODEWAVE 2026 · 8 Aralık 2026, Trabzon · edu.tr e-postası doğrulanmış öğrenciye özel, tek kişilik indirimli bilet. Bu ürün yalnızca bir kez satın alınabilir.",
             price: price,
             currency: currency,
             stockQuantity: 1);

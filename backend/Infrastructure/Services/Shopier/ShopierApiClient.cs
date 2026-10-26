@@ -9,7 +9,9 @@ public record ShopierProduct(string Id, string? Url, int? StockQuantity);
 
 // Shopier REST API v1 (https://api.shopier.com/v1), "Kişisel Erişim Anahtarı" (PAT) ile.
 // Anahtar Shopier panelinde Hesap Yönetimi > Kişisel Erişim Anahtarı'ndan alınır (iki adımlı doğrulama gerekir)
-// ve appsettings'te Shopier:PersonalAccessToken olarak durur. Gereken izin: ürün okuma/yazma.
+// ve appsettings'te Shopier:PersonalAccessToken olarak durur (PAT'te kapsam seçimi yoktur; hesaba tam erişim sağlar).
+// Ürün ayarları appsettings'ten gelir: Shopier:ProductImageUrl (herkese açık jpg/jpeg/png/bmp adresi, zorunlu),
+// Shopier:ProductDescription, Shopier:HideProductFromShop (true ise ürün dükkanda listelenmez, yalnızca bağlantıyla açılır).
 public class ShopierApiClient
 {
     private const string BaseUrl = "https://api.shopier.com/v1/";
@@ -32,21 +34,37 @@ public class ShopierApiClient
     public bool IsConfigured => Token is not null;
 
     // Dijital, kargosuz, tek stoklu bir ürün açar. Başarısızlıkta null döner (ayrıntı loglanır).
-    public async Task<ShopierProduct?> CreateDigitalProductAsync(string title, string description, decimal price, string currency, int stockQuantity, CancellationToken ct = default)
+    public async Task<ShopierProduct?> CreateDigitalProductAsync(string title, decimal price, string currency, int stockQuantity, CancellationToken ct = default)
     {
+        // Shopier ürün için en az bir görsel ister (media zorunlu, en fazla 5; herkese açık URL).
+        var imageUrl = _configuration["Shopier:ProductImageUrl"]?.Trim();
+        if (string.IsNullOrEmpty(imageUrl))
+        {
+            _logger.LogError("Shopier:ProductImageUrl ayarı boş; Shopier ürünü için görsel gerekli.");
+            return null;
+        }
+
+        var description = _configuration["Shopier:ProductDescription"]?.Trim();
+        if (string.IsNullOrEmpty(description))
+            description = "KTÜCEC CODEWAVE 2026 öğrenci bileti.";
+
+        // Varsayılan: gizli. Ürün dükkanda listelenmez, yalnızca bağlantıyı bilen görür.
+        var hide = !bool.TryParse(_configuration["Shopier:HideProductFromShop"], out var h) || h;
+
         var body = new
         {
             title,
             description,
             type = "digital",
-            media = Array.Empty<object>(),
+            media = new[] { new { type = "image", url = imageUrl, placement = 1 } },
             priceData = new
             {
                 currency,
                 price = price.ToString("0.00", CultureInfo.InvariantCulture)
             },
             stockQuantity,
-            shippingPayer = "sellerPays"
+            shippingPayer = "sellerPays",
+            customListing = hide
         };
 
         using var request = CreateRequest(HttpMethod.Post, "products");
