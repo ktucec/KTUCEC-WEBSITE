@@ -14,17 +14,25 @@ public record RequestTicketLookupRequest(string? Email);
 
 
 // 2. HANDLER
-// "Biletimi bul": bilet alırken yazılan (kişisel) e-posta adresine doğrulama kodu yollar. Adreslerin kayıtlı olup
-// olmadığı sızmasın diye adres geçerliyse yanıt her zaman aynıdır; kod yalnızca onaylı bileti olan adreslere gider.
+// "Biletimi bul": bilet alırken yazılan (kişisel) e-posta adresine doğrulama kodu yollar.
+//  - Adreste onaylı bilet varsa 6 haneli kod gider (kodu olmayan eski/elle onaylanmış başvurulara burada kod verilir).
+//  - Yoksa kod yerine "bilet bulunamadı" bilgi e-postası gider. Böylece kod gelmeyince nedeni anlaşılır ve arayüzdeki
+//    yanıt her adres için aynı kalır (adres kayıtlı mı sorgulanamaz; farkı yalnızca adresin sahibi görür).
+// Adres başına gönderim sınırı (60 sn bekleme, saatte 5) her iki durumda da geçerlidir.
 public class RequestTicketLookupHandler
 {
     private readonly KtucecDbContext _context;
     private readonly CodewaveOtpSender _otpSender;
+    private readonly CodewaveTicketCodes _ticketCodes;
+    private readonly ILogger<RequestTicketLookupHandler> _logger;
 
-    public RequestTicketLookupHandler(KtucecDbContext context, CodewaveOtpSender otpSender)
+    public RequestTicketLookupHandler(KtucecDbContext context, CodewaveOtpSender otpSender, CodewaveTicketCodes ticketCodes,
+        ILogger<RequestTicketLookupHandler> logger)
     {
         _context = context;
         _otpSender = otpSender;
+        _ticketCodes = ticketCodes;
+        _logger = logger;
     }
 
     public async Task<IResult> HandleAsync(RequestTicketLookupRequest request, HttpContext httpContext)
@@ -36,16 +44,14 @@ public class RequestTicketLookupHandler
             return CodewaveResults.Error(StatusCodes.Status400BadRequest, "email_invalid", "Geçerli bir e-posta adresi girin.");
 
         var data = new CodewaveOtpSentResponse(email, (int)CodewaveRules.OtpLifetime.TotalSeconds, (int)CodewaveRules.OtpResendCooldown.TotalSeconds);
-        var ok = Results.Ok(new ApiResult<CodewaveOtpSentResponse>(true, data, "Adrese bağlı bir bilet varsa doğrulama kodu gönderildi."));
+        var ok = Results.Ok(new ApiResult<CodewaveOtpSentResponse>(true, data, "Doğrulama e-postası gönderildi."));
 
-        var language = await _context.CodewaveApplications
-            .Where(a => a.Email == email && a.Status == CodewaveApplicationStatus.Approved && a.TicketCode != null)
-            .OrderByDescending(a => a.Id)
-            .Select(a => a.Language)
-            .FirstOrDefaultAsync();
+        var approved = await _context.CodewaveApplications
+            .Where(a => a.Email == email && a.Status == CodewaveApplicationStatus.Approved)
+            .ToListAsync();
 
-        // Bileti olmayan adrese kod gitmez, kayıt da açılmaz (tablo şişmesin); yanıt yine aynıdır.
-        if (language is null) return ok;
+        // Onaylı ama kodu olmayan başvurulara kod ver (senkronizasyon bunu sonradan da yapar)
+        if (await _ticketCodes.AssignMissingAsync(approved) > 0) await _context.SaveChangesAsync();
 
         var entry = await _context.CodewaveTicketLookups.FirstOrDefaultAsync(l => l.Email == email);
         if (entry is null)
@@ -56,13 +62,29 @@ public class RequestTicketLookupHandler
 
         var now = DateTime.UtcNow;
         var limited = _otpSender.CheckLimits(entry, now);
-        if (limited is not null) return CodewaveResults.FromSendResult(limited);
+        if (limited is not null)
+        {
+            _logger.LogInformation("CODEWAVE biletimi bul: gönderim sınırı ({Outcome}).", limited.Outcome);
+            return ok;
+        }
 
         entry.LastRequestIp = CodewaveResults.ClientIp(httpContext);
         var otp = _otpSender.Issue(entry, now);
+
+        var hasTicket = approved.Count > 0;
+        if (!hasTicket)
+        {
+            // Bilgi e-postasında kod yok; sayaçlar işlenir ama kod saklanmaz.
+            entry.OtpCodeHash = null;
+            entry.OtpCodeExpiresAt = null;
+        }
         await _context.SaveChangesAsync();
 
-        if (!await _otpSender.SendTicketLookupAsync(email, otp, english: language == "EN"))
+        var sent = hasTicket
+            ? await _otpSender.SendTicketLookupAsync(email, otp, english: approved.OrderByDescending(a => a.Id).First().Language == "EN")
+            : await _otpSender.SendNoTicketAsync(email);
+
+        if (!sent)
         {
             entry.OtpCodeHash = null;
             entry.OtpCodeExpiresAt = null;
@@ -71,6 +93,7 @@ public class RequestTicketLookupHandler
             return CodewaveResults.FromSendResult(new OtpSendResult(OtpSendOutcome.MailFailed));
         }
 
+        _logger.LogInformation("CODEWAVE biletimi bul: e-posta gönderildi (bilet var: {HasTicket}).", hasTicket);
         return ok;
     }
 }

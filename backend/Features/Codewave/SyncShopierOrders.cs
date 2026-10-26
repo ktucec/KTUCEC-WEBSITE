@@ -40,17 +40,17 @@ public class SyncShopierOrdersHandler
     private readonly KtucecDbContext _context;
     private readonly ShopierApiClient _shopier;
     private readonly CodewaveTicketMailer _mailer;
-    private readonly CodewaveSecurityService _security;
+    private readonly CodewaveTicketCodes _ticketCodes;
     private readonly IConfiguration _configuration;
     private readonly ILogger<SyncShopierOrdersHandler> _logger;
 
     public SyncShopierOrdersHandler(KtucecDbContext context, ShopierApiClient shopier, CodewaveTicketMailer mailer,
-        CodewaveSecurityService security, IConfiguration configuration, ILogger<SyncShopierOrdersHandler> logger)
+        CodewaveTicketCodes ticketCodes, IConfiguration configuration, ILogger<SyncShopierOrdersHandler> logger)
     {
         _context = context;
         _shopier = shopier;
         _mailer = mailer;
-        _security = security;
+        _ticketCodes = ticketCodes;
         _configuration = configuration;
         _logger = logger;
     }
@@ -184,12 +184,7 @@ public class SyncShopierOrdersHandler
         var withoutCode = await _context.CodewaveApplications
             .Where(a => a.Status == CodewaveApplicationStatus.Approved && a.TicketCode == null)
             .ToListAsync(ct);
-        foreach (var app in withoutCode)
-        {
-            app.TicketCode = await GenerateUniqueTicketCodeAsync(ct);
-            app.TicketIssuedAt = DateTime.UtcNow;
-        }
-        if (withoutCode.Count > 0) await _context.SaveChangesAsync(ct);
+        if (await _ticketCodes.AssignMissingAsync(withoutCode, ct) > 0) await _context.SaveChangesAsync(ct);
 
         // E. ONAY E-POSTALARI (gönderilemeyenler sonraki çalıştırmada tekrar denenir)
         var pendingMails = await _context.CodewaveApplications
@@ -214,17 +209,6 @@ public class SyncShopierOrdersHandler
         }
 
         return new SyncShopierOrdersResponse(ticketOrders, newOrders, approved, refunded, unmatched, emailsSent, emailsFailed);
-    }
-
-    private async Task<string> GenerateUniqueTicketCodeAsync(CancellationToken ct)
-    {
-        for (var i = 0; i < 5; i++)
-        {
-            var candidate = _security.GenerateTicketCode();
-            if (!await _context.CodewaveApplications.AnyAsync(a => a.TicketCode == candidate, ct))
-                return candidate;
-        }
-        throw new InvalidOperationException("Benzersiz bilet kodu üretilemedi.");
     }
 
     // Siparişi bekleyen bir başvuruyla eşleştirir ve onaylar. Onaylanamazsa nedeni sipariş kaydına yazılır.

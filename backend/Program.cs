@@ -229,6 +229,7 @@ builder.Services.AddScoped<UpdateFormHandler>();
 builder.Services.AddHttpClient<ShopierApiClient>();
 builder.Services.AddScoped<CodewaveSecurityService>();
 builder.Services.AddScoped<CodewaveOtpSender>();
+builder.Services.AddScoped<CodewaveTicketCodes>();
 builder.Services.AddScoped<ClaimStudentDiscountHandler>();
 builder.Services.AddScoped<LookupStudentDiscountHandler>();
 builder.Services.AddScoped<VerifyStudentDiscountHandler>();

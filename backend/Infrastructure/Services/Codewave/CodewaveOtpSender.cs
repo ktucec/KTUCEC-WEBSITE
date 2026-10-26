@@ -94,6 +94,31 @@ public class CodewaveOtpSender
         }
     }
 
+    // Bileti olmayan adrese kod yerine kısa bir bilgi e-postası gider; adresin sahibi neden kod gelmediğini anlar.
+    public async Task<bool> SendNoTicketAsync(string email)
+    {
+        var body =
+            "<div style=\"font-family:Arial,sans-serif;max-width:480px\">" +
+            "<h3 style=\"margin:0 0 12px\">CODEWAVE 2026 · Biletimi bul</h3>" +
+            "<p>Bu e-posta adresine bağlı onaylı bir bilet bulamadık. Bileti satın alırken formda başka bir adres yazmış olabilirsiniz. " +
+            "Ödemeyi az önce yaptıysanız onayın gelmesi 15-30 dakika sürebilir; sonra tekrar deneyin.</p>" +
+            "<p style=\"color:#555\">We couldn’t find a confirmed ticket linked to this email address. You may have used another address on the ticket form. " +
+            "If you just paid, confirmation can take 15–30 minutes; try again then.</p>" +
+            "<p style=\"color:#666;font-size:13px\">Bu isteği siz yapmadıysanız yok sayabilirsiniz. / If you did not request this, ignore this email.</p>" +
+            "</div>";
+
+        try
+        {
+            await _emailService.SendEmailAsync(email, "CODEWAVE 2026 · Bilet bulunamadı / Ticket not found", body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CODEWAVE biletimi bul bilgi e-postası gönderilemedi.");
+            return false;
+        }
+    }
+
     public async Task<bool> SendAsync(string email, string otp, bool isLookup)
     {
         var minutes = (int)CodewaveRules.OtpLifetime.TotalMinutes;
