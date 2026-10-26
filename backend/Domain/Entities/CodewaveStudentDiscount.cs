@@ -5,7 +5,7 @@ namespace ktucec.Domain.Entities;
 // edu.tr e-posta onayı ile kazanılan CODEWAVE öğrenci indirimi.
 // Bir e-posta adresi yalnızca bir kez indirim kazanabilir. İndirimli bilet, Shopier'de bu kayda özel açılan
 // tek stoklu bir üründür: ürün bir kez satın alınınca stok biter ve indirim kendiliğinden kullanılmış olur.
-public class CodewaveStudentDiscount : BaseEntity
+public class CodewaveStudentDiscount : BaseEntity, ICodewaveOtpHolder
 {
     // Küçük harfe çevrilmiş, *.edu.tr uzantılı adres (benzersiz)
     public string Email { get; set; } = string.Empty;

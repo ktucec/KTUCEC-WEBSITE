@@ -44,6 +44,10 @@ public static partial class CodewaveRules
     [GeneratedRegex(@"^CW26-[0-9A-Z]{4}-[0-9A-Z]{4}$")]
     private static partial Regex DiscountCodeRegex();
 
+    // Bilet kodu: CodewaveSecurityService alfabesinden 20 karakter (0/O, 1/I/L yok)
+    [GeneratedRegex(@"^[2-9A-HJKMNP-Z]{20}$")]
+    private static partial Regex TicketCodeRegex();
+
     public static string NormalizeEmail(string? email) => (email ?? string.Empty).Trim().ToLowerInvariant();
 
     public static string NormalizeDiscountCode(string? code) => (code ?? string.Empty).Trim().ToUpperInvariant();
@@ -64,4 +68,25 @@ public static partial class CodewaveRules
     public static bool IsValidOtp(string? value) => value is not null && OtpRegex().IsMatch(value);
 
     public static bool IsValidDiscountCode(string? value) => value is not null && DiscountCodeRegex().IsMatch(value);
+
+    // QR'dan okunan metin kod ya da tam bağlantı (https://codewave.ktucec.com/bilet/KOD) olabilir; yalnızca kod döner.
+    public static string NormalizeTicketCode(string? raw)
+    {
+        var value = (raw ?? string.Empty).Trim();
+        var cut = value.IndexOfAny(['?', '#']);
+        if (cut >= 0) value = value[..cut];
+        value = value.TrimEnd('/');
+        var slash = value.LastIndexOf('/');
+        if (slash >= 0) value = value[(slash + 1)..];
+        return value.ToUpperInvariant();
+    }
+
+    public static bool IsValidTicketCode(string? value) => value is not null && TicketCodeRegex().IsMatch(value);
+
+    // Herkese açık bilet sayfasında gösterilen ad: her sözcüğün ilk harfi + ***  (Barış Demir → B*** D***)
+    public static string MaskName(string? firstName, string? lastName)
+    {
+        var words = $"{firstName} {lastName}".Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return string.Join(' ', words.Select(w => char.ToUpperInvariant(w[0]) + "***"));
+    }
 }

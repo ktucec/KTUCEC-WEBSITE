@@ -45,4 +45,12 @@ public class CodewaveApplication : BaseEntity
 
     // Onay e-postası (kişisel adrese) gönderildiğinde dolar; boşsa sonraki senkronizasyon yeniden dener.
     public DateTime? ConfirmationEmailSentAt { get; set; }
+
+    // --- QR bilet ---
+    // Onaylanınca üretilen rastgele, tahmin edilemez 20 karakterlik kod (benzersiz). QR bu kodu içeren bir bağlantıdır;
+    // telefon numarası gibi bilgiler kodda yer almaz.
+    public string? TicketCode { get; set; }
+    public DateTime? TicketIssuedAt { get; set; }
+
+    public ICollection<CodewaveTicketScan> TicketScans { get; set; } = new List<CodewaveTicketScan>();
 }

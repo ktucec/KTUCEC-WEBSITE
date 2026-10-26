@@ -29,7 +29,7 @@ public class CodewaveOtpSender
     }
 
     // Sınır aşıldıysa kayıt değiştirilmez.
-    public OtpSendResult? CheckLimits(CodewaveStudentDiscount entry, DateTime now)
+    public OtpSendResult? CheckLimits(ICodewaveOtpHolder entry, DateTime now)
     {
         if (entry.OtpLastSentAt is { } last && now - last < CodewaveRules.OtpResendCooldown)
         {
@@ -48,7 +48,7 @@ public class CodewaveOtpSender
     }
 
     // Yeni kodu kayda işler (özet + süre + sayaçlar) ve düz kodu döner. Önce CheckLimits çağrılmalıdır.
-    public string Issue(CodewaveStudentDiscount entry, DateTime now)
+    public string Issue(ICodewaveOtpHolder entry, DateTime now)
     {
         var otp = _security.GenerateOtp();
 
@@ -65,6 +65,33 @@ public class CodewaveOtpSender
         entry.OtpSendCount++;
 
         return otp;
+    }
+
+    public async Task<bool> SendTicketLookupAsync(string email, string otp, bool english)
+    {
+        var minutes = (int)CodewaveRules.OtpLifetime.TotalMinutes;
+        var subject = english ? "Your CODEWAVE 2026 verification code" : "CODEWAVE 2026 doğrulama kodunuz";
+        var body =
+            "<div style=\"font-family:Arial,sans-serif;max-width:480px\">" +
+            (english
+                ? "<h3 style=\"margin:0 0 12px\">CODEWAVE 2026 · Find my ticket</h3><p>Your verification code to see your ticket:</p>"
+                : "<h3 style=\"margin:0 0 12px\">CODEWAVE 2026 · Biletimi bul</h3><p>Biletinizi görüntülemek için doğrulama kodunuz:</p>") +
+            $"<p style=\"font-size:28px;letter-spacing:6px;font-weight:700;margin:16px 0\">{otp}</p>" +
+            (english
+                ? $"<p>The code is valid for {minutes} minutes and can be used once.</p><p style=\"color:#666;font-size:13px\">If you did not request this, ignore this email and do not share the code.</p>"
+                : $"<p>Kod {minutes} dakika geçerlidir ve yalnızca bir kez kullanılabilir.</p><p style=\"color:#666;font-size:13px\">Bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz; kodu kimseyle paylaşmayın.</p>") +
+            "</div>";
+
+        try
+        {
+            await _emailService.SendEmailAsync(email, subject, body);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "CODEWAVE biletimi bul OTP e-postası gönderilemedi.");
+            return false;
+        }
     }
 
     public async Task<bool> SendAsync(string email, string otp, bool isLookup)

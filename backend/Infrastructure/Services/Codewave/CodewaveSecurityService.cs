@@ -64,6 +64,9 @@ public class CodewaveSecurityService
         return new string(chars);
     }
 
+    // QR biletin kodu: 31^20 ≈ 2^99 olasılık, tahmin edilemez. Telefon/ad gibi bir bilgiden türetilmez.
+    public string GenerateTicketCode() => GenerateProductCode(20);
+
     // İki değer de SHA-256'dan geçirilir; böylece uzunluk farkı bile zamanlamadan sızmaz.
     public bool IsValidInternalKey(string? provided)
     {

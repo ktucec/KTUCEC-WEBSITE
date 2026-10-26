@@ -24,6 +24,25 @@ public class CodewaveTicketMailer
         _logger = logger;
     }
 
+    // QR görseli ve bilet bağlantısı. Görsel yüklenmeyen e-posta istemcileri için bağlantı ve "biletimi bul" yolu da yazılır.
+    private static string TicketBlock(string? ticketCode, bool en)
+    {
+        if (string.IsNullOrEmpty(ticketCode)) return string.Empty;
+
+        var link = $"{SiteUrl}/bilet/{ticketCode}";
+        var find = $"{SiteUrl}/biletim";
+        return
+            "<div style=\"margin:20px 0;padding:16px;border:1px solid #e3e3e3;border-radius:12px;text-align:center\">" +
+            (en
+                ? "<p style=\"margin:0 0 10px;font-weight:600\">Your entry QR code</p>"
+                : "<p style=\"margin:0 0 10px;font-weight:600\">Giriş QR kodun</p>") +
+            $"<a href=\"{link}\"><img src=\"{link}/qr.png\" width=\"220\" height=\"220\" alt=\"QR\" style=\"display:block;margin:0 auto\"></a>" +
+            (en
+                ? $"<p style=\"margin:10px 0 0;font-size:13px\">Show it at the entrance. If the image does not load, open <a href=\"{link}\">your ticket page</a>.<br>Lost this email? Find your ticket anytime at <a href=\"{find}\">{find}</a>.</p>"
+                : $"<p style=\"margin:10px 0 0;font-size:13px\">Girişte göster. Görsel yüklenmezse <a href=\"{link}\">bilet sayfanı</a> aç.<br>Bu e-postayı kaybedersen biletini istediğin zaman <a href=\"{find}\">{find}</a> adresinden bulabilirsin.</p>") +
+            "</div>";
+    }
+
     public async Task<bool> SendConfirmationAsync(CodewaveApplication application)
     {
         var en = application.Language == "EN";
@@ -50,6 +69,7 @@ public class CodewaveTicketMailer
             Row(en ? "Shopier order no." : "Shopier sipariş no", order) +
             Row(en ? "Amount paid" : "Ödenen tutar", $"{amount} {currency}") +
             "</table>" +
+            TicketBlock(application.TicketCode, en) +
             (en
                 ? $"<p>Event details: <a href=\"{SiteUrl}\">{SiteUrl}</a><br>Questions: <a href=\"mailto:{ContactEmail}\">{ContactEmail}</a></p>"
                 : $"<p>Etkinlik bilgileri: <a href=\"{SiteUrl}\">{SiteUrl}</a><br>Soruların için: <a href=\"mailto:{ContactEmail}\">{ContactEmail}</a></p>") +

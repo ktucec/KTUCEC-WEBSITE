@@ -27,6 +27,8 @@ namespace ktucec.Infrastructure.Database
         public DbSet<CodewaveStudentDiscount> CodewaveStudentDiscounts => Set<CodewaveStudentDiscount>();
         public DbSet<CodewaveApplication> CodewaveApplications => Set<CodewaveApplication>();
         public DbSet<CodewaveShopierOrder> CodewaveShopierOrders => Set<CodewaveShopierOrder>();
+        public DbSet<CodewaveTicketLookup> CodewaveTicketLookups => Set<CodewaveTicketLookup>();
+        public DbSet<CodewaveTicketScan> CodewaveTicketScans => Set<CodewaveTicketScan>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -98,6 +100,10 @@ namespace ktucec.Infrastructure.Database
                 e.Property(x => x.TotalPrice).HasPrecision(10, 2);
                 e.Property(x => x.PaidAmount).HasPrecision(10, 2);
                 e.Property(x => x.ShopierOrderId).HasMaxLength(64);
+                e.Property(x => x.TicketCode).HasMaxLength(20);
+
+                // Kod yalnızca onaydan sonra oluşur; boş satırlar benzersizlik kuralına takılmaz
+                e.HasIndex(x => x.TicketCode).IsUnique().HasFilter("[TicketCode] IS NOT NULL");
 
                 e.HasIndex(x => x.Email);
                 e.HasIndex(x => x.Status);
@@ -134,6 +140,33 @@ namespace ktucec.Infrastructure.Database
                     .WithMany()
                     .HasForeignKey(x => x.CodewaveApplicationId)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<CodewaveTicketLookup>(e =>
+            {
+                e.ToTable("CodewaveTicketLookups", "dbo");
+
+                e.Property(x => x.Email).HasMaxLength(254).IsRequired();
+                e.Property(x => x.OtpCodeHash).HasMaxLength(64);
+                e.Property(x => x.LastRequestIp).HasMaxLength(45);
+
+                e.HasIndex(x => x.Email).IsUnique();
+            });
+
+            modelBuilder.Entity<CodewaveTicketScan>(e =>
+            {
+                e.ToTable("CodewaveTicketScans", "dbo");
+
+                e.Property(x => x.ScannedByName).HasMaxLength(100).IsRequired();
+                e.Property(x => x.Result).HasMaxLength(16).IsRequired();
+
+                e.HasIndex(x => x.CodewaveApplicationId);
+
+                // Başvuru silinirse okutma kayıtları da silinir
+                e.HasOne(x => x.CodewaveApplication)
+                    .WithMany(a => a.TicketScans)
+                    .HasForeignKey(x => x.CodewaveApplicationId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

@@ -235,6 +235,10 @@ builder.Services.AddScoped<VerifyStudentDiscountHandler>();
 builder.Services.AddScoped<CreateCodewaveApplicationHandler>();
 builder.Services.AddScoped<CodewaveTicketMailer>();
 builder.Services.AddScoped<SyncShopierOrdersHandler>();
+builder.Services.AddScoped<RequestTicketLookupHandler>();
+builder.Services.AddScoped<VerifyTicketLookupHandler>();
+builder.Services.AddScoped<GetPublicTicketHandler>();
+builder.Services.AddScoped<ScanTicketHandler>();
 
 
 // -- Media --
@@ -257,7 +261,7 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 // İndirim uçları codewave.ktucec.com'a, geri kalan her şey ana siteye açık (tek istek tek politika)
-static bool IsCodewavePublic(HttpContext ctx) => ctx.Request.Path.StartsWithSegments(CodewaveResults.PublicPathPrefix);
+static bool IsCodewavePublic(HttpContext ctx) => CodewaveResults.IsPublicPath(ctx.Request.Path);
 app.UseWhen(IsCodewavePublic, branch => branch.UseCors(CodewaveResults.CorsPolicy));
 app.UseWhen(ctx => !IsCodewavePublic(ctx), branch => branch.UseCors("AllowFrontend"));
 
@@ -320,5 +324,9 @@ app.MapLookupStudentDiscount();
 app.MapVerifyStudentDiscount();
 app.MapCreateCodewaveApplication();
 app.MapSyncShopierOrders();
+app.MapRequestTicketLookup();
+app.MapVerifyTicketLookup();
+app.MapGetPublicTicket();
+app.MapScanTicket();
 
 app.Run();

@@ -14,6 +14,10 @@ public static class CodewaveResults
     // codewave.ktucec.com tarayıcıdan yalnızca bu yol altındaki uçları çağırır (Program.cs'te ayrı CORS politikası)
     public const string CorsPolicy = "AllowCodewave";
     public const string PublicPathPrefix = "/api/codewave/discount";
+    public const string TicketLookupPathPrefix = "/api/codewave/ticket-lookup";
+
+    public static bool IsPublicPath(PathString path) =>
+        path.StartsWithSegments(PublicPathPrefix) || path.StartsWithSegments(TicketLookupPathPrefix);
 
     public static IResult Error(int statusCode, string code, string message, int? retryAfter = null, int? attemptsLeft = null) =>
         Results.Json(

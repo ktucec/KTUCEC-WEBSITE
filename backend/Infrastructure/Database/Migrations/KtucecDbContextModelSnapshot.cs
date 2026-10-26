@@ -145,6 +145,13 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<string>("TicketCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("TicketIssuedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(10, 2)
                         .HasColumnType("decimal(10,2)");
@@ -161,6 +168,10 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.HasIndex("PhoneKey");
 
                     b.HasIndex("Status");
+
+                    b.HasIndex("TicketCode")
+                        .IsUnique()
+                        .HasFilter("[TicketCode] IS NOT NULL");
 
                     b.ToTable("CodewaveApplications", "dbo");
                 });
@@ -332,6 +343,93 @@ namespace ktucec.Infrastructure.Database.Migrations
                         .IsUnique();
 
                     b.ToTable("CodewaveStudentDiscounts", "dbo");
+                });
+
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveTicketLookup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("LastRequestIp")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.Property<DateTime?>("OtpCodeExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("OtpCodeHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("OtpFailedAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("OtpLastSentAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OtpSendCount")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("OtpSendWindowStartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("CodewaveTicketLookups", "dbo");
+                });
+
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveTicketScan", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CodewaveApplicationId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("ScannedByName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("ScannedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CodewaveApplicationId");
+
+                    b.ToTable("CodewaveTicketScans", "dbo");
                 });
 
             modelBuilder.Entity("ktucec.Domain.Entities.ContactForm", b =>
@@ -673,6 +771,17 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.Navigation("CodewaveApplication");
                 });
 
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveTicketScan", b =>
+                {
+                    b.HasOne("ktucec.Domain.Entities.CodewaveApplication", "CodewaveApplication")
+                        .WithMany("TicketScans")
+                        .HasForeignKey("CodewaveApplicationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CodewaveApplication");
+                });
+
             modelBuilder.Entity("ktucec.Domain.Entities.EventGalleryImage", b =>
                 {
                     b.HasOne("ktucec.Domain.Entities.Event", "Event")
@@ -730,6 +839,11 @@ namespace ktucec.Infrastructure.Database.Migrations
                     b.Navigation("FormApplication");
 
                     b.Navigation("FormQuestion");
+                });
+
+            modelBuilder.Entity("ktucec.Domain.Entities.CodewaveApplication", b =>
+                {
+                    b.Navigation("TicketScans");
                 });
 
             modelBuilder.Entity("ktucec.Domain.Entities.CodewaveStudentDiscount", b =>
