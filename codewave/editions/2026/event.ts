@@ -22,7 +22,7 @@ export const EVENT = {
 // Bilet fiyatını değiştirmek için bu değeri güncelleyin (Shopier'deki herkese açık bilet ürününün fiyatı da aynı olmalı).
 // Sunucu ödeme tutarını da buradan hesaplar; tarayıcıdan gelen fiyata asla güvenilmez.
 export const TICKET = {
-    price: 161,
+    price: 20,
     currency: 'TRY',
 } as const;
 
@@ -30,10 +30,10 @@ export const TICKET = {
 //  - { type: 'percent', value: 20 } → bilet fiyatından %20 düşülür
 //  - { type: 'fixed', value: 30 }   → bilet fiyatından 30 TL düşülür
 // Sunucu ödeme tutarını da buradan hesaplar. İndirim fiyatı en fazla 1 TL'ye kadar indirebilir.
-// Şu an: 161 TL bilet, indirimli fiyat 120 TL (161 - 41). Bilet fiyatı değişirse indirimli fiyat da kayar; value'yu yeniden hesaplayın.
+// Şu an (geçici): 20 TL bilet, indirimli fiyat 18 TL (20 - 2). Bilet fiyatı değişirse indirimli fiyat da kayar; value'yu yeniden hesaplayın.
 export const STUDENT_DISCOUNT: { type: 'percent' | 'fixed'; value: number } = {
     type: 'fixed',
-    value: 41,
+    value: 2,
 };
 
 export const CONTACT = {
