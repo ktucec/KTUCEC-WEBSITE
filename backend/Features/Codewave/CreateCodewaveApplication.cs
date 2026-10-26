@@ -91,21 +91,11 @@ public class CreateCodewaveApplicationHandler
         if (phoneKey.Length < 8)
             return CodewaveResults.Error(StatusCodes.Status400BadRequest, "invalid", "Başvuru bilgileri geçersiz.");
 
-        var samePhone = await _context.CodewaveApplications
-            .Where(a => a.PhoneKey == phoneKey
-                        && (a.Status == CodewaveApplicationStatus.Waiting || a.Status == CodewaveApplicationStatus.Approved))
-            .OrderByDescending(a => a.Id)
-            .ToListAsync();
-
-        if (samePhone.Any(a => a.Status == CodewaveApplicationStatus.Approved))
-            return CodewaveResults.Error(StatusCodes.Status409Conflict, "phone_used", "Bu telefon numarasıyla zaten bilet alınmış.");
-
-        var existing = samePhone.FirstOrDefault();
-
         CodewaveStudentDiscount? discount = null;
         string? redirectUrl = null;
 
-        // B. İNDİRİMLİ BİLET: öğrenciye özel tek stoklu ürün
+        // B. İNDİRİM KODU: kod geçerli ve doğrulanmış olmalı. Form e-postası kişisel adrestir; indirimin bağlı olduğu
+        // edu.tr adresiyle aynı olması gerekmez (indirim kodla taşınır).
         if (hasCode)
         {
             if (!CodewaveRules.IsValidDiscountCode(discountCode))
@@ -114,16 +104,42 @@ public class CreateCodewaveApplicationHandler
             discount = await _context.CodewaveStudentDiscounts.FirstOrDefaultAsync(d => d.DiscountCode == discountCode);
             if (discount is null || !discount.IsVerified)
                 return CodewaveResults.Error(StatusCodes.Status404NotFound, "discount_invalid", "İndirim kodu geçersiz.");
+        }
 
-            if (discount.Email != email)
-                return CodewaveResults.Error(StatusCodes.Status403Forbidden, "discount_email_mismatch", "İndirim kodu yalnızca kazanıldığı edu.tr adresiyle kullanılabilir.");
+        // C. MEVCUT KAYIT: yeni satır açmadan önce aynı e-posta, telefon ya da indirime ait kayıt aranır.
+        //  - Ödenmiş (onaylı) bilet varsa yeni başvuru açılmaz ve tekrar satın alma engellenir.
+        //  - Bekleyen kayıt varsa yenisi açılmaz; o satır güncellenir ve ziyaretçi aynı ödeme sayfasına yönlendirilir
+        //    (indirimliyse kendisine ayrılmış ürüne, indirimsizse herkese açık ürüne).
+        var discountId = discount?.Id;
+        var matches = await _context.CodewaveApplications
+            .Where(a => (a.Status == CodewaveApplicationStatus.Waiting || a.Status == CodewaveApplicationStatus.Approved)
+                        && (a.Email == email
+                            || a.PhoneKey == phoneKey
+                            || (discountId != null && a.CodewaveStudentDiscountId == discountId)))
+            .OrderByDescending(a => a.Id)
+            .ToListAsync();
 
+        if (discountId is not null
+            && matches.Any(a => a.Status == CodewaveApplicationStatus.Approved && a.CodewaveStudentDiscountId == discountId))
+            return CodewaveResults.Error(StatusCodes.Status409Conflict, "discount_used", "Bu indirim daha önce kullanılmış.");
+
+        if (matches.Any(a => a.Status == CodewaveApplicationStatus.Approved && a.Email == email))
+            return CodewaveResults.Error(StatusCodes.Status409Conflict, "email_used", "Bu e-posta adresiyle zaten bilet alınmış.");
+
+        if (matches.Any(a => a.Status == CodewaveApplicationStatus.Approved && a.PhoneKey == phoneKey))
+            return CodewaveResults.Error(StatusCodes.Status409Conflict, "phone_used", "Bu telefon numarasıyla zaten bilet alınmış.");
+
+        var existing = matches.FirstOrDefault(a => a.Status == CodewaveApplicationStatus.Waiting);
+
+        // D. İNDİRİMLİ BİLET: öğrenciye özel tek stoklu ürün (varsa aynı ürüne, yoksa yenisi açılır)
+        if (discount is not null)
+        {
             var product = await GetOrCreateProductAsync(discount, request.TotalPrice, currency);
             if (product.Error is not null) return product.Error;
             redirectUrl = product.Url;
         }
 
-        // C. BAŞVURUYU KAYDET (aynı numarayla bekleyen başvuru varsa o satır güncellenir)
+        // E. BAŞVURUYU KAYDET (mevcut bekleyen kayıt varsa o satır güncellenir)
         var application = existing ?? new CodewaveApplication
         {
             Status = CodewaveApplicationStatus.Waiting,

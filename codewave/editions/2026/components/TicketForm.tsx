@@ -24,8 +24,8 @@ const fieldId = (f: Field) => `ticket-${f}`;
 
 // Taslak bu sekmede saklanır: pencere kapanıp açılsa ya da Shopier'den geri dönülse de yazılanlar kalır.
 // Biletteki ad girildiyse ad/soyad alanları ondan gelir.
-// Öğrenci indirimi uygulanmışsa e-posta, indirimin bağlı olduğu edu.tr adresidir (backend başka adresi kabul etmez).
-function initialValues(name?: { firstName: string; lastName: string }, lockedEmail?: string): Registration {
+// E-posta otomatik doldurulmaz: bilet kişisel adrese gider, öğrenci adresi indirimi onaylamak içindir.
+function initialValues(name?: { firstName: string; lastName: string }): Registration {
     let values = EMPTY_REGISTRATION;
     try {
         const raw = sessionStorage.getItem(DRAFT_KEY);
@@ -33,9 +33,11 @@ function initialValues(name?: { firstName: string; lastName: string }, lockedEma
     } catch {
         // Bozuk ya da erişilemeyen taslak yok sayılır.
     }
-    if (lockedEmail) values = { ...values, email: lockedEmail };
     return name?.firstName ? { ...values, ...name } : values;
 }
+
+// İpucundaki *işaretli* kısım belirgin renkle gösterilir.
+const hintParts = (text: string) => text.split('*').map((part, i) => (i % 2 === 1 ? <strong key={i} className="hint-em">{part}</strong> : part));
 
 // Bilet formu. Doğrulama tarayıcıda ve sunucuda aynı kurallarla yapılır; tutar sunucuda hesaplanır.
 // Başarılı yanıtta başvuru kaydedilmiştir; Shopier ürün bağlantısı onReady ile üst bileşene verilir
@@ -51,7 +53,7 @@ export default function TicketForm({
     const { d, lang } = useLang();
     const { discount, clear: clearDiscount } = useDiscount();
     const summary = useRef<HTMLDivElement>(null);
-    const [values, setValues] = useState<Registration>(() => initialValues(name, discount?.email));
+    const [values, setValues] = useState<Registration>(() => initialValues(name));
     const [errors, setErrors] = useState<FieldErrors>({});
     const [showSummary, setShowSummary] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -64,11 +66,6 @@ export default function TicketForm({
         window.addEventListener('pageshow', onShow);
         return () => window.removeEventListener('pageshow', onShow);
     }, []);
-
-    // İndirim sonradan eklenirse e-posta alanı o adrese geçer.
-    useEffect(() => {
-        if (discount) setValues((v) => (v.email === discount.email ? v : { ...v, email: discount.email }));
-    }, [discount]);
 
     const removeDiscount = () => {
         clearDiscount();
@@ -89,7 +86,7 @@ export default function TicketForm({
         const next = { ...values, [field]: value } as Registration;
         setValues(next);
         if (errors[field]) setErrors((prev) => ({ ...prev, [field]: validateField(field, next) }));
-        if (serverError === 'invalid' || (field === 'phone' && serverError === 'phone_used')) setServerError(null);
+        if (serverError === 'invalid' || (field === 'phone' && serverError === 'phone_used') || (field === 'email' && serverError === 'email_used')) setServerError(null);
     };
     const onText = (field: Field) => (e: ChangeEvent<HTMLInputElement>) => update(field, e.target.value);
     const onBlur = (field: Field) => () => {
@@ -154,7 +151,7 @@ export default function TicketForm({
             />
             {hint && (
                 <p className="hint" id={`${fieldId(f)}-hint`}>
-                    {hint}
+                    {hintParts(hint)}
                 </p>
             )}
             {errors[f] && (
@@ -193,14 +190,9 @@ export default function TicketForm({
                 {text(
                     'email',
                     d.email,
-                    { type: 'email', inputMode: 'email', autoComplete: 'email', autoCapitalize: 'off', spellCheck: false, enterKeyHint: 'next', readOnly: Boolean(discount) },
-                    discount ? d.emailLocked : d.emailHint,
+                    { type: 'email', inputMode: 'email', autoComplete: 'email', autoCapitalize: 'off', spellCheck: false, enterKeyHint: 'next' },
+                    d.emailHint,
                     true,
-                    discount && (
-                        <button type="button" className="discount-link justify-self-start" onClick={removeDiscount}>
-                            {d.discountRemove}
-                        </button>
-                    ),
                 )}
                 {text('phone', d.phone, { type: 'tel', inputMode: 'tel', autoComplete: 'tel', enterKeyHint: 'next' }, d.phoneHint)}
                 {text('city', d.city, { autoComplete: 'address-level2', autoCapitalize: 'words', enterKeyHint: 'done' }, d.cityHint)}

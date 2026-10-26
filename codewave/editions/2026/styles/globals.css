@@ -580,6 +580,7 @@ body::after {
 .field input:hover { border-color: rgb(150 180 225 / 0.45); }
 .field input:focus { outline: none; border-color: var(--color-green); background: rgb(136 223 138 / 0.04); box-shadow: 0 0 0 4px rgb(136 223 138 / 0.12), 0 0 32px -8px rgb(136 223 138 / 0.5); }
 .field .hint { font-size: 0.8125rem; color: var(--color-faint); }
+.field .hint .hint-em { font-weight: 650; color: #ffc46b; }
 .field .err { font-size: 0.8125rem; font-weight: 500; color: var(--color-danger); }
 .field.has-error input { border-color: var(--color-danger); }
 .choice-option { position: relative; }

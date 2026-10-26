@@ -11,7 +11,7 @@ const json = (body: unknown, status: number) =>
     NextResponse.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
 
 // Backend'in arayüze olduğu gibi iletilen hata kodları (metinleri i18n.ts → serverErrors)
-const PASS_THROUGH = new Set(['discount_invalid', 'discount_used', 'discount_email_mismatch', 'busy', 'shopier_failed', 'phone_used']);
+const PASS_THROUGH = new Set(['discount_invalid', 'discount_used', 'discount_email_mismatch', 'busy', 'shopier_failed', 'phone_used', 'email_used']);
 
 // Bilet formu gönderildi ("ödemeye geç"):
 //  1. Form doğrulanır, tutar sunucuda event.ts'den hesaplanır (tarayıcıdan fiyat kabul edilmez).
