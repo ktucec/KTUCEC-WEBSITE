@@ -640,6 +640,9 @@ body::after {
 .field input.otp-input:not([type='checkbox']):not([type='radio']) { min-height: 64px; padding: 10px 12px; text-align: center; font: 500 clamp(1.5rem, 7vw, 1.875rem) var(--font-mono); letter-spacing: 0.5em; text-indent: 0.5em; font-variant-numeric: tabular-nums; }
 .field input.otp-input::placeholder { color: var(--color-faint); }
 
+.ticket-qr { width: min(100%, 280px); padding: 14px; border-radius: 20px; background: #fff; box-shadow: 0 0 60px -20px rgb(136 223 138 / 0.5); }
+.ticket-qr img { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+
 .discount-code-card { display: grid; gap: 6px; justify-items: center; padding: 20px; border-radius: 20px; border: 1px dashed var(--line-hi); background: rgb(255 255 255 / 0.03); text-align: center; }
 .discount-code { font-size: clamp(1.5rem, 7vw, 2rem); font-weight: 500; letter-spacing: 0.08em; color: var(--color-green-hi); text-shadow: 0 0 24px rgb(136 223 138 / 0.4); user-select: all; }
 .discount-code.is-used { color: var(--color-faint); text-decoration: line-through; text-shadow: none; }

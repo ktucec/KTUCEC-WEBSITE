@@ -35,6 +35,7 @@ export default function Footer() {
                             ['#konusmacilar', d.navSpeakers],
                             ['#bilet', d.navTicket],
                             ['#ulasim', d.navVenue],
+                            ['/biletim', d.ticketFindLink],
                         ].map(([href, text]) => (
                             <li key={href}>
                                 <a className="nav-link inline-flex min-h-11 items-center" href={href}>
