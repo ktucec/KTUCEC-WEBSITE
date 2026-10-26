@@ -9,6 +9,7 @@ export const NAV_GROUPS = [
         items: [
             { href: '/admin/forms', label: 'Başvuru Formları', icon: 'dynamic_form', keywords: 'forms yanıtlar başvuru' },
             { href: '/admin/contactforms', label: 'İletişim Mesajları', icon: 'mail', keywords: 'contact mesaj iletişim' },
+            { href: '/admin/tickets', label: 'Bilet Tarama', icon: 'qr_code_scanner', keywords: 'codewave bilet qr tarama giriş kapı' },
         ],
     },
     {

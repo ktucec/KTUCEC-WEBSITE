@@ -666,3 +666,39 @@ html.adm .ad-input, html.adm .ad-select { font-size: 14px; }
 html.adm .ad-input:focus-visible, html.adm .ad-select:focus-visible { outline: none; border-radius: 10px; }
 .ad-cmd-in input:focus-visible { outline: none; }
 .ad-item { align-content: start; }
+
+/* ---------- CODEWAVE bilet tarama ---------- */
+.ad-scan { display: grid; gap: 20px; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 900px) { .ad-scan { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.ad-scan-cam { padding: 14px; display: grid; gap: 14px; justify-items: stretch; }
+.ad-scan-view { position: relative; aspect-ratio: 1 / 1; max-height: 70vh; width: 100%; border-radius: 12px; overflow: hidden; background: #05070b; display: grid; place-items: center; }
+.ad-scan-view video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+.ad-scan-view.on video { opacity: 1; }
+.ad-scan-idle { position: relative; display: grid; gap: 14px; justify-items: center; padding: 20px; text-align: center; color: #cfd6e4; }
+.ad-scan-bigico { font-size: 56px; opacity: 0.7; }
+.ad-scan-err { margin: 0; max-width: 28ch; font-size: 13px; color: #ff9a9e; }
+.ad-scan-frame { position: absolute; inset: 14%; border-radius: 18px; border: 3px solid rgba(255,255,255,.85); box-shadow: 0 0 0 100vmax rgba(0,0,0,.35); pointer-events: none; }
+.ad-scan-manual { display: grid; gap: 6px; }
+.ad-scan-manual label { font-size: 13px; font-weight: 600; color: var(--ad-ink-2); }
+.ad-scan-row { display: flex; gap: 8px; }
+.ad-scan-row .ad-input { flex: 1; min-width: 0; text-transform: uppercase; }
+.ad-scan-side { display: grid; gap: 16px; }
+.ad-scan-wait { display: grid; justify-items: center; gap: 6px; text-align: center; color: var(--ad-ink-2); }
+.ad-scan-result { overflow: hidden; border-width: 2px; }
+.ad-scan-result.is-ok { border-color: var(--ad-ok); }
+.ad-scan-result.is-bad { border-color: var(--ad-danger); }
+.ad-scan-verdict { display: flex; align-items: center; gap: 10px; padding: 14px 18px; font-size: 20px; font-weight: 800; letter-spacing: 0.04em; color: #fff; }
+.is-ok .ad-scan-verdict { background: var(--ad-ok); }
+.is-bad .ad-scan-verdict { background: var(--ad-danger); }
+.ad-scan-verdict-ico { font-size: 30px; }
+.ad-scan-body { padding: 16px 18px 4px; display: grid; gap: 10px; }
+.ad-scan-name { margin: 0; font-size: clamp(22px, 4vw, 30px); line-height: 1.15; }
+.ad-scan-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px; }
+.ad-scan-count { margin: 0; font-size: 14px; color: var(--ad-ink-2); }
+.ad-scan-hist summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ad-ink-2); }
+.ad-scan-hist ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--ad-ink-2); display: grid; gap: 4px; }
+.ad-scan-next { margin: 14px 18px 18px; width: calc(100% - 36px); min-height: 52px; font-size: 16px; font-weight: 700; }
+.ad-scan-recent h3 { margin: 0 0 8px; font-size: 13px; font-weight: 700; color: var(--ad-ink-2); }
+.ad-scan-recent ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
+.ad-scan-recent li { display: flex; align-items: center; gap: 8px; }
+.ad-ok { color: var(--ad-ok); } .ad-bad { color: var(--ad-danger); }
