@@ -52,7 +52,21 @@ public class CreateCodewaveApplicationHandler
         _shopier = shopier;
     }
 
+    // Aynı indirim koduyla eşzamanlı iki istek ikinci bir satır açmasın diye kod başına sıraya alınır.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, SemaphoreSlim> CodeLocks = new();
+
     public async Task<IResult> HandleAsync(CreateCodewaveApplicationRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.DiscountCode))
+            return await HandleCoreAsync(request);
+
+        var gate = CodeLocks.GetOrAdd(CodewaveRules.NormalizeDiscountCode(request.DiscountCode), _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync();
+        try { return await HandleCoreAsync(request); }
+        finally { gate.Release(); }
+    }
+
+    private async Task<IResult> HandleCoreAsync(CreateCodewaveApplicationRequest request)
     {
         // A. INPUT VALIDATION (codewave tarafı da doğruluyor; burada güvenmeden tekrar kontrol edilir)
         var firstName = (request.FirstName ?? string.Empty).Trim();
@@ -115,12 +129,13 @@ public class CreateCodewaveApplicationHandler
             .Where(a => (a.Status == CodewaveApplicationStatus.Waiting || a.Status == CodewaveApplicationStatus.Approved)
                         && (a.Email == email
                             || a.PhoneKey == phoneKey
-                            || (discountId != null && a.CodewaveStudentDiscountId == discountId)))
+                            || (discountId != null && (a.CodewaveStudentDiscountId == discountId || a.DiscountCode == discountCode))))
             .OrderByDescending(a => a.Id)
             .ToListAsync();
 
         if (discountId is not null
-            && matches.Any(a => a.Status == CodewaveApplicationStatus.Approved && a.CodewaveStudentDiscountId == discountId))
+            && matches.Any(a => a.Status == CodewaveApplicationStatus.Approved
+                               && (a.CodewaveStudentDiscountId == discountId || a.DiscountCode == discountCode)))
             return CodewaveResults.Error(StatusCodes.Status409Conflict, "discount_used", "Bu indirim daha önce kullanılmış.");
 
         if (matches.Any(a => a.Status == CodewaveApplicationStatus.Approved && a.Email == email))
@@ -129,7 +144,12 @@ public class CreateCodewaveApplicationHandler
         if (matches.Any(a => a.Status == CodewaveApplicationStatus.Approved && a.PhoneKey == phoneKey))
             return CodewaveResults.Error(StatusCodes.Status409Conflict, "phone_used", "Bu telefon numarasıyla zaten bilet alınmış.");
 
-        var existing = matches.FirstOrDefault(a => a.Status == CodewaveApplicationStatus.Waiting);
+        // İndirimli başvuruda önce o indirime ait satır seçilir: form e-postası/telefonu/adı farklı olsa da yeni satır açılmaz.
+        var existing = (discountId is not null
+                ? matches.FirstOrDefault(a => a.Status == CodewaveApplicationStatus.Waiting
+                                              && (a.CodewaveStudentDiscountId == discountId || a.DiscountCode == discountCode))
+                : null)
+            ?? matches.FirstOrDefault(a => a.Status == CodewaveApplicationStatus.Waiting);
 
         // D. İNDİRİMLİ BİLET: öğrenciye özel tek stoklu ürün (varsa aynı ürüne, yoksa yenisi açılır)
         if (discount is not null)
