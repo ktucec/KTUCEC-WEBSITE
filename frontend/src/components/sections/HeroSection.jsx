@@ -239,7 +239,7 @@ export default function HeroSection() {
                         >
                             <span className="cw-pill-dot" aria-hidden="true" />
                             <span className="cw-pill-name">CODEWAVE 2026</span>
-                            <span className="hidden sm:inline text-white/70">biletleri satışa açıldı</span>
+                            <span className="hidden sm:inline cw-pill-text">biletleri satışa açıldı</span>
                             <span className="cw-pill-cta">
                                 Hemen satın al
                                 <span className="material-symbols-outlined text-[16px] transition-transform duration-300 group-hover:translate-x-0.5" aria-hidden="true">arrow_forward</span>

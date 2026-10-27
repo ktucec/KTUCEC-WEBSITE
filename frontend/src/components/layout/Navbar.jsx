@@ -25,15 +25,16 @@ function CodewaveButton({ className = "" }) {
             href="https://codewave.ktucec.com"
             target="_blank"
             rel="noopener noreferrer"
-            className={`codewave-button group !py-2.5 !px-5 !text-[13px] ${className}`}
+            className={`codewave-button group ${className}`}
         >
-            <span className="codewave-bg"></span>
-            <span className="codewave-shine"></span>
-            <span className="codewave-glass"></span>
+            <span className="codewave-bg" aria-hidden="true"></span>
+            <span className="codewave-shine" aria-hidden="true"></span>
             <span className="codewave-text">
-                CODEWAVE 2026
-                <svg className="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                <span className="codewave-dot" aria-hidden="true"></span>
+                CODEWAVE
+                <span className="codewave-year">2026</span>
+                <svg className="codewave-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 12h14m-6-6 6 6-6 6" />
                 </svg>
             </span>
         </Link>
