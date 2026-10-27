@@ -33,7 +33,7 @@ export const TICKET = {
 // Şu an (geçici): 20 TL bilet, indirimli fiyat 18 TL (20 - 2). Bilet fiyatı değişirse indirimli fiyat da kayar; value'yu yeniden hesaplayın.
 export const STUDENT_DISCOUNT: { type: 'percent' | 'fixed'; value: number } = {
     type: 'fixed',
-    value: 20,
+    value: 41,
 };
 
 export const CONTACT = {
