@@ -23,7 +23,9 @@ public record CreateCodewaveApplicationRequest(
     decimal DiscountAmount,
     decimal TotalPrice,
     string? Currency,
-    string? DiscountCode);
+    string? DiscountCode,
+    bool PrivacyNoticeAccepted,
+    bool ExplicitConsentAccepted);
 
 // RedirectUrl: indirimli bilette öğrenciye özel tek stoklu Shopier ürünü; indirimsizde null
 // (codewave sitesi herkese açık bilet ürününe yönlendirir).
@@ -69,6 +71,11 @@ public class CreateCodewaveApplicationHandler
     private async Task<IResult> HandleCoreAsync(CreateCodewaveApplicationRequest request)
     {
         // A. INPUT VALIDATION (codewave tarafı da doğruluyor; burada güvenmeden tekrar kontrol edilir)
+        // Aydınlatma metni onayı zorunlu: onaylanmadıysa başka hiçbir şey yapılmadan reddedilir (Postman vb. istekler için).
+        // Açık rıza zorunlu değildir; yalnızca değeri kaydedilir.
+        if (!request.PrivacyNoticeAccepted)
+            return CodewaveResults.Error(StatusCodes.Status400BadRequest, "privacy_required", "Aydınlatma metnini onaylamak zorunlu.");
+
         var firstName = (request.FirstName ?? string.Empty).Trim();
         var lastName = (request.LastName ?? string.Empty).Trim();
         var email = CodewaveRules.NormalizeEmail(request.Email);
@@ -181,6 +188,8 @@ public class CreateCodewaveApplicationHandler
         application.CodewaveStudentDiscountId = discount?.Id;
         application.DiscountCode = discount?.DiscountCode;
         application.ShopierProductUrl = redirectUrl;
+        application.PrivacyNoticeAccepted = request.PrivacyNoticeAccepted;
+        application.ExplicitConsentAccepted = request.ExplicitConsentAccepted;
 
         if (existing is null)
             _context.CodewaveApplications.Add(application);

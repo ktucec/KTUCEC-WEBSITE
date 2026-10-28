@@ -15,6 +15,7 @@ import {
 import { isShopierUrl } from '@/editions/2026/lib/shopierLink';
 import { useDiscount } from './discount/DiscountProvider';
 import { useLang } from './i18n/LanguageProvider';
+import LegalDialog, { type LegalKind } from './LegalDialog';
 import Price from './Price';
 
 const DRAFT_KEY = 'cw26-ticket-draft';
@@ -29,7 +30,7 @@ function initialValues(name?: { firstName: string; lastName: string }): Registra
     let values = EMPTY_REGISTRATION;
     try {
         const raw = sessionStorage.getItem(DRAFT_KEY);
-        if (raw) values = { ...EMPTY_REGISTRATION, ...JSON.parse(raw), consent: false };
+        if (raw) values = { ...EMPTY_REGISTRATION, ...JSON.parse(raw), consent: false, openConsent: false, privacy: false };
     } catch {
         // Bozuk ya da erişilemeyen taslak yok sayılır.
     }
@@ -38,6 +39,18 @@ function initialValues(name?: { firstName: string; lastName: string }): Registra
 
 // İpucundaki *işaretli* kısım belirgin renkle gösterilir.
 const hintParts = (text: string) => text.split('*').map((part, i) => (i % 2 === 1 ? <strong key={i} className="hint-em">{part}</strong> : part));
+
+// Onay satırındaki *işaretli* kısım, ilgili metni küçük bir pencerede açan bağlantıdır.
+const legalParts = (text: string, onOpen: () => void) =>
+    text.split('*').map((part, i) =>
+        i % 2 === 1 ? (
+            <button key={i} type="button" className="legal-link" onClick={onOpen}>
+                {part}
+            </button>
+        ) : (
+            part
+        ),
+    );
 
 // Bilet formu. Doğrulama tarayıcıda ve sunucuda aynı kurallarla yapılır; tutar sunucuda hesaplanır.
 // Başarılı yanıtta başvuru kaydedilmiştir; Shopier ürün bağlantısı onReady ile üst bileşene verilir
@@ -58,6 +71,7 @@ export default function TicketForm({
     const [showSummary, setShowSummary] = useState(false);
     const [busy, setBusy] = useState(false);
     const [serverError, setServerError] = useState<ServerError | null>(null);
+    const [legal, setLegal] = useState<LegalKind | null>(null);
 
     useEffect(() => {
         const onShow = (e: PageTransitionEvent) => {
@@ -75,8 +89,8 @@ export default function TicketForm({
 
     useEffect(() => {
         try {
-            // Onay kutusu bilerek saklanmaz: her ödeme denemesinde yeniden işaretlenir.
-            sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...values, consent: undefined }));
+            // Onay kutuları bilerek saklanmaz: her ödeme denemesinde yeniden işaretlenir.
+            sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ ...values, consent: undefined, openConsent: undefined, privacy: undefined }));
         } catch {
             // Depolama yoksa taslak tutulmaz; form yine çalışır.
         }
@@ -236,6 +250,44 @@ export default function TicketForm({
                     </p>
                 )}
             </div>
+
+            <div className="grid grid-cols-[22px_1fr] items-start gap-3">
+                <input
+                    type="checkbox"
+                    id={fieldId('openConsent')}
+                    name="openConsent"
+                    className="mt-0.5 h-[22px] w-[22px]"
+                    checked={values.openConsent}
+                    onChange={(e) => update('openConsent', e.target.checked)}
+                />
+                <label htmlFor={fieldId('openConsent')} className="text-[0.9375rem] leading-snug text-mute">
+                    {legalParts(d.legal.openConsent.label, () => setLegal('openConsent'))}
+                </label>
+            </div>
+
+            <div className={`grid grid-cols-[22px_1fr] items-start gap-3${errors.privacy ? ' has-error' : ''}`}>
+                <input
+                    type="checkbox"
+                    id={fieldId('privacy')}
+                    name="privacy"
+                    className="mt-0.5 h-[22px] w-[22px]"
+                    checked={values.privacy}
+                    onChange={(e) => update('privacy', e.target.checked)}
+                    aria-invalid={errors.privacy ? true : undefined}
+                    aria-describedby={describe('privacy')}
+                    required
+                />
+                <label htmlFor={fieldId('privacy')} className="text-[0.9375rem] leading-snug text-mute">
+                    {legalParts(d.legal.privacy.label, () => setLegal('privacy'))}
+                </label>
+                {errors.privacy && (
+                    <p className="err col-start-2 text-[0.8125rem] font-medium text-danger" id={`${fieldId('privacy')}-error`}>
+                        {d.errors[errors.privacy]}
+                    </p>
+                )}
+            </div>
+
+            {legal && <LegalDialog kind={legal} onClose={() => setLegal(null)} />}
 
             {serverError && (
                 <div className="grid gap-2 rounded-[14px] border border-[var(--line-hi)] bg-white/[0.03] px-4 py-3 text-[0.9375rem]" role="alert">

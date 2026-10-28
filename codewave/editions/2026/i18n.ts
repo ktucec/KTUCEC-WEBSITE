@@ -23,6 +23,46 @@ export function formatDiscount(lang: Lang) {
     return lang === 'TR' ? `%${n}` : `${n}%`;
 }
 
+// Hukuki metinler her iki dilde de Türkçe gösterilir (bağlayıcı olan Türkçe metindir).
+export type LegalBlock = { heading?: string; text?: string; items?: string[] };
+
+const OPEN_CONSENT_TITLE = `KİŞİSEL VERİ PAYLAŞIMI VE TİCARİ İLETİŞİM AÇIK RIZA BEYANI`;
+const OPEN_CONSENT_BODY: LegalBlock[] = [
+    { text: `Codewave etkinliği kapsamında tarafıma sunulan "Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metni"ni okudum ve anladım.` },
+    { text: `Bu kapsamda; Kayıt formunda paylaştığım kimlik bilgilerimin (ad, soyad) ve iletişim bilgilerimin (telefon numarası, e-posta adresi);` },
+    {
+        items: [
+            `Bana özel dil eğitimi fırsatları, kampanyalar, indirimler ve tanıtım faaliyetleri sunulabilmesi,`,
+            `Eğitim programları hakkında tarafıma bilgilendirme yapılabilmesi`,
+        ],
+    },
+    { text: `amaçlarıyla, Codewave etkinliği sponsoru TEOL Eğitim Kurumları ile paylaşılmasına (aktarılmasına) ve bu verilerimin TEOL tarafından pazarlama faaliyetleri kapsamında işlenmesine özgür irademle açık rıza veriyorum.` },
+    { text: `Ayrıca, 6563 sayılı Elektronik Ticaretin Düzenlenmesi Hakkında Kanun uyarınca; TEOL Eğitim Kurumları tarafından yukarıda belirtilen kampanya, indirim ve tanıtım amaçlarıyla tarafıma SMS (kısa mesaj), e-posta ve telefon araması yoluyla ticari elektronik ileti gönderilmesine onay veriyorum.` },
+    { text: `İşbu onayımı, dilediğim zaman hiçbir gerekçe göstermeksizin, tarafıma gönderilen iletilerde yer alan "ret/iptal" hakkını kullanarak (örneğin SMS'lerdeki iptal linkine tıklayarak veya İYS üzerinden) ücretsiz olarak geri alabileceğimi bildiğimi beyan ederim.` },
+];
+
+const PRIVACY_TITLE = `CODEWAVE ETKİNLİĞİ KİŞİSEL VERİLERİN İŞLENMESİNE İLİŞKİN AYDINLATMA METNİ`;
+const PRIVACY_BODY: LegalBlock[] = [
+    { text: `Veri Sorumlusu: KTUCEC (Karadeniz Teknik Üniversitesi Computer Engineering Club)` },
+    { text: `İşbu Aydınlatma Metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") 10. maddesi kapsamında, "Codewave" etkinliğine kayıt ve katılım süreçlerinizde işlenen kişisel verilerinize ilişkin olarak sizleri bilgilendirmek amacıyla hazırlanmıştır.` },
+    { heading: `1. Hangi Kişisel Verilerinizi İşliyoruz?` },
+    { text: `Etkinlik kayıt formunu doldurmanız vasıtasıyla; kimlik bilgileriniz (ad, soyad) ve iletişim bilgileriniz (e-posta adresi, telefon numarası) toplanmaktadır.` },
+    { heading: `2. Kişisel Verilerinizi Hangi Amaçlarla ve Hukuki Sebeplerle İşliyoruz?` },
+    { text: `Kişisel verileriniz, KVKK'nın 5. maddesinde belirtilen hukuki sebeplere dayanarak aşağıdaki amaçlarla işlenmektedir:` },
+    {
+        items: [
+            `KVKK m. 5/2-c (Bir sözleşmenin kurulması veya ifası) kapsamında: Etkinlik kayıt başvurularının alınması, bilet/giriş işlemlerinin tamamlanması, etkinlik hakkında (saat, mekan, değişiklikler vb.) zorunlu bilgilendirmelerin yapılması ve etkinliğe katılımınızın sağlanması.`,
+            `KVKK m. 5/2-f (Veri sorumlusunun meşru menfaati) kapsamında: Etkinlik operasyonlarının yönetilmesi ve güvenliğin sağlanması.`,
+        ],
+    },
+    { heading: `3. Kişisel Verilerinizi Kimlere Aktarıyoruz?` },
+    { text: `Kişisel verileriniz; yalnızca yukarıda belirtilen etkinlik operasyonlarının yürütülebilmesi amacıyla sınırlı kalmak kaydıyla, hizmet aldığımız teknik altyapı, sunucu ve SMS/e-posta gönderim hizmeti sağlayan tedarikçilerimize aktarılabilmektedir.(Not: İletişim bilgilerinizin, kampanya ve tanıtım amacıyla etkinlik sponsorumuz TEOL ile paylaşılması işlemi, bu aydınlatma metninden bağımsız olarak yalnızca ayrıca "Açık Rıza" vermeniz halinde gerçekleşecektir.)` },
+    { heading: `4. Kişisel Verilerinizi Toplama Yöntemimiz` },
+    { text: `Kişisel verileriniz, Codewave etkinlik kayıt web sitesi üzerinden elektronik ortamda, tamamen veya kısmen otomatik yollarla toplanmaktadır.` },
+    { heading: `5. KVKK Kapsamındaki Haklarınız` },
+    { text: `KVKK'nın 11. maddesi uyarınca veri sorumlusu olarak bize başvurarak; kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenme amacını öğrenme, aktarıldığı üçüncü kişileri bilme, eksik/yanlış işlenmişse düzeltilmesini isteme ve silinmesini talep etme haklarına sahipsiniz. Taleplerinizi ktucec@ceng.ktu.edu.tr adresi üzerinden bize iletebilirsiniz.` },
+];
+
 const TR = {
     skip: 'İçeriğe geç',
     navSpeakers: 'Konuşmacılar',
@@ -128,6 +168,11 @@ const TR = {
     attendee: 'Katılım türü',
     attendeeOptions: { student: 'Öğrenci', professional: 'Çalışan', other: 'Diğer' },
     consent: 'Bilgilerimin bu bilet işlemi için ödeme altyapısı Shopier’e aktarılmasını kabul ediyorum.',
+    legal: {
+        close: 'Kapat',
+        openConsent: { label: '*Açık rıza metnini* okudum, onaylıyorum.', title: OPEN_CONSENT_TITLE, body: OPEN_CONSENT_BODY },
+        privacy: { label: '*Aydınlatma metnini* okudum, onaylıyorum.', title: PRIVACY_TITLE, body: PRIVACY_BODY },
+    },
     pay: 'Ödemeye geç',
     paying: 'Shopier’e yönlendiriliyorsun…',
     salesClosed: 'Satış kapandı',
@@ -193,6 +238,7 @@ const TR = {
         cityRequired: 'Şehrini yaz.',
         attendeeRequired: 'Katılım türünü seç.',
         consentRequired: 'Devam etmek için onay kutusunu işaretle.',
+        privacyRequired: 'Aydınlatma metnini onaylamak zorunlu.',
     },
     serverErrors: {
         not_configured: 'Online satış henüz açılmadı. Shopier bağlantısı kurulduğunda bu form çalışacak; bilgilerin bu cihazda duruyor.',
@@ -383,6 +429,11 @@ const EN: Dict = {
     attendee: 'You are attending as',
     attendeeOptions: { student: 'Student', professional: 'Professional', other: 'Other' },
     consent: 'I agree that my details are passed to Shopier, the payment provider, to process this ticket.',
+    legal: {
+        close: 'Close',
+        openConsent: { label: 'I have read and accept the *explicit consent text* (Turkish).', title: OPEN_CONSENT_TITLE, body: OPEN_CONSENT_BODY },
+        privacy: { label: 'I have read and accept the *privacy notice* (Turkish).', title: PRIVACY_TITLE, body: PRIVACY_BODY },
+    },
     pay: 'Continue to payment',
     paying: 'Taking you to Shopier…',
     salesClosed: 'Sales closed',
@@ -448,6 +499,7 @@ const EN: Dict = {
         cityRequired: 'Enter your city.',
         attendeeRequired: 'Choose how you are attending.',
         consentRequired: 'Tick the box to continue.',
+        privacyRequired: 'You must accept the privacy notice.',
     },
     serverErrors: {
         not_configured: 'Online sales aren’t open yet. This form will work once Shopier is connected; your details stay on this device.',

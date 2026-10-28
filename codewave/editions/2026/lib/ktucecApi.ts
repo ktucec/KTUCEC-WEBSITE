@@ -82,6 +82,8 @@ export type CreateApplicationInput = {
     totalPrice: number;
     currency: string;
     discountCode?: string;
+    privacyNoticeAccepted: boolean;
+    explicitConsentAccepted: boolean;
 };
 
 // redirectUrl: indirimli bilette öğrenciye özel Shopier ürünü; indirimsizde null.

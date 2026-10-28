@@ -53,6 +53,8 @@ export async function POST(request: Request) {
         totalPrice: amount.total,
         currency: TICKET.currency,
         discountCode: code || undefined,
+        privacyNoticeAccepted: registration.privacy,
+        explicitConsentAccepted: registration.openConsent,
     });
 
     if (!created.ok) {

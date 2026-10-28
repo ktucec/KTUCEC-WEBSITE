@@ -12,13 +12,17 @@ export type Registration = {
     city: string;
     attendee: AttendeeType | '';
     consent: boolean;
+    // Açık rıza (TEOL ile paylaşım, ticari iletişim): zorunlu değil, seçim backend'e kaydedilir.
+    openConsent: boolean;
+    // Aydınlatma metni onayı: zorunlu.
+    privacy: boolean;
 };
 
 export type Field = keyof Registration;
 export type ErrorCode = keyof Dict['errors'];
 export type FieldErrors = Partial<Record<Field, ErrorCode>>;
 
-export const FIELD_ORDER: Field[] = ['firstName', 'lastName', 'email', 'phone', 'city', 'attendee', 'consent'];
+export const FIELD_ORDER: Field[] = ['firstName', 'lastName', 'email', 'phone', 'city', 'attendee', 'consent', 'privacy'];
 
 export const EMPTY_REGISTRATION: Registration = {
     firstName: '',
@@ -28,6 +32,8 @@ export const EMPTY_REGISTRATION: Registration = {
     city: '',
     attendee: '',
     consent: false,
+    openConsent: false,
+    privacy: false,
 };
 
 const NAME_RE = /^[\p{L}][\p{L}\p{M}' .-]*$/u;
@@ -73,6 +79,10 @@ export function validateField(field: Field, values: Registration): ErrorCode | u
             return ATTENDEE_TYPES.includes(values.attendee as AttendeeType) ? undefined : 'attendeeRequired';
         case 'consent':
             return values.consent ? undefined : 'consentRequired';
+        case 'privacy':
+            return values.privacy ? undefined : 'privacyRequired';
+        case 'openConsent':
+            return undefined;
     }
 }
 
@@ -98,5 +108,7 @@ export function parseRegistration(input: unknown): Registration {
         city: clean(str('city')),
         attendee: ATTENDEE_TYPES.includes(attendee as AttendeeType) ? (attendee as AttendeeType) : '',
         consent: o.consent === true,
+        openConsent: o.openConsent === true,
+        privacy: o.privacy === true,
     };
 }

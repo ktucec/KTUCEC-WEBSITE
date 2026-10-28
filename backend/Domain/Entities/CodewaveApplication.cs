@@ -52,5 +52,11 @@ public class CodewaveApplication : BaseEntity
     public string? TicketCode { get; set; }
     public DateTime? TicketIssuedAt { get; set; }
 
+    // --- Rıza / aydınlatma ---
+    // Aydınlatma metni onayı zorunludur (form ve backend reddeder). Açık rıza (TEOL ile paylaşım ve ticari iletişim)
+    // zorunlu değildir; verilip verilmediği burada tutulur. Başvuru tekrar gönderilirse son seçim yazılır.
+    public bool PrivacyNoticeAccepted { get; set; }
+    public bool ExplicitConsentAccepted { get; set; }
+
     public ICollection<CodewaveTicketScan> TicketScans { get; set; } = new List<CodewaveTicketScan>();
 }
