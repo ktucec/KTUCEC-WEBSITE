@@ -6,6 +6,9 @@ import { useLang } from './i18n/LanguageProvider';
 
 export type LegalKind = 'openConsent' | 'privacy';
 
+// Metindeki **kalın** işaretli kısımlar kalın yazılır.
+const rich = (text: string) => text.split('**').map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part));
+
 // Açık rıza ve aydınlatma metinlerini küçük puntolu, sade bir pencerede gösterir.
 // Bilet penceresinin (TicketDialog) üstünde açılır; Escape yalnızca bu pencereyi kapatır.
 export default function LegalDialog({ kind, onClose }: { kind: LegalKind; onClose: () => void }) {
@@ -59,11 +62,11 @@ export default function LegalDialog({ kind, onClose }: { kind: LegalKind; onClos
                         ) : block.items ? (
                             <ul key={i}>
                                 {block.items.map((item) => (
-                                    <li key={item}>{item}</li>
+                                    <li key={item}>{rich(item)}</li>
                                 ))}
                             </ul>
                         ) : (
-                            <p key={i}>{block.text}</p>
+                            <p key={i}>{block.text && rich(block.text)}</p>
                         ),
                     )}
                 </div>
