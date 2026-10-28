@@ -31,7 +31,7 @@ public static class CodewaveResults
         OtpSendOutcome.LimitReached => Error(StatusCodes.Status429TooManyRequests, "otp_limit",
             "Bu adres için çok fazla kod istendi. Daha sonra tekrar deneyin.", retryAfter: result.RetryAfterSeconds),
         _ => Error(StatusCodes.Status502BadGateway, "mail_failed",
-            "Doğrulama e-postası gönderilemedi. Lütfen biraz sonra tekrar deneyin."),
+            "Şu anda servislerimiz çok yoğun. Lütfen daha sonra tekrar deneyin."),
     };
 
     // available: kullanılabilir · redeemed: Shopier'deki tek stoklu indirimli ürün satıldı

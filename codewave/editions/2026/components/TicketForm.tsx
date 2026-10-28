@@ -320,6 +320,9 @@ export default function TicketForm({
                 <p id="ticket-note" className="mono text-center text-[0.6875rem] tracking-[0.14em] text-faint uppercase" aria-live="polite">
                     {busy ? d.paying : d.secureNote}
                 </p>
+                <div className="field">
+                    <p className="hint text-center">{hintParts(d.shopierNote)}</p>
+                </div>
             </div>
         </form>
     );

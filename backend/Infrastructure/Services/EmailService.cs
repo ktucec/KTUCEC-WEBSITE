@@ -6,6 +6,10 @@ namespace ktucec.Infrastructure.Services;
 
 public class EmailService
 {
+    // SMTP sunucusu yanıt vermezse istek 100 sn (varsayılan) beklemesin: 20 sn sonra hata verilir,
+    // çağıran taraf (onay e-postası / OTP) bunu "gönderilemedi" sayar.
+    private static readonly TimeSpan SendTimeout = TimeSpan.FromSeconds(20);
+
     private readonly IConfiguration _configuration;
 
     public EmailService(IConfiguration configuration)
@@ -36,7 +40,8 @@ public class EmailService
         using var client = new SmtpClient(host, port)
         {
             Credentials = new NetworkCredential(fromEmail, password),
-            EnableSsl = true
+            EnableSsl = true,
+            Timeout = (int)SendTimeout.TotalMilliseconds
         };
 
         using var mailMessage = new MailMessage
@@ -49,6 +54,7 @@ public class EmailService
 
         mailMessage.To.Add(cleanToEmail);
 
-        await client.SendMailAsync(mailMessage);
+        // Async gönderimde SmtpClient.Timeout her zaman uygulanmayabildiği için süre ayrıca burada da sınırlanır.
+        await client.SendMailAsync(mailMessage).WaitAsync(SendTimeout);
     }
 }
