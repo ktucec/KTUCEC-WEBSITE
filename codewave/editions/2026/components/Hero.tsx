@@ -163,7 +163,7 @@ export default function Hero({ salesOpen }: { salesOpen: boolean }) {
                                 </span>
                             </p>
                             <Magnetic className="mt-4 w-full sm:mt-5">
-                                <a className="btn btn-primary btn-lg btn-block" href="#bilet" data-cursor={salesOpen ? d.buy : d.buySoon}>
+                                <a id="hero-buy" className="btn btn-primary btn-lg btn-block" href="#bilet" data-cursor={salesOpen ? d.buy : d.buySoon}>
                                     <span>{salesOpen ? d.buy : d.buySoon}</span>
                                     <span className="price">
                                         <Price />

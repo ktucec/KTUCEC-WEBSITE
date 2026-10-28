@@ -7,6 +7,7 @@ import Tickets from '@/editions/2026/components/Tickets';
 import Venue from '@/editions/2026/components/Venue';
 import Footer from '@/editions/2026/components/Footer';
 import StickyTicketBar from '@/editions/2026/components/StickyTicketBar';
+import FloatingTicketButton from '@/editions/2026/components/FloatingTicketButton';
 import Cursor from '@/editions/2026/components/fx/Cursor';
 import Intro from '@/editions/2026/components/fx/Intro';
 import RevealObserver from '@/editions/2026/components/fx/RevealObserver';
@@ -64,6 +65,7 @@ export default function Page() {
             </main>
             <Footer />
             <StickyTicketBar salesOpen={salesOpen} />
+            <FloatingTicketButton salesOpen={salesOpen} />
             <RevealObserver />
             <SmartAnchors />
         </>
