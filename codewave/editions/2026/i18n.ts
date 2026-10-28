@@ -29,38 +29,78 @@ export type LegalBlock = { heading?: string; text?: string; items?: string[] };
 const OPEN_CONSENT_TITLE = `KİŞİSEL VERİ PAYLAŞIMI VE TİCARİ İLETİŞİM AÇIK RIZA BEYANI`;
 const OPEN_CONSENT_BODY: LegalBlock[] = [
     { text: `Codewave etkinliği kapsamında tarafıma sunulan "Kişisel Verilerin İşlenmesine İlişkin Aydınlatma Metni"ni okudum ve anladım.` },
-    { text: `Bu kapsamda; Kayıt formunda paylaştığım kimlik bilgilerimin (ad, soyad) ve iletişim bilgilerimin (telefon numarası, e-posta adresi);` },
+    { text: `Bu kapsamda; kayıt formunda paylaştığım kimlik bilgilerimin (ad, soyad) ve iletişim bilgilerimin (telefon numarası, e-posta adresi);` },
     {
         items: [
             `Bana özel dil eğitimi fırsatları, kampanyalar, indirimler ve tanıtım faaliyetleri sunulabilmesi,`,
             `Eğitim programları hakkında tarafıma bilgilendirme yapılabilmesi`,
         ],
     },
-    { text: `amaçlarıyla, Codewave etkinliği sponsoru TEOL Eğitim Kurumları ile paylaşılmasına (aktarılmasına) ve bu verilerimin TEOL tarafından pazarlama faaliyetleri kapsamında işlenmesine özgür irademle açık rıza veriyorum.` },
-    { text: `Ayrıca, 6563 sayılı Elektronik Ticaretin Düzenlenmesi Hakkında Kanun uyarınca; TEOL Eğitim Kurumları tarafından yukarıda belirtilen kampanya, indirim ve tanıtım amaçlarıyla tarafıma SMS (kısa mesaj), e-posta ve telefon araması yoluyla ticari elektronik ileti gönderilmesine onay veriyorum.` },
+    { text: `amaçlarıyla, Codewave etkinliğinin sponsorlarından biri olan eğitim kurumu ("Sponsor Kurum") ile paylaşılmasına (aktarılmasına) ve bu verilerimin Sponsor Kurum tarafından pazarlama faaliyetleri kapsamında işlenmesine özgür irademle açık rıza veriyorum.` },
+    { text: `Ayrıca, 6563 sayılı Elektronik Ticaretin Düzenlenmesi Hakkında Kanun uyarınca; Sponsor Kurum tarafından yukarıda belirtilen kampanya, indirim ve tanıtım amaçlarıyla tarafıma SMS (kısa mesaj), e-posta ve telefon araması yoluyla ticari elektronik ileti gönderilmesine onay veriyorum.` },
     { text: `İşbu onayımı, dilediğim zaman hiçbir gerekçe göstermeksizin, tarafıma gönderilen iletilerde yer alan "ret/iptal" hakkını kullanarak (örneğin SMS'lerdeki iptal linkine tıklayarak veya İYS üzerinden) ücretsiz olarak geri alabileceğimi bildiğimi beyan ederim.` },
 ];
 
 const PRIVACY_TITLE = `CODEWAVE ETKİNLİĞİ KİŞİSEL VERİLERİN İŞLENMESİNE İLİŞKİN AYDINLATMA METNİ`;
 const PRIVACY_BODY: LegalBlock[] = [
-    { text: `Veri Sorumlusu: KTUCEC (Karadeniz Teknik Üniversitesi Computer Engineering Club)` },
-    { text: `İşbu Aydınlatma Metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") 10. maddesi kapsamında, "Codewave" etkinliğine kayıt ve katılım süreçlerinizde işlenen kişisel verilerinize ilişkin olarak sizleri bilgilendirmek amacıyla hazırlanmıştır.` },
+    { text: `Veri Sorumlusu: KTUCEC (Karadeniz Teknik Üniversitesi Computer Engineering Club). İletişim: ktucec@ceng.ktu.edu.tr` },
+    { text: `İşbu Aydınlatma Metni, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") 10. maddesi ve Aydınlatma Yükümlülüğünün Yerine Getirilmesinde Uyulacak Usul ve Esaslar Hakkında Tebliğ kapsamında, "Codewave" etkinliğine kayıt, bilet satın alma ve katılım süreçlerinizde işlenen kişisel verilerinize ilişkin olarak sizleri bilgilendirmek amacıyla hazırlanmıştır.` },
+
     { heading: `1. Hangi Kişisel Verilerinizi İşliyoruz?` },
-    { text: `Etkinlik kayıt formunu doldurmanız vasıtasıyla; kimlik bilgileriniz (ad, soyad) ve iletişim bilgileriniz (e-posta adresi, telefon numarası) toplanmaktadır.` },
-    { heading: `2. Kişisel Verilerinizi Hangi Amaçlarla ve Hukuki Sebeplerle İşliyoruz?` },
-    { text: `Kişisel verileriniz, KVKK'nın 5. maddesinde belirtilen hukuki sebeplere dayanarak aşağıdaki amaçlarla işlenmektedir:` },
     {
         items: [
-            `KVKK m. 5/2-c (Bir sözleşmenin kurulması veya ifası) kapsamında: Etkinlik kayıt başvurularının alınması, bilet/giriş işlemlerinin tamamlanması, etkinlik hakkında (saat, mekan, değişiklikler vb.) zorunlu bilgilendirmelerin yapılması ve etkinliğe katılımınızın sağlanması.`,
-            `KVKK m. 5/2-f (Veri sorumlusunun meşru menfaati) kapsamında: Etkinlik operasyonlarının yönetilmesi ve güvenliğin sağlanması.`,
+            `Kimlik ve iletişim bilgileriniz: ad, soyad, e-posta adresi, telefon numarası ve şehir.`,
+            `Katılım ve işlem bilgileriniz: katılımcı türü (öğrenci, çalışan, diğer), bilet ve sipariş bilgileri, bilet kodu ve etkinlik girişinde yapılan bilet okutma kayıtları.`,
+            `Öğrenci indirimi talep etmeniz halinde: öğrenci e-posta adresiniz ve öğrenci numaranız.`,
+            `İşlem güvenliği bilgileriniz: doğrulama kodu isteklerinde kötüye kullanımın önlenmesi amacıyla IP adresiniz.`,
         ],
     },
+    { text: `Ödeme bilgileriniz (kart bilgileri vb.) tarafımızca işlenmez ve saklanmaz; ödeme, ödeme hizmeti sağlayıcısının kendi sayfasında gerçekleşir.` },
+
+    { heading: `2. Kişisel Verilerinizi Hangi Amaçlarla ve Hukuki Sebeplerle İşliyoruz?` },
+    {
+        items: [
+            `KVKK m. 5/2-c (Bir sözleşmenin kurulması veya ifası) kapsamında: etkinlik kayıt ve bilet başvurularının alınması, ödemenin ve siparişin eşleştirilmesi, biletinizin oluşturulup e-posta ile iletilmesi, öğrenci indiriminin doğrulanması, etkinlik hakkında (saat, mekan, değişiklikler vb.) zorunlu bilgilendirmelerin yapılması ve etkinliğe katılımınızın sağlanması.`,
+            `KVKK m. 5/2-f (Veri sorumlusunun meşru menfaati) kapsamında: etkinlik operasyonlarının yönetilmesi, giriş kontrolünün yapılması, güvenliğin sağlanması ile kötüye kullanım ve sahteciliğin önlenmesi.`,
+            `KVKK m. 5/2-ç (Hukuki yükümlülük) kapsamında: mevzuattan doğan yükümlülüklerin yerine getirilmesi ve yetkili kurum taleplerinin karşılanması.`,
+            `KVKK m. 5/1 (Açık rıza) kapsamında: yalnızca ayrıca açık rıza vermeniz halinde, ad-soyad ve iletişim bilgilerinizin etkinlik sponsoru bir eğitim kurumuyla paylaşılması ve bu kurum tarafından kampanya, indirim, tanıtım ve bilgilendirme amacıyla kullanılması.`,
+        ],
+    },
+    { text: `Açık rıza ayrı bir onaya bağlıdır; bilet satın almanız ve etkinliğe katılımınız açık rıza vermenize bağlı değildir. Açık rıza vermemeniz biletiniz ve etkinlik haklarınız bakımından hiçbir sonuç doğurmaz. Verdiğiniz açık rızayı dilediğiniz zaman geri alabilirsiniz.` },
+
     { heading: `3. Kişisel Verilerinizi Kimlere Aktarıyoruz?` },
-    { text: `Kişisel verileriniz; yalnızca yukarıda belirtilen etkinlik operasyonlarının yürütülebilmesi amacıyla sınırlı kalmak kaydıyla, hizmet aldığımız teknik altyapı, sunucu ve SMS/e-posta gönderim hizmeti sağlayan tedarikçilerimize aktarılabilmektedir.(Not: İletişim bilgilerinizin, kampanya ve tanıtım amacıyla etkinlik sponsorumuz TEOL ile paylaşılması işlemi, bu aydınlatma metninden bağımsız olarak yalnızca ayrıca "Açık Rıza" vermeniz halinde gerçekleşecektir.)` },
+    { text: `Kişisel verileriniz, yukarıdaki amaçlarla sınırlı olarak ve yalnızca gerekli olduğu ölçüde aşağıdaki alıcı gruplarına aktarılabilir:` },
+    {
+        items: [
+            `Ödeme hizmeti sağlayıcımız: ödemenin alınması ve siparişin oluşturulması için.`,
+            `Teknik altyapı, sunucu ve e-posta/SMS gönderim hizmeti sağlayan tedarikçilerimiz: sitenin çalıştırılması ile bilet ve doğrulama mesajlarının iletilmesi için.`,
+            `Yetkili kamu kurum ve kuruluşları: mevzuattan doğan yükümlülükler çerçevesinde, talep halinde.`,
+            `Etkinlik sponsoru eğitim kurumu: yalnızca ayrıca açık rıza vermeniz halinde, ad-soyad ve iletişim bilgilerinizle sınırlı olarak ve yukarıda belirtilen kampanya, indirim, tanıtım ve bilgilendirme amacıyla. Açık rıza vermezseniz bu paylaşım yapılmaz.`,
+        ],
+    },
+    { text: `Teknik altyapı tedarikçilerimizin sunucuları yurt dışında bulunabilir; bu durumda aktarım KVKK m. 9 ve ilgili mevzuata uygun olarak yapılır.` },
+
     { heading: `4. Kişisel Verilerinizi Toplama Yöntemimiz` },
-    { text: `Kişisel verileriniz, Codewave etkinlik kayıt web sitesi üzerinden elektronik ortamda, tamamen veya kısmen otomatik yollarla toplanmaktadır.` },
-    { heading: `5. KVKK Kapsamındaki Haklarınız` },
-    { text: `KVKK'nın 11. maddesi uyarınca veri sorumlusu olarak bize başvurarak; kişisel verilerinizin işlenip işlenmediğini öğrenme, işlenme amacını öğrenme, aktarıldığı üçüncü kişileri bilme, eksik/yanlış işlenmişse düzeltilmesini isteme ve silinmesini talep etme haklarına sahipsiniz. Taleplerinizi ktucec@ceng.ktu.edu.tr adresi üzerinden bize iletebilirsiniz.` },
+    { text: `Kişisel verileriniz, Codewave etkinlik kayıt web sitesindeki formlar üzerinden elektronik ortamda, tamamen veya kısmen otomatik yollarla toplanır. Ödeme sonrasında sipariş ve alıcı bilgileriniz ödeme hizmeti sağlayıcısından da alınır. Toplama işleminin hukuki sebepleri yukarıda 2. maddede belirtilmiştir.` },
+
+    { heading: `5. Saklama Süresi` },
+    { text: `Kişisel verileriniz, işlenme amaçları için gerekli süre boyunca saklanır. Bu sürenin ve etkinlik ile mevzuattan doğan yükümlülüklerin sona ermesinin ardından verileriniz silinir, yok edilir veya anonim hale getirilir.` },
+
+    { heading: `6. KVKK Kapsamındaki Haklarınız` },
+    { text: `KVKK'nın 11. maddesi uyarınca veri sorumlusu olarak bize başvurarak aşağıdaki haklara sahipsiniz:` },
+    {
+        items: [
+            `Kişisel verilerinizin işlenip işlenmediğini öğrenme ve işlenmişse buna ilişkin bilgi talep etme,`,
+            `İşlenme amacını ve bu amaca uygun kullanılıp kullanılmadığını öğrenme,`,
+            `Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme,`,
+            `Eksik veya yanlış işlenmişse düzeltilmesini isteme,`,
+            `KVKK m. 7'de öngörülen şartlar çerçevesinde silinmesini veya yok edilmesini isteme,`,
+            `Düzeltme, silme ve yok edilme işlemlerinin kişisel verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme,`,
+            `İşlenen verilerin münhasıran otomatik sistemlerle analiz edilmesi suretiyle aleyhinize bir sonucun ortaya çıkmasına itiraz etme,`,
+            `Kanuna aykırı işlenmesi sebebiyle zarara uğramanız halinde zararın giderilmesini talep etme.`,
+        ],
+    },
+    { text: `Taleplerinizi, kimliğinizi tespit edici bilgiler ve talebinizin içeriğiyle birlikte ktucec@ceng.ktu.edu.tr adresi üzerinden bize iletebilirsiniz. Başvurunuz, niteliğine göre en geç otuz gün içinde sonuçlandırılır. Başvurunuza verilen yanıtı yetersiz bulmanız halinde Kişisel Verileri Koruma Kurulu'na şikayette bulunma hakkınız saklıdır.` },
 ];
 
 const TR = {
