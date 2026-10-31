@@ -154,7 +154,7 @@ const TR = {
     speakersTitle: 'Sahnede kimler var',
     speakersIntro: 'CODEWAVE 2026 konuşmacılarını keşfetmek için kaydır',
     speakerJump: (name: string) => `${name}: konuşmacıya git`,
-    speakersLead: 'Kesinleşen beş konuşmacı. Altıncı isim yakında açıklanacak.',
+    speakersLead: 'Altı konuşmacının tamamı kesinleşti. Sahne hazır.',
     seatPending: 'Altıncı konuşmacı',
     seatPendingNote: 'Yakında açıklanacak',
 
@@ -416,7 +416,7 @@ const EN: Dict = {
     speakersTitle: 'Who’s on stage',
     speakersIntro: 'Scroll to discover the CODEWAVE 2026 speakers',
     speakerJump: (name: string) => `${name}: go to speaker`,
-    speakersLead: 'Five speakers confirmed. The sixth will be announced soon.',
+    speakersLead: 'All six speakers are confirmed. The stage is set.',
     seatPending: 'Sixth speaker',
     seatPendingNote: 'To be announced',
 

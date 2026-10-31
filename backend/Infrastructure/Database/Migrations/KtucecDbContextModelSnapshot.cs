@@ -95,6 +95,9 @@ namespace ktucec.Infrastructure.Database.Migrations
                         .HasMaxLength(254)
                         .HasColumnType("nvarchar(254)");
 
+                    b.Property<bool>("ExplicitConsentAccepted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -130,6 +133,9 @@ namespace ktucec.Infrastructure.Database.Migrations
                         .IsRequired()
                         .HasMaxLength(16)
                         .HasColumnType("nvarchar(16)");
+
+                    b.Property<bool>("PrivacyNoticeAccepted")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("RefundedAt")
                         .HasColumnType("datetime2");

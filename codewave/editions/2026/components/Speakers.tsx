@@ -182,7 +182,7 @@ export default function Speakers() {
                             .set(portrait, { opacity: 0 }, t + 2);
                     });
 
-                    // Perde 4 · Doruk: rayda oturan beş portre büyük kadroya uçar, altıncı koltuk boş parlar.
+                    // Perde 4 · Doruk: rayda oturan portreler büyük kadroya uçar (boş koltuk kaldıysa "?" parlar).
                     tl.to('.st-beam', { x: 0, opacity: 0.45, scaleX: 2.6, duration: 1 }, p);
                     thumbs.forEach((thumb, i) => {
                         tl.to(
@@ -199,9 +199,12 @@ export default function Speakers() {
                             .set(cells[i], { opacity: 1 }, p + 1.2 + i * 0.08)
                             .set(thumb, { opacity: 0 }, p + 1.2 + i * 0.08);
                     });
-                    tl.to('.st-slot', { opacity: 0, duration: 0.4 }, p + 0.3)
-                        .fromTo('.st-cell-pending', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }, p + 1.1)
-                        .fromTo('.st-cell-meta', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.06, ease: 'power3.out' }, p + 1.3)
+                    tl.to('.st-slot', { opacity: 0, duration: 0.4 }, p + 0.3);
+                    // Boş koltuk kalmadıysa (altı konuşmacı da belli) "?" hücresi yoktur.
+                    if (q('.st-cell-pending').length) {
+                        tl.fromTo('.st-cell-pending', { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.6, ease: 'power3.out' }, p + 1.1);
+                    }
+                    tl.fromTo('.st-cell-meta', { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.06, ease: 'power3.out' }, p + 1.3)
                         .fromTo('.st-closing', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, p + 1.6)
                         // bırakış: son kare bir süre tutulur
                         .addLabel('lineup', p + 2.2)
