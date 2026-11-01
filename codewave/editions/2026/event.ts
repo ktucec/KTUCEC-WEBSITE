@@ -56,6 +56,8 @@ export type Speaker = {
     name: string;
     title: string;
     company?: string;
+    // Şirketin altında küçük, büyük harfsiz ikinci satır olarak gösterilir: (via Tibula Consulting)
+    via?: string;
     photo?: string;
     photoPosition?: string;
     // true: photo, test amaçlı sentetik bir örnek görseldir (kişinin fotoğrafı değil). Gerçek fotoğraf
@@ -72,7 +74,7 @@ export const SPEAKERS: Speaker[] = [
     { name: 'Güvenç Eraslan', title: 'Expert Data Engineer', company: 'Pegasus Airlines', photo: '/editions/2026/speakers/guvenc-eraslan.jpg' },
     { name: 'Emre Savcı', title: 'Tech Lead', company: 'Trendyol Group', photo: '/editions/2026/speakers/emre-savci.jpg' },
     { name: 'Akın Özer', title: 'DevOps Manager', company: 'Hepapi', photo: '/editions/2026/speakers/akin-ozer.jpg' },
-    { name: 'Celal Karahan', title: 'AI Engineer', company: 'Garanti BBVA Teknoloji', photo: '/editions/2026/speakers/celal-karahan.jpg' },
+    { name: 'Celal Karahan', title: 'AI Engineer', company: 'Garanti BBVA Teknoloji', via: 'via Tibula Consulting', photo: '/editions/2026/speakers/celal-karahan.jpg' },
 ];
 
 // Programdaki oturum sayısı. Bilet bölümündeki "oturum başına" tutarı buradan hesaplanır.

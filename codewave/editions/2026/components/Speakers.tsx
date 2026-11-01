@@ -259,6 +259,7 @@ export default function Speakers() {
                         </span>
                         <span className="sp-plate">
                             <span className="kicker">{s.company ?? d.speakerKicker}</span>
+                            {s.via && <span className="via">({s.via})</span>}
                             <span className="sp-name">{s.name}</span>
                             <span className="sp-title mono">{s.title}</span>
                         </span>
@@ -310,6 +311,7 @@ export default function Speakers() {
                 {SPEAKERS.map((s, i) => (
                     <div key={s.name} className={`st-plate st-plate-${i} st-plate-${i % 2 ? 'r' : 'l'}`}>
                         <p className="kicker">{s.company ?? d.speakerKicker}</p>
+                        {s.via && <p className="via">({s.via})</p>}
                         <p className="st-plate-name">{s.name}</p>
                         <p className="mono st-plate-title">{s.title}</p>
                     </div>
@@ -348,6 +350,7 @@ export default function Speakers() {
                             <span className="st-cell-meta">
                                 <span className="st-cell-name">{seat.speaker ? seat.speaker.name : d.seatPending}</span>
                                 <span className="mono st-cell-sub">{seat.speaker ? (seat.speaker.company ?? seat.speaker.title) : d.seatPendingNote}</span>
+                                {seat.speaker?.via && <span className="via st-cell-via">({seat.speaker.via})</span>}
                             </span>
                         </div>
                     ))}

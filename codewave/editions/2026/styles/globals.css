@@ -357,6 +357,11 @@ body::after {
 @media (min-width: 560px) { .sp-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (min-width: 1024px) { .sp-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3rem 2rem; } }
 
+.via { font-size: 0.75rem; letter-spacing: 0.02em; text-transform: none; color: var(--color-mute); line-height: 1.3; }
+.st-plate .via { margin-top: 0.3rem; }
+.st-cell-via { font-size: 0.625rem; margin-top: -0.1rem; }
+@media (min-width: 1024px) { .st-cell-via { font-size: 0.6875rem; } }
+
 /* Sahne */
 .st { display: none; }
 @media (prefers-reduced-motion: no-preference) {
